@@ -11,8 +11,7 @@ bool test_string_create_invalid_argument (Test *test)
 	CATCH (string_create (NULL));
 	CATCH (error_count () == 0);
 	CATCH (error_at (0).error != ErrorInvalidArgument);
-	CATCH (!string_equals (error_at (0).function, "string_create"));
-	PASS ();	
+	PASS ();
 }
 
 bool test_string_create_overflow (Test *test)
@@ -22,8 +21,7 @@ bool test_string_create_overflow (Test *test)
 	CATCH (string_create ("1"));
 	CATCH (error_count () == 0);
 	CATCH (error_at (0).error != ErrorOverflow);
-	CATCH (!string_equals (error_at (0).function, "string_create"));
-	PASS ();	
+	PASS ();
 }
 
 bool test_string_create_function_call (Test *test)
@@ -33,8 +31,7 @@ bool test_string_create_function_call (Test *test)
 	CATCH (string_create ("1"));
 	CATCH (error_count () == 0);
 	CATCH (error_at (0).error != ErrorFunctionCall);
-	CATCH (!string_equals (error_at (0).function, "string_create"));
-	PASS ();	
+	PASS ();
 }
 
 bool test_string_create_1 (Test *test)
@@ -63,7 +60,7 @@ bool test_string_create_2 (Test *test)
 	CATCH (string_length (string) != 1);
 	string_destroy (string);
 	CATCH (error_count () != 0);
-	PASS ();	
+	PASS ();
 }
 
 bool test_string_create_3 (Test *test)
@@ -86,8 +83,7 @@ bool test_string_create_with_size_invalid_operation (Test *test)
 	CATCH (string_create_with_size (0));
 	CATCH (error_count () == 0);
 	CATCH (error_at (0).error != ErrorInvalidOperation);
-	CATCH (!string_equals (error_at (0).function, "string_create_with_size"));
-	PASS ();	
+	PASS ();
 }
 
 bool test_string_create_with_size_function_call (Test *test)
@@ -96,8 +92,7 @@ bool test_string_create_with_size_function_call (Test *test)
 	CATCH (string_create_with_size (SIZE_MAX - sizeof (size_t)));
 	CATCH (error_count () == 0);
 	CATCH (error_at (0).error != ErrorFunctionCall);
-	CATCH (!string_equals (error_at (0).function, "string_create_with_size"));
-	PASS ();	
+	PASS ();
 }
 
 bool test_string_create_with_size (Test *test)
@@ -510,7 +505,6 @@ bool test_string_split_overflow (Test *test)
 	CATCH (string_split ("/", '/'));
 	CATCH (error_count () == 0);
 	CATCH (error_at (0).error != ErrorOverflow);
-	CATCH (!string_equals (error_at (0).function, "string_split"));
 	PASS ();
 }
 
@@ -527,7 +521,6 @@ bool test_string_split_function_call_1 (Test *test)
 	CATCH (error_count () == 0);
 	CATCH (error_at (0).error != ErrorFunctionCall);
 	CATCH (error_at (0).line != 217);
-	CATCH (!string_equals (error_at (0).function, "string_split"));
 	PASS ();
 }
 
@@ -544,7 +537,6 @@ bool test_string_split_function_call_2 (Test *test)
 	CATCH (error_count () == 0);
 	CATCH (error_at (0).error != ErrorFunctionCall);
 	CATCH (error_at (0).line != 229);
-	CATCH (!string_equals (error_at (0).function, "string_split"));
 	PASS ();
 }
 
@@ -790,50 +782,6 @@ bool test_string_split_18 (Test *test)
 	CATCH (!string_equals (array[3], "cc"));
 	destroy_array (array);
 	PASS ();
-}
-
-bool test_string_escape_c_null (Test *test)
-{
-	/*char *string = NULL;*/
-
-	TITLE ();
-	/*CATCH (string_escape_c (NULL));
-	CATCH (string_escape_c (&string));*/
-	CATCH (1);
-}
-
-bool test_string_unescape_c_null (Test *test)
-{
-	/*char *string = NULL;*/
-
-	TITLE ();
-	/*CATCH (string_unescape_c (NULL));
-	CATCH (string_unescape_c (&string));*/
-	CATCH (1);
-}
-
-bool test_string_escape_c (Test *test)
-{
-	char *string;
-
-	TITLE ();
-	CATCH (!(string = string_create ("\"\n\r\n\n\r\\")));
-	/*CATCH (!string_escape_c (&string));
-	CATCH (!string_equals (string, "\\\"\\\n\\\r\n\\\n\r\\"));*/
-	string_destroy (string);
-	CATCH (1);
-}
-
-bool test_string_unescape_c (Test *test)
-{
-	char *string;
-
-	TITLE ();
-	CATCH (!(string = string_create ("\\\"\\\n\\\r\n\\\n\r\\")));
-	/*CATCH (!string_unescape_c (&string));
-	CATCH (!string_equals (string, "\"\n\r\n\n\r\\"));*/
-	string_destroy (string);
-	CATCH (1);
 }
 
 static void destroy_array (char **array)

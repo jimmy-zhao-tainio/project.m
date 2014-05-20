@@ -66,9 +66,5 @@ bool test_string_split_15 (Test *test);
 bool test_string_split_16 (Test *test);
 bool test_string_split_17 (Test *test);
 bool test_string_split_18 (Test *test);
-bool test_string_escape_c_null (Test *test);
-bool test_string_unescape_c_null (Test *test);
-bool test_string_escape_c (Test *test);
-bool test_string_unescape_c (Test *test);
 
 #endif
