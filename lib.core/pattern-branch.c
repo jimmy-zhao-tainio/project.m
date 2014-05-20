@@ -161,25 +161,20 @@ static PatternBranchPart *branch_part_create (ListNode *node, ListNode **end, ui
 {
 	PatternToken *token = node->data;
 
-	if (token->type == PatternTokenTypeParenthesesOpen) {
+        switch (token->type) {
+        case PatternTokenTypeParenthesesOpen:
 		return branch_part_create_branch (node, end, depth);
-	}
-	else if (token->type == PatternTokenTypeNot) {
+        case PatternTokenTypeNot:
 		return branch_part_create_not (node, end, depth);
-	}
-	else if (token->type == PatternTokenTypeOr) {
+        case PatternTokenTypeOr:
 		return branch_part_create_or (node, end);
-	}
-	else if (token->type == PatternTokenTypeRepeat) {
+        case PatternTokenTypeRepeat:
 		return branch_part_create_repeat (node, end);
-	}
-	else if (token->type == PatternTokenTypeRange) {
+        case PatternTokenTypeRange:
 		return branch_part_create_range (node, end);
-	}
-	else if (token->type == PatternTokenTypeSet) {
+        case PatternTokenTypeSet:
 		return branch_part_create_set (node, end);
-	}
-	else {
+        default:	
 		return branch_part_create_value (node, end);
 	}
 }
@@ -332,26 +327,30 @@ static void branch_part_destroy (PatternBranchPart *part)
 	if (!part) {
 		return;
 	}
-	if (part->type == PatternBranchPartTypeBranch) {
+        switch (part->type) {
+        case PatternBranchPartTypeBranch:
 		branch_part_destroy_branch ((PatternBranchPartBranch *)part);
-	}
-	else if (part->type == PatternBranchPartTypeNot) {
+	        break;
+        case PatternBranchPartTypeNot:
 		branch_part_destroy_not ((PatternBranchPartNot *)part);
-	}
-	else if (part->type == PatternBranchPartTypeOr) {
+	        break;
+        case PatternBranchPartTypeOr:
 		branch_part_destroy_or ((PatternBranchPartOr *)part);
-	}
-	else if (part->type == PatternBranchPartTypeRepeat) {
+	        break;
+        case PatternBranchPartTypeRepeat:
 		branch_part_destroy_repeat ((PatternBranchPartRepeat *)part);
-	}
-	else if (part->type == PatternBranchPartTypeRange) {
+	        break;
+        case PatternBranchPartTypeRange:
 		branch_part_destroy_range ((PatternBranchPartRange *)part);
-	}
-	else if (part->type == PatternBranchPartTypeSet) {
+	        break;
+        case PatternBranchPartTypeSet:
 		branch_part_destroy_set ((PatternBranchPartSet *)part);
-	}
-	else if (part->type == PatternBranchPartTypeValue) {
+	        break;
+        case PatternBranchPartTypeValue:
 		branch_part_destroy_value ((PatternBranchPartValue *)part);
+                break;
+        default:
+                break;
 	}
 }
 
