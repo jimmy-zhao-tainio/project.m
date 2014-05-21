@@ -10,24 +10,24 @@
 
 bool test_pattern_path_buffer_size_invalid_argument_1 (Test *test)
 {
-	TITLE ();
-	CATCH (pattern_path_buffer_size (NULL, NULL));
-	CATCH (error_count () != 1);
-	CATCH (error_at (0).error != ErrorInvalidArgument);
+        TITLE ();
+        CATCH (pattern_path_buffer_size (NULL, NULL));
+        CATCH (error_count () != 1);
+        CATCH (error_at (0).error != ErrorInvalidArgument);
         CATCH (error_at (0).code != 1);
-	PASS ();
+        PASS ();
 }
 
 bool test_pattern_path_buffer_size_invalid_argument_2 (Test *test)
 {
         PatternBranch branch;
 
-	TITLE ();
-	CATCH (pattern_path_buffer_size (&branch, NULL));
-	CATCH (error_count () != 1);
-	CATCH (error_at (0).error != ErrorInvalidArgument);
+        TITLE ();
+        CATCH (pattern_path_buffer_size (&branch, NULL));
+        CATCH (error_count () != 1);
+        CATCH (error_at (0).error != ErrorInvalidArgument);
         CATCH (error_at (0).code != 2);
-	PASS ();
+        PASS ();
 }
 
 bool test_pattern_path_buffer_size (Test *test)
@@ -36,10 +36,10 @@ bool test_pattern_path_buffer_size (Test *test)
         PatternBranch *branch;
         size_t size;
 
-	TITLE ();
+        TITLE ();
         CATCH (!(tokens = pattern_tokens_create ("a|b")));
         CATCH (!(branch = pattern_branch_create (tokens)));
-	CATCH (!pattern_path_buffer_size (branch, &size));
+        CATCH (!pattern_path_buffer_size (branch, &size));
         CATCH (size != 123456789);
-	PASS ();
+        PASS ();
 }
