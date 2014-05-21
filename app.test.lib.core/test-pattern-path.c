@@ -8,38 +8,24 @@
 
 #include "test-pattern-path.h"
 
-bool test_pattern_path_buffer_size_invalid_argument_1 (Test *test)
+bool test_pattern_path_create_invalid_argument (Test *test)
 {
         TITLE ();
-        CATCH (pattern_path_buffer_size (NULL, NULL));
+        CATCH (pattern_path_create (NULL));
         CATCH (error_count () != 1);
         CATCH (error_at (0).error != ErrorInvalidArgument);
-        CATCH (error_at (0).code != 1);
         PASS ();
 }
 
-bool test_pattern_path_buffer_size_invalid_argument_2 (Test *test)
-{
-        PatternBranch branch;
-
-        TITLE ();
-        CATCH (pattern_path_buffer_size (&branch, NULL));
-        CATCH (error_count () != 1);
-        CATCH (error_at (0).error != ErrorInvalidArgument);
-        CATCH (error_at (0).code != 2);
-        PASS ();
-}
-
-bool test_pattern_path_buffer_size (Test *test)
+bool test_pattern_path_create (Test *test)
 {
         List *tokens;
         PatternBranch *branch;
-        size_t size;
+        PatternPath *path;
 
         TITLE ();
-        CATCH (!(tokens = pattern_tokens_create ("a|b")));
+        CATCH (!(tokens = pattern_tokens_create ("a")));
         CATCH (!(branch = pattern_branch_create (tokens)));
-        CATCH (!pattern_path_buffer_size (branch, &size));
-        CATCH (size != 123456789);
+        CATCH (!(path = pattern_path_create (branch)));
         PASS ();
 }

@@ -3,8 +3,7 @@
 
 #include <lib.test/test.h>
 
-bool test_pattern_path_buffer_size_invalid_argument_1 (Test *test);
-bool test_pattern_path_buffer_size_invalid_argument_2 (Test *test);
-bool test_pattern_path_buffer_size (Test *test);
+bool test_pattern_path_create_invalid_argument (Test *test);
+bool test_pattern_path_create (Test *test);
 
 #endif
