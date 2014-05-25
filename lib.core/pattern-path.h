@@ -5,17 +5,17 @@
 #include <lib.core/list.h>
 #include <lib.core/pattern-branch.h>
 
-typedef struct s_PatternPath         PatternPath;
-typedef struct s_PatternPathBranches PatternPathBranches;
-typedef struct s_PatternPathRepeat   PatternPathRepeat;
-typedef struct s_PatternPathRange    PatternPathRange;
-typedef struct s_PatternPathSet      PatternPathSet;
-typedef struct s_PatternPathValue    PatternPathValue;
+typedef struct s_PatternPath       PatternPath;
+typedef struct s_PatternPathOr     PatternPathOr;
+typedef struct s_PatternPathRepeat PatternPathRepeat;
+typedef struct s_PatternPathRange  PatternPathRange;
+typedef struct s_PatternPathSet    PatternPathSet;
+typedef struct s_PatternPathValue  PatternPathValue;
 
 struct s_PatternPath
 {
         enum {
-                PatternPathTypeBranches,
+                PatternPathTypeOr,
                 PatternPathTypeRepeat,
                 PatternPathTypeRange,
                 PatternPathTypeSet,
@@ -23,11 +23,11 @@ struct s_PatternPath
         } type;
 };
 
-struct s_PatternPathBranches
+struct s_PatternPathOr
 {
         PatternPath base;
-        PatternPath **array;
-        size_t array_length;
+        PatternPath *left;
+        PatternPath *right;
 };
 
 struct s_PatternPathRepeat
@@ -57,11 +57,12 @@ struct s_PatternPathSet
 struct s_PatternPathValue
 {
         PatternPath base;
-        PatternTokenSet token;
+        PatternTokenValue token;
         PatternPath *next;
         bool not;
 };
 
 PatternPath *pattern_path_create (PatternBranch *branch);
+void pattern_path_destroy (PatternPath *path);
 
 #endif
