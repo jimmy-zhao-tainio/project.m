@@ -21,6 +21,8 @@ struct s_PatternPath
                 PatternPathTypeSet,
                 PatternPathTypeValue
         } type;
+
+        bool destroy;
 };
 
 struct s_PatternPathOr

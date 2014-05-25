@@ -11,6 +11,11 @@ static PatternPath *path_create_part_repeat (PatternBranchPartRepeat *repeat, Pa
 static PatternPath *path_create_part_range (PatternBranchPartRange *range, PatternPath *last);
 static PatternPath *path_create_part_set (PatternBranchPartSet *set, PatternPath *last);
 static PatternPath *path_create_part_value (PatternBranchPartValue *value, PatternPath *last);
+static void pattern_path_destroy_or (PatternPathOr *or);
+static void pattern_path_destroy_repeat (PatternPathRepeat *repeat);
+static void pattern_path_destroy_range (PatternPathRange *range);
+static void pattern_path_destroy_set (PatternPathSet *set);
+static void pattern_path_destroy_value (PatternPathValue *value);
 
 PatternPath *pattern_path_create (PatternBranch *branch)
 {
@@ -25,15 +30,6 @@ PatternPath *pattern_path_create (PatternBranch *branch)
                 return NULL;
         }
         return path;
-}
-
-void pattern_path_destroy (PatternPath *path)
-{
-        if (!path) {
-                error (InvalidArgument);
-                return;
-        }
-        memory_destroy (path);
 }
 
 static PatternPath *path_create_branch (PatternBranch *branch, PatternPath *last)
@@ -71,8 +67,6 @@ static PatternPath *path_create_part (PatternBranchPart *part, PatternPath *last
                 return path_create_part_set ((PatternBranchPartSet *)part, last);
         case PatternBranchPartTypeValue:
                 return path_create_part_value ((PatternBranchPartValue *)part, last);
-        default:
-                return NULL;
         };
 }
 
@@ -85,25 +79,25 @@ static PatternPath *path_create_part_not (PatternBranchPartNot *not, PatternPath
 {
         PatternPath *path;
 
-        if (not->part->type != PatternBranchPartTypeRange &&
-            not->part->type != PatternBranchPartTypeSet &&
-            not->part->type != PatternBranchPartTypeValue) {
-                error (InvalidOperation);
-                return NULL;
-        }
         if (!(path = path_create_part (not->part, last))) {
                 error (FunctionCall);
                 return NULL;
         }
-        if (not->part->type == PatternBranchPartTypeRange) {
+        switch (not->part->type) {
+        case PatternBranchPartTypeRange:
                 ((PatternPathRange *)path)->not = true;
-        }
-        else if (not->part->type == PatternBranchPartTypeSet) {
+                break;
+        case PatternBranchPartTypeSet:
                 ((PatternPathSet *)path)->not = true;
-        }
-        else {
+                break;
+        case PatternBranchPartTypeValue:
                 ((PatternPathValue *)path)->not = true;
-        }
+                break;
+        default:
+                memory_destroy (path);
+                error (InvalidOperation);
+                return NULL;
+        };
         return path;
 }
 
@@ -116,11 +110,15 @@ static PatternPath *path_create_part_or (PatternBranchPartOr *or, PatternPath *l
                 return NULL;
         }
         path->base.type = PatternPathTypeOr;
+        path->base.destroy = true;
         if (!(path->left = path_create_branch (or->left, last))) {
+                memory_destroy (path);
                 error (FunctionCall);
                 return NULL;
         }
         if (!(path->right = path_create_branch (or->right, last))) {
+                pattern_path_destroy (path->left);
+                memory_destroy (path);
                 error (FunctionCall);
                 return NULL;
         }
@@ -136,10 +134,13 @@ static PatternPath *path_create_part_repeat (PatternBranchPartRepeat *repeat, Pa
                 return NULL;
         }
         path->base.type = PatternPathTypeRepeat;
+        path->base.destroy = false;
         if (!(path->repeat = path_create_part (repeat->part, (PatternPath *)path))) {
+                memory_destroy (path);
                 error (FunctionCall);
                 return NULL;
         }
+        path->base.destroy = true;
         path->token.from = repeat->token->from;
         path->token.to = repeat->token->to;
         path->next = last;
@@ -155,6 +156,7 @@ static PatternPath *path_create_part_range (PatternBranchPartRange *range, Patte
                 return NULL;
         }
         path->base.type = PatternPathTypeRange;
+        path->base.destroy = true;
         path->token.from = range->token->from;
         path->token.to = range->token->to;
         path->next = last;
@@ -170,6 +172,7 @@ static PatternPath *path_create_part_set (PatternBranchPartSet *set, PatternPath
                 return NULL;
         }
         path->base.type = PatternPathTypeSet;
+        path->base.destroy = true;
         path->token.values = set->token->values;
         path->token.values_length = set->token->values_length;
         path->next = last;
@@ -185,7 +188,83 @@ static PatternPath *path_create_part_value (PatternBranchPartValue *value, Patte
                 return NULL;
         }
         path->base.type = PatternPathTypeValue;
+        path->base.destroy = true;
         path->token.value = value->token->value;
         path->next = last;
         return (PatternPath *)path;
+}
+
+void pattern_path_destroy (PatternPath *path)
+{
+        if (!path) {
+                return;
+        }
+        if (!path->destroy) {
+                return;
+        }
+        path->destroy = false;
+        switch (path->type) {
+        case PatternPathTypeOr:
+                pattern_path_destroy_or ((PatternPathOr *)path);
+                break;
+        case PatternPathTypeRepeat:
+                pattern_path_destroy_repeat ((PatternPathRepeat *)path);
+                break;
+        case PatternPathTypeRange:
+                pattern_path_destroy_range ((PatternPathRange *)path);
+                break;
+        case PatternPathTypeSet:
+                pattern_path_destroy_set ((PatternPathSet *)path);
+                break;
+        case PatternPathTypeValue:
+                pattern_path_destroy_value ((PatternPathValue *)path);
+                break;
+        };
+}
+
+static void pattern_path_destroy_or (PatternPathOr *or)
+{
+        if (!or) {
+                return;
+        }
+        pattern_path_destroy (or->left);
+        pattern_path_destroy (or->right);
+        memory_destroy (or);
+}
+
+static void pattern_path_destroy_repeat (PatternPathRepeat *repeat)
+{
+        if (!repeat) {
+                return;
+        }
+        pattern_path_destroy (repeat->next);
+        pattern_path_destroy (repeat->repeat);
+        memory_destroy (repeat);
+}
+
+static void pattern_path_destroy_range (PatternPathRange *range)
+{
+        if (!range) {
+                return;
+        }
+        pattern_path_destroy (range->next);
+        memory_destroy (range);
+}
+
+static void pattern_path_destroy_set (PatternPathSet *set)
+{
+        if (!set) {
+                return;
+        }
+        pattern_path_destroy (set->next);
+        memory_destroy (set);
+}
+
+static void pattern_path_destroy_value (PatternPathValue *value)
+{
+        if (!value) {
+                return;
+        }
+        pattern_path_destroy (value->next);
+        memory_destroy (value);
 }
