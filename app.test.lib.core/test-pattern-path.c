@@ -17,6 +17,21 @@ bool test_pattern_path_create_invalid_argument (Test *test)
         PASS ();
 }
 
+bool test_pattern_path_create_function_call (Test *test)
+{
+        List *tokens;
+        PatternBranch *branch;
+
+        TITLE ();
+        CATCH (!(tokens = pattern_tokens_create ("a")));
+        CATCH (!(branch = pattern_branch_create (tokens)));
+        memory_commit_limit (memory_commit_size ());
+        CATCH (pattern_path_create (branch));
+        pattern_branch_destroy (branch);
+        pattern_tokens_destroy (tokens);
+        PASS ();
+}
+
 bool test_pattern_path_create (Test *test)
 {
         List *tokens;
@@ -27,5 +42,8 @@ bool test_pattern_path_create (Test *test)
         CATCH (!(tokens = pattern_tokens_create ("a")));
         CATCH (!(branch = pattern_branch_create (tokens)));
         CATCH (!(path = pattern_path_create (branch)));
+        pattern_path_destroy (path);
+        pattern_branch_destroy (branch);
+        pattern_tokens_destroy (tokens);
         PASS ();
 }

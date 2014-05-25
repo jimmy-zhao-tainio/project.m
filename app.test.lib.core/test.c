@@ -477,6 +477,7 @@ bool (*tests[]) (Test *test) =
         &test_pattern_branch_create_7,
         &test_pattern_branch_create_8,
         &test_pattern_path_create_invalid_argument,
+        &test_pattern_path_create_function_call,
         &test_pattern_path_create,
         NULL
 };
