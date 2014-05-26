@@ -1,6 +1,7 @@
 #include <lib.core/pattern-path.h>
 #include <lib.core/memory.h>
 #include <lib.core/error.h>
+#include <stdio.h>
 
 static PatternPath *path_create_branch (PatternBranch *branch, PatternPath *last);
 static PatternPath *path_create_part (PatternBranchPart *part, PatternPath *last);
@@ -41,8 +42,11 @@ static PatternPath *path_create_branch (PatternBranch *branch, PatternPath *last
                 if (!(path = path_create_part (node->data, last))) {
                         if (last) {
                                 pattern_path_destroy (last);
+                                error_code (FunctionCall, 1);
                         }
-                        error (FunctionCall);
+                        else {
+                                error_code (FunctionCall, 2);
+                        }
                         return NULL;
                 }
                 last = path;
@@ -106,20 +110,20 @@ static PatternPath *path_create_part_or (PatternBranchPartOr *or, PatternPath *l
         PatternPathOr *path;
 
         if (!(path = memory_create (sizeof (PatternPathOr)))) {
-                error (FunctionCall);
+                error_code (FunctionCall, 1);
                 return NULL;
         }
         path->base.type = PatternPathTypeOr;
         path->base.destroy = true;
         if (!(path->left = path_create_branch (or->left, last))) {
                 memory_destroy (path);
-                error (FunctionCall);
+                error_code (FunctionCall, 2);
                 return NULL;
         }
         if (!(path->right = path_create_branch (or->right, last))) {
                 pattern_path_destroy (path->left);
                 memory_destroy (path);
-                error (FunctionCall);
+                error_code (FunctionCall, 3);
                 return NULL;
         }
         return (PatternPath *)path;
@@ -130,14 +134,14 @@ static PatternPath *path_create_part_repeat (PatternBranchPartRepeat *repeat, Pa
         PatternPathRepeat *path;
 
         if (!(path = memory_create (sizeof (PatternPathRepeat)))) {
-                error (FunctionCall);
+                error_code (FunctionCall, 1);
                 return NULL;
         }
         path->base.type = PatternPathTypeRepeat;
         path->base.destroy = false;
         if (!(path->repeat = path_create_part (repeat->part, (PatternPath *)path))) {
                 memory_destroy (path);
-                error (FunctionCall);
+                error_code (FunctionCall, 2);
                 return NULL;
         }
         path->base.destroy = true;
