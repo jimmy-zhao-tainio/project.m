@@ -3,6 +3,7 @@
 
 #include <lib.core/defines.h>
 
-bool convert_string_decimal_to_size_t (char *string, size_t *result);
+bool convert_string_to_size_t (const char *string, size_t *result, size_t *digits);
+bool convert_string_to_unsigned_long_long (const char *string, unsigned long long *result, size_t *digits);
 
 #endif

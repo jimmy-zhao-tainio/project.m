@@ -3,7 +3,6 @@
 
 bool pattern_token_string_to_value (const char *pattern, size_t length, size_t *i, unsigned char *value);
 bool pattern_token_escape_to_value (const char *pattern, size_t length, size_t *i, unsigned char *value);
-bool pattern_token_string_to_size_t (const char *pattern, size_t length, size_t *i, size_t *value);
 bool pattern_token_escapable_to_byte (char escapable, unsigned char *value);
 bool pattern_token_is_syntax (char c);
 bool pattern_token_is_octal (char c1, char c2, char c3);

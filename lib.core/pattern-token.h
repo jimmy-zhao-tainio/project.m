@@ -29,8 +29,8 @@ struct s_PatternToken
 struct s_PatternTokenRepeat
 {
 	PatternToken token;
-	size_t from;
-	size_t to;
+	unsigned long long from;
+	unsigned long long to;
 };
 
 struct s_PatternTokenRange

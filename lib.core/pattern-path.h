@@ -50,6 +50,7 @@ struct s_PatternPathRepeat
         PatternTokenRepeat token;
         PatternPath *repeat;
         PatternPath *next;
+        unsigned long long repeated;
 };
 
 struct s_PatternPathRange

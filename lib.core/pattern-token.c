@@ -224,8 +224,9 @@ static bool tokenize_or (const char *pattern, size_t length, size_t *i, PatternT
 
 static bool tokenize_repeat (const char *pattern, size_t length, size_t *i, PatternToken **token)
 {
-	size_t from;
-	size_t to;
+	unsigned long long from;
+	unsigned long long to;
+        size_t digits;
 
 	if (!(*token)) {
 		error (PatternRepeatMissingOperand);
@@ -247,10 +248,11 @@ static bool tokenize_repeat (const char *pattern, size_t length, size_t *i, Patt
 		from = 0;
 	}
 	else {
-		if (!pattern_token_string_to_size_t (pattern, length, i, &from)) {
+		if (!convert_string_to_unsigned_long_long (pattern + *i, &from, &digits)) {
 			error (PatternRepeatInvalidFrom);
 			return false;
 		}
+                *i += digits;
 		if (*i >= length) {
 			error (PatternRepeatMissingCloseBracket);
 			return false;
@@ -279,10 +281,11 @@ static bool tokenize_repeat (const char *pattern, size_t length, size_t *i, Patt
 		to = SIZE_MAX;
 	}
 	else {
-		if (!pattern_token_string_to_size_t (pattern, length, i, &to)) {
+		if (!convert_string_to_unsigned_long_long (pattern + *i, &to, &digits)) {
 			error (PatternRepeatInvalidTo);
 			return false;
 		}
+                *i += digits;
 		if (*i >= length) {
 			error (PatternRepeatMissingCloseBracket);
 			return false;
@@ -526,36 +529,6 @@ bool pattern_token_escape_to_value (const char *pattern, size_t length, size_t *
 		return true;
 	}
 	return false;
-}
-
-bool pattern_token_string_to_size_t (const char *pattern, size_t length, size_t *i, size_t *value)
-{
-	char *decimals = NULL;
-	size_t digits = 0;
-	size_t d;
-	
-	while (*i + digits < length && ascii_is_digit (pattern[*i + digits])) {
-		digits++;
-	}
-	if (digits == 0) {
-		return false;
-	}
-	if (!(decimals = string_create_with_size (digits + 1))) {
-		error (FunctionCall);
-		return false;
-	}
-	for (d = 0; d < digits; d++) {
-		decimals[d] = pattern[*i + d];
-	}
-	decimals[d] = '\0';
-	if (!convert_string_decimal_to_size_t (decimals, value)) {
-		string_destroy (decimals);
-		error (FunctionCall);
-		return false;
-	}
-	string_destroy (decimals);
-	*i += digits;
-	return true;
 }
 
 bool pattern_token_escapable_to_byte (char escapable, unsigned char *value)

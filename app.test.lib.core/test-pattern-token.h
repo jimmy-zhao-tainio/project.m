@@ -75,7 +75,6 @@ bool test_pattern_tokens_escape_to_value (Test *test);
 bool test_pattern_tokens_escape_to_value_B (Test *test);
 bool test_pattern_tokens_escape_to_value_o (Test *test);
 bool test_pattern_tokens_escape_to_value_x (Test *test);
-bool test_pattern_tokens_string_to_size_t (Test *test);
 bool test_pattern_tokens_escapable_to_byte (Test *test);
 bool test_pattern_token_is_syntax (Test *test);
 bool test_pattern_token_is_octal (Test *test);

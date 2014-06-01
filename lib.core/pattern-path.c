@@ -194,6 +194,7 @@ static PatternPath *path_create_part_repeat (PatternBranchPartRepeat *repeat, Pa
         path->token.from = repeat->token->from;
         path->token.to = repeat->token->to;
         path->next = last;
+        path->repeated = 0;
         return (PatternPath *)path;
 }
 

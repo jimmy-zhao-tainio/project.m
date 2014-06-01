@@ -282,7 +282,7 @@ bool test_pattern_tokens_repeat_invalid_from (Test *test)
 {
 	TITLE ();
 	CATCH (pattern_tokens_create ("a{X"));
-	CATCH (error_count () != 1);
+	CATCH (error_count () != 2);
 	CATCH (error_at (0).error != ErrorPatternRepeatInvalidFrom);
 	PASS ();
 }
@@ -348,7 +348,7 @@ bool test_pattern_tokens_repeat_invalid_to (Test *test)
 {
 	TITLE ();
 	CATCH (pattern_tokens_create ("a{1-X"));
-	CATCH (error_count () != 1);
+	CATCH (error_count () != 2);
 	CATCH (error_at (0).error != ErrorPatternRepeatInvalidTo);
 	PASS ();
 }
@@ -993,40 +993,6 @@ bool test_pattern_tokens_escape_to_value_x (Test *test)
 	CATCH (!pattern_token_escape_to_value (x, 4, &i, &value));
 	CATCH (value != 0x22);
 	CATCH (i != 4);
-	PASS ();
-}
-
-bool test_pattern_tokens_string_to_size_t (Test *test)
-{
-	size_t i;
-	size_t value;
-
-	TITLE ();
-	i = 0;
-	CATCH (pattern_token_string_to_size_t ("a", 1, &i, &value));
-	memory_commit_limit (sizeof (size_t) + 1);
-	i = 0;
-	CATCH (pattern_token_string_to_size_t ("1", 1, &i, &value));
-	CATCH (error_count () != 3);
-	CATCH (error_at (0).error != ErrorFunctionCall);
-	error_reset ();
-	memory_commit_limit ((unsigned long long)-1);
-	i = 0;
-	CATCH (pattern_token_string_to_size_t ("99999999999999999999999999999999", 32, &i, &value));
-	CATCH (error_count () != 2);
-	CATCH (error_at (0).error != ErrorFunctionCall);
-	error_reset ();
-	CATCH (pattern_token_string_to_size_t ("01", 2, &i, &value));
-	CATCH (error_count () != 2);
-	CATCH (error_at (0).error != ErrorFunctionCall);
-	error_reset ();
-	CATCH (!pattern_token_string_to_size_t ("1", 1, &i, &value));
-	CATCH (i != 1);
-	CATCH (value != 1);
-	i = 0;
-	CATCH (!pattern_token_string_to_size_t ("123", 3, &i, &value));
-	CATCH (i != 3);
-	CATCH (value != 123);
 	PASS ();
 }
 
