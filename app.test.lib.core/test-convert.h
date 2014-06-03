@@ -10,11 +10,11 @@ bool test_convert_string_to_size_t (Test *test);
 bool test_convert_string_to_unsigned_long_long_invalid_argument_1 (Test *test);
 bool test_convert_string_to_unsigned_long_long_invalid_argument_2 (Test *test);
 bool test_convert_string_to_unsigned_long_long_invalid_argument_3 (Test *test);
-/*bool test_convert_string_to_unsigned_long_long_invalid_operation_1 (Test *test);
+bool test_convert_string_to_unsigned_long_long_invalid_operation_1 (Test *test);
 bool test_convert_string_to_unsigned_long_long_invalid_operation_2 (Test *test);
-bool test_convert_string_to_unsigned_long_long_overflow_1 (Test *test);
-bool test_convert_string_to_unsigned_long_long_overflow_2 (Test *test);
+bool test_convert_string_to_unsigned_long_long_overflow (Test *test);
+bool test_convert_string_to_unsigned_long_long (Test *test);
 bool test_convert_string_to_unsigned_long_long_overflow_3 (Test *test);
-bool test_convert_string_to_unsigned_long_long (Test *test);*/
+bool test_convert_string_to_unsigned_long_long (Test *test);
 
 #endif

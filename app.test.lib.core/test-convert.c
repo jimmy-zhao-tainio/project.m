@@ -21,7 +21,8 @@ bool test_convert_string_to_size_t_function_call (Test *test)
         TITLE ();
         CATCH (convert_string_to_size_t (NULL, &result, NULL));
         CATCH (error_count () == 0);
-        CATCH (error_at (0).error != ErrorFunctionCall);
+        CATCH (error_at (0).error != ErrorInvalidArgument);
+        CATCH (error_at (0).code != 1);
         PASS ();
 }
 
@@ -130,101 +131,69 @@ bool test_convert_string_to_unsigned_long_long_invalid_argument_3 (Test *test)
 	PASS ();
 }
 
-/*
 bool test_convert_string_to_unsigned_long_long_invalid_operation_1 (Test *test)
 {
-	size_t result;
+	unsigned long long result;
+        size_t digits;
 
 	TITLE ();
-	CATCH (convert_string_to_size_t ("", &result));
+	CATCH (convert_string_to_unsigned_long_long ("", &result, &digits));
 	CATCH (error_count () != 1);
 	CATCH (error_at (0).error != ErrorInvalidOperation);
-	CATCH (!string_equals (error_at (0).function, "convert_string_to_size_t"));
+	CATCH (error_at (0).code != 1);
 	PASS ();
 }
 
 bool test_convert_string_to_unsigned_long_long_invalid_operation_2 (Test *test)
 {
-	size_t result;
+	unsigned long long result;
+        size_t digits;
 
 	TITLE ();
-	CATCH (convert_string_to_size_t ("01", &result));
+	CATCH (convert_string_to_unsigned_long_long ("01", &result, &digits));
 	CATCH (error_count () != 1);
 	CATCH (error_at (0).error != ErrorInvalidOperation);
-	CATCH (!string_equals (error_at (0).function, "convert_string_to_size_t"));
+	CATCH (error_at (0).code != 2);
 	PASS ();
 }
 
-bool test_convert_string_to_unsigned_long_long_overflow_1 (Test *test)
+bool test_convert_string_to_unsigned_long_long_overflow (Test *test)
 {
-	size_t result;
+	unsigned long long result;
+        size_t digits;
 
 	TITLE ();
-	if (sizeof (size_t) == 2) {
-		CATCH (convert_string_to_size_t ("75535", &result));
+	CATCH (convert_string_to_unsigned_long_long ("99999999999999999999", &result, &digits));
+	CATCH (error_count () != 1);
+	CATCH (error_at (0).error != ErrorOverflow);
+	PASS ();
+}
+
+bool test_convert_string_to_unsigned_long_long (Test *test)
+{
+        unsigned long long result;
+        size_t digits;
+
+	TITLE ();
+	result = 1;
+        if (sizeof (unsigned long long) == 2) {
+		CATCH (!convert_string_to_unsigned_long_long ("65535", &result, &digits));
+                CATCH (result != (unsigned long long)-1);
+                CATCH (digits != 5);
 	}
-	else if (sizeof (size_t) == 4) {
-		CATCH (convert_string_to_size_t ("5294967295", &result));
+	else if (sizeof (unsigned long long) == 4) {
+		CATCH (!convert_string_to_unsigned_long_long ("4294967295", &result, &digits));
+                CATCH (result != (unsigned long long)-1);
+                CATCH (digits != 10);
 	}
 	else if (sizeof (size_t) == 8) {
-		CATCH (convert_string_to_size_t ("28446744073709551615", &result));
+		CATCH (!convert_string_to_unsigned_long_long ("18446744073709551615", &result, &digits));
+                CATCH (result != (unsigned long long)-1);
+                CATCH (digits != 20);
 	}
 	else {
 		CATCH (1);
 	}
-	CATCH (error_count () == 0);
-	CATCH (error_at (0).error != ErrorOverflow);
-	CATCH (!string_equals (error_at (0).function, "convert_string_to_size_t"));
-	CATCH (error_at (0).line != 35);
+	CATCH (error_count () != 0);
 	PASS ();
 }
-
-bool test_convert_string_to_unsigned_long_long_overflow_2 (Test *test)
-{
-	size_t result;
-
-	TITLE ();
-	if (sizeof (size_t) == 2) {
-		CATCH (convert_string_to_size_t ("65536", &result));
-	}
-	else if (sizeof (size_t) == 4) {
-		CATCH (convert_string_to_size_t ("4294967296", &result));
-	}
-	else if (sizeof (size_t) == 8) {
-		CATCH (convert_string_to_size_t ("18446744073709551616", &result));
-	}
-	else {
-		CATCH (1);
-	}
-	CATCH (error_count () == 0);
-	CATCH (error_at (0).error != ErrorOverflow);
-	CATCH (!string_equals (error_at (0).function, "convert_string_to_size_t"));
-	CATCH (error_at (0).line != 39);
-	PASS ();
-}
-
-bool test_convert_string_to_unsigned_long_long_overflow_3 (Test *test)
-{
-	size_t result;
-
-	TITLE ();
-	if (sizeof (size_t) == 2) {
-		CATCH (convert_string_to_size_t ("165535", &result));
-	}
-	else if (sizeof (size_t) == 4) {
-		CATCH (convert_string_to_size_t ("14294967295", &result));
-	}
-	else if (sizeof (size_t) == 8) {
-		CATCH (convert_string_to_size_t ("118446744073709551615", &result));
-	}
-	else {
-		CATCH (1);
-	}
-	CATCH (error_count () == 0);
-	CATCH (error_at (0).error != ErrorOverflow);
-	CATCH (!string_equals (error_at (0).function, "convert_string_to_size_t"));
-	CATCH (error_at (0).line != 44);
-	PASS ();
-}
-
-*/
