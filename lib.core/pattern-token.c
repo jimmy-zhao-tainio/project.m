@@ -71,23 +71,23 @@ static bool tokenize_create_try (const char *pattern, size_t length, List *token
 {
 	PatternToken *token = NULL;
 	PatternToken *token_previous;
-	size_t opened = 0;
+	size_t parentheses_open = 0;
 	size_t i = 0;
 
 	while (i < length) {
 		switch (pattern[i]) {
 		case '(':
-			opened++;
+			parentheses_open++;
 			if (!tokenize_parentheses_open (&i, &token)) {
 				return false;
 			}
 			break;
 		case ')':
-			if (opened == 0) {
+			if (parentheses_open == 0) {
 				error (PatternParenthesesMismatch);
 				return false;
 			}
-			opened--;
+			parentheses_open--;
 			if (!tokenize_parentheses_close (&i, &token)) {
 				return false;
 			}
@@ -147,7 +147,7 @@ static bool tokenize_create_try (const char *pattern, size_t length, List *token
 			return false;
 		}
 	}
-	if (opened != 0) {
+	if (parentheses_open != 0) {
 		return false;
 	}
 	return true;
@@ -233,7 +233,6 @@ static bool tokenize_repeat (const char *pattern, size_t length, size_t *i, Patt
 		return false;
 	}
 	if ((*token)->type != PatternTokenTypeParenthesesClose &&
-	    (*token)->type != PatternTokenTypeRepeat &&
 	    (*token)->type != PatternTokenTypeRange &&
 	    (*token)->type != PatternTokenTypeSet &&
 	    (*token)->type != PatternTokenTypeValue) {
@@ -278,7 +277,7 @@ static bool tokenize_repeat (const char *pattern, size_t length, size_t *i, Patt
 		return false;
 	}
 	if (pattern[*i] == '}') {
-		to = SIZE_MAX;
+		to = ULLONG_MAX;
 	}
 	else {
 		if (!convert_string_to_unsigned_long_long (pattern + *i, &to, &digits)) {

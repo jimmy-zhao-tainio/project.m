@@ -642,23 +642,22 @@ bool test_pattern_branch_create_8 (Test *test)
 {
 	List *tokens;
 	PatternBranch *branch;
-	PatternBranchPartRepeat *part_repeat_1;
-	PatternBranchPartRepeat *part_repeat_2;
 	PatternBranchPartValue *part_a;
+	PatternBranchPartValue *part_b;
+	PatternBranchPartRepeat *part_repeat;
 
 	TITLE ();
-	CATCH (!(tokens = pattern_tokens_create ("a{0-2}{2-4}")));
+	CATCH (!(tokens = pattern_tokens_create ("ab{2-4}")));
 	CATCH (!(branch = pattern_branch_create (tokens)));
 	CATCH (!branch->parts);
-	CATCH (list_count (branch->parts) != 1);
-	CATCH (!(part_repeat_1 = (PatternBranchPartRepeat *)branch->parts->first->data));
-	CATCH (part_repeat_1->token->from != 2);
-	CATCH (part_repeat_1->token->to != 4);
-	CATCH (!(part_repeat_2 = (PatternBranchPartRepeat *)part_repeat_1->part));
-	CATCH (part_repeat_2->token->from != 0);
-	CATCH (part_repeat_2->token->to != 2);
-	CATCH (!(part_a = (PatternBranchPartValue *)part_repeat_2->part));
+	CATCH (list_count (branch->parts) != 2);
+	CATCH (!(part_a = (PatternBranchPartValue *)branch->parts->first->data));
 	CATCH (part_a->token->value != 'a');
+	CATCH (!(part_repeat = (PatternBranchPartRepeat *)branch->parts->last->data));
+	CATCH (part_repeat->token->from != 2);
+	CATCH (part_repeat->token->to != 4);
+	CATCH (!(part_b = (PatternBranchPartValue *)part_repeat->part));
+	CATCH (part_b->token->value != 'b');
 	pattern_branch_destroy (branch);
 	pattern_tokens_destroy (tokens);
 	CATCH (error_count () != 0);

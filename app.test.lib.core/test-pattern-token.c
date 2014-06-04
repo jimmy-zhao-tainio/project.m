@@ -103,10 +103,10 @@ bool test_pattern_tokens_parentheses_close_function_call (Test *test)
 {
 	TITLE ();
 	memory_commit_limit (sizeof (size_t) + sizeof (List) +
-				 sizeof (size_t) + sizeof (PatternToken) +
-				 sizeof (size_t) + sizeof (ListNode) +
-				 sizeof (size_t) + sizeof (PatternToken) - 
-				 1);
+			     sizeof (size_t) + sizeof (PatternToken) +
+			     sizeof (size_t) + sizeof (ListNode) +
+			     sizeof (size_t) + sizeof (PatternToken) - 
+			     1);
 	CATCH (pattern_tokens_create ("()"));
 	CATCH (error_count () != 2);
 	CATCH (error_at (0).error != ErrorFunctionCall);
@@ -211,10 +211,10 @@ bool test_pattern_tokens_or_function_call (Test *test)
 {
 	TITLE ();
 	memory_commit_limit (sizeof (size_t) + sizeof (List) +
-				 sizeof (size_t) + sizeof (PatternTokenValue) +
-				 sizeof (size_t) + sizeof (ListNode) +
-				 sizeof (size_t) + sizeof (PatternToken) - 
-				 1);
+			     sizeof (size_t) + sizeof (PatternTokenValue) +
+			     sizeof (size_t) + sizeof (ListNode) +
+			     sizeof (size_t) + sizeof (PatternToken) - 
+			     1);
 	CATCH (pattern_tokens_create ("0|1"));
 	CATCH (error_count () != 2);
 	CATCH (error_at (0).error != ErrorFunctionCall);
@@ -300,10 +300,10 @@ bool test_pattern_tokens_repeat_function_call_1 (Test *test)
 {
 	TITLE ();
 	memory_commit_limit (sizeof (size_t) + sizeof (List) +
-				 sizeof (size_t) + sizeof (PatternTokenValue) +
-				 sizeof (size_t) + sizeof (ListNode) +
-				 sizeof (size_t) + sizeof (PatternTokenRepeat) -
-				 1);
+			     sizeof (size_t) + sizeof (PatternTokenValue) +
+			     sizeof (size_t) + sizeof (ListNode) +
+			     sizeof (size_t) + sizeof (PatternTokenRepeat) -
+			     1);
 	CATCH (pattern_tokens_create ("a{1}"));
 	CATCH (error_count () != 2);
 	CATCH (error_at (0).error != ErrorFunctionCall);
@@ -339,7 +339,7 @@ bool test_pattern_tokens_repeat_implicit_to (Test *test)
 	repeat = list_first (list)->next->data;
 	CATCH (repeat->token.type != PatternTokenTypeRepeat);
 	CATCH (repeat->from != 12);
-	CATCH (repeat->to != SIZE_MAX);
+	CATCH (repeat->to != ULLONG_MAX);
 	pattern_tokens_destroy (list);
 	PASS ();
 }
@@ -375,10 +375,10 @@ bool test_pattern_tokens_repeat_function_call_2 (Test *test)
 {
 	TITLE ();
 	memory_commit_limit (sizeof (size_t) + sizeof (List) + 
-				 sizeof (size_t) + sizeof (PatternTokenValue) +
-				 sizeof (size_t) + sizeof (ListNode) +
-				 sizeof (size_t) + sizeof (PatternTokenRepeat) -
-				 1);
+			     sizeof (size_t) + sizeof (PatternTokenValue) +
+			     sizeof (size_t) + sizeof (ListNode) +
+			     sizeof (size_t) + sizeof (PatternTokenRepeat) -
+			     1);
 	CATCH (pattern_tokens_create ("a{1-2}"));
 	CATCH (error_count () != 2);
 	CATCH (error_at (0).error != ErrorFunctionCall);
@@ -444,7 +444,7 @@ bool test_pattern_tokens_repeat_4 (Test *test)
 	repeat = list_first (list)->next->data;
 	CATCH (repeat->token.type != PatternTokenTypeRepeat);
 	CATCH (repeat->from != 123);
-	CATCH (repeat->to != SIZE_MAX);
+	CATCH (repeat->to != ULLONG_MAX);
 	pattern_tokens_destroy (list);
 	PASS ();
 }
@@ -460,7 +460,7 @@ bool test_pattern_tokens_repeat_5 (Test *test)
 	repeat = list_first (list)->next->data;
 	CATCH (repeat->token.type != PatternTokenTypeRepeat);
 	CATCH (repeat->from != 0);
-	CATCH (repeat->to != SIZE_MAX);
+	CATCH (repeat->to != ULLONG_MAX);
 	pattern_tokens_destroy (list);
 	PASS ();
 }
@@ -573,8 +573,8 @@ bool test_pattern_tokens_range_function_call (Test *test)
 {
 	TITLE ();
 	memory_commit_limit (sizeof (size_t) + sizeof (List) +
-				 sizeof (size_t) + sizeof (PatternTokenRange) -
-				 1);
+			     sizeof (size_t) + sizeof (PatternTokenRange) -
+			     1);
 	CATCH (pattern_tokens_create ("[0-1]"));
 	CATCH (error_count () != 2);
 	CATCH (error_at (0).error != ErrorFunctionCall);
