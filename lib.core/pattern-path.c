@@ -8,17 +8,15 @@ static PatternPath *path_create_part_branch (PatternBranchPartBranch *branch, Pa
 static PatternPath *path_create_part_not (PatternBranchPartNot *not, PatternPath *last, PatternPathTracker *tracker);
 static PatternPath *path_create_part_or (PatternBranchPartOr *or, PatternPath *last, PatternPathTracker *tracker);
 static PatternPath *path_create_part_repeat (PatternBranchPartRepeat *repeat, PatternPath *last, PatternPathTracker *tracker);
-static PatternPath *path_create_part_range (PatternBranchPartRange *range, PatternPath *last, PatternPathTracker *tracker);
-static PatternPath *path_create_part_set (PatternBranchPartSet *set, PatternPath *last, PatternPathTracker *tracker);
-static PatternPath *path_create_part_value (PatternBranchPartValue *value, PatternPath *last, PatternPathTracker *tracker);
+static PatternPath *path_create_part_range (PatternBranchPartRange *range, PatternPath *last);
+static PatternPath *path_create_part_set (PatternBranchPartSet *set, PatternPath *last);
+static PatternPath *path_create_part_value (PatternBranchPartValue *value, PatternPath *last);
 static void path_destroy (PatternPath *path);
 static void path_destroy_or (PatternPathOr *or);
 static void path_destroy_repeat (PatternPathRepeat *repeat);
 static void path_destroy_range (PatternPathRange *range);
 static void path_destroy_set (PatternPathSet *set);
 static void path_destroy_value (PatternPathValue *value);
-static bool path_tracker_add_repeat (PatternPathTracker *tracker, PatternPathRepeat *repeat);
-static bool path_tracker_add_follow (PatternPathTracker *tracker);
 
 PatternPathTracker *pattern_path_tracker_create (PatternBranch *branch)
 {
@@ -32,26 +30,9 @@ PatternPathTracker *pattern_path_tracker_create (PatternBranch *branch)
                 error_code (FunctionCall, 1);
                 return NULL;
         }
-        tracker->follow_index = 0;
-        tracker->repeat_index = 0;
-        tracker->follow_length = 64;
-        tracker->repeat_length = 8;
-        if (!(tracker->follow = memory_create (tracker->follow_length * sizeof (PatternPath *)))) {
+        if (!(tracker->path = path_create_branch (branch, NULL, tracker))) {
                 memory_destroy (tracker);
                 error_code (FunctionCall, 2);
-                return NULL;
-        }
-        if (!(tracker->repeat = memory_create (tracker->repeat_length * sizeof (PatternPathRepeat *)))) {
-                memory_destroy (tracker->follow);
-                memory_destroy (tracker);
-                error_code (FunctionCall, 3);
-                return NULL;
-        }
-        if (!(tracker->path = path_create_branch (branch, NULL, tracker))) {
-                memory_destroy (tracker->follow);
-                memory_destroy (tracker->repeat);
-                memory_destroy (tracker);
-                error_code (FunctionCall, 4);
                 return NULL;
         }
         return tracker;
@@ -61,12 +42,6 @@ void pattern_path_tracker_destroy (PatternPathTracker *tracker)
 {
         if (!tracker) {
                 return;
-        }
-        if (tracker->follow) {
-                memory_destroy (tracker->follow);
-        }
-        if (tracker->repeat) {
-                memory_destroy (tracker->repeat);
         }
         if (tracker->path) {
                 path_destroy (tracker->path);
@@ -107,11 +82,11 @@ static PatternPath *path_create_part (PatternBranchPart *part, PatternPath *last
         case PatternBranchPartTypeRepeat:
                 return path_create_part_repeat ((PatternBranchPartRepeat *)part, last, tracker);
         case PatternBranchPartTypeRange:
-                return path_create_part_range ((PatternBranchPartRange *)part, last, tracker);
+                return path_create_part_range ((PatternBranchPartRange *)part, last);
         case PatternBranchPartTypeSet:
-                return path_create_part_set ((PatternBranchPartSet *)part, last, tracker);
+                return path_create_part_set ((PatternBranchPartSet *)part, last);
         case PatternBranchPartTypeValue:
-                return path_create_part_value ((PatternBranchPartValue *)part, last, tracker);
+                return path_create_part_value ((PatternBranchPartValue *)part, last);
         };
 }
 
@@ -178,16 +153,13 @@ static PatternPath *path_create_part_repeat (PatternBranchPartRepeat *repeat, Pa
                 error_code (FunctionCall, 1);
                 return NULL;
         }
-        if (!path_tracker_add_repeat (tracker, path)) {
-                memory_destroy (path);
-                error_code (FunctionCall, 2);
-                return NULL;
-        }
+        path->next_repeat = tracker->repeat;
+        tracker->repeat = path;
         path->base.type = PatternPathTypeRepeat;
         path->base.destroy = false;
         if (!(path->repeat = path_create_part (repeat->part, (PatternPath *)path, tracker))) {
                 memory_destroy (path);
-                error_code (FunctionCall, 3);
+                error_code (FunctionCall, 2);
                 return NULL;
         }
         path->base.destroy = true;
@@ -198,17 +170,12 @@ static PatternPath *path_create_part_repeat (PatternBranchPartRepeat *repeat, Pa
         return (PatternPath *)path;
 }
 
-static PatternPath *path_create_part_range (PatternBranchPartRange *range, PatternPath *last, PatternPathTracker *tracker)
+static PatternPath *path_create_part_range (PatternBranchPartRange *range, PatternPath *last)
 {
         PatternPathRange *path;
 
         if (!(path = memory_create (sizeof (PatternPathRange)))) {
-                error_code (FunctionCall, 1);
-                return NULL;
-        }
-        if (!path_tracker_add_follow (tracker)) {
-                memory_destroy (path);
-                error_code (FunctionCall, 2);
+                error (FunctionCall);
                 return NULL;
         }
         path->base.type = PatternPathTypeRange;
@@ -219,17 +186,12 @@ static PatternPath *path_create_part_range (PatternBranchPartRange *range, Patte
         return (PatternPath *)path;
 }
 
-static PatternPath *path_create_part_set (PatternBranchPartSet *set, PatternPath *last, PatternPathTracker *tracker)
+static PatternPath *path_create_part_set (PatternBranchPartSet *set, PatternPath *last)
 {
         PatternPathSet *path;
 
         if (!(path = memory_create (sizeof (PatternPathSet)))) {
-                error_code (FunctionCall, 1);
-                return NULL;
-        }
-        if (!path_tracker_add_follow (tracker)) {
-                memory_destroy (path);
-                error_code (FunctionCall, 2);
+                error (FunctionCall);
                 return NULL;
         }
         path->base.type = PatternPathTypeSet;
@@ -240,17 +202,12 @@ static PatternPath *path_create_part_set (PatternBranchPartSet *set, PatternPath
         return (PatternPath *)path;
 }
 
-static PatternPath *path_create_part_value (PatternBranchPartValue *value, PatternPath *last, PatternPathTracker *tracker)
+static PatternPath *path_create_part_value (PatternBranchPartValue *value, PatternPath *last)
 {
         PatternPathValue *path;
 
         if (!(path = memory_create (sizeof (PatternPathValue)))) {
-                error_code (FunctionCall, 1);
-                return NULL;
-        }
-        if (!path_tracker_add_follow (tracker)) {
-                memory_destroy (path);
-                error_code (FunctionCall, 2);
+                error (FunctionCall);
                 return NULL;
         }
         path->base.type = PatternPathTypeValue;
@@ -333,36 +290,4 @@ static void path_destroy_value (PatternPathValue *value)
         }
         path_destroy (value->next);
         memory_destroy (value);
-}
-
-static bool path_tracker_add_repeat (PatternPathTracker *tracker, PatternPathRepeat *repeat)
-{
-        PatternPath **grow;
-
-        if (tracker->repeat_index == tracker->repeat_length) {
-                if (!(grow = memory_grow (tracker->repeat, 2 * (tracker->repeat_length * sizeof (PatternPathRepeat *))))) {
-                        error (FunctionCall);
-                        return false;
-                }
-                tracker->repeat_length *= 2;
-                tracker->repeat = (PatternPathRepeat **)grow;
-        }
-        tracker->repeat[tracker->repeat_index] = repeat;
-        tracker->repeat_index++;
-        return true;
-}
-
-static bool path_tracker_add_follow (PatternPathTracker *tracker)
-{
-        PatternPath **grow;
-
-        if (tracker->follow_index == tracker->follow_length) {
-                if (!(grow = memory_grow (tracker->follow, 2 * (tracker->follow_length * sizeof (PatternPath *))))) {
-                        error (FunctionCall);
-                        return false;
-                }
-                tracker->follow_length *= 2;
-        }
-        tracker->follow_index++;
-        return true;
 }

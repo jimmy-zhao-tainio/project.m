@@ -15,13 +15,11 @@ typedef struct s_PatternPathValue   PatternPathValue;
 
 struct s_PatternPathTracker
 {
-        PatternPath **follow;
-        size_t follow_length;
-        size_t follow_index;
-        PatternPathRepeat **repeat;
-        size_t repeat_length;
-        size_t repeat_index;
+        PatternPathRepeat *repeat;
         PatternPath *path;
+        PatternPath *track_first;
+        PatternPath *track_last;
+        size_t track_count;
 };
 
 struct s_PatternPath
@@ -34,6 +32,9 @@ struct s_PatternPath
                 PatternPathTypeValue
         } type;
 
+        PatternPath *track_previous;
+        PatternPath *track_next;
+        bool         track_pushed;
         bool destroy;
 };
 
@@ -50,6 +51,7 @@ struct s_PatternPathRepeat
         PatternTokenRepeat token;
         PatternPath *repeat;
         PatternPath *next;
+        PatternPathRepeat *next_repeat;
         unsigned long long repeated;
 };
 

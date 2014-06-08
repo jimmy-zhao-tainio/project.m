@@ -8,11 +8,6 @@
 
 #include "test-pattern-path.h"
 
-static size_t path_tracker_size = 
-        sizeof (size_t) + sizeof (PatternPathTracker) +
-        sizeof (size_t) + (64 * sizeof (PatternPath *)) +
-        sizeof (size_t) + (8 * sizeof (PatternPathRepeat *));
-
 bool test_pattern_path_tracker_create_invalid_argument (Test *test)
 {
         TITLE ();
@@ -51,54 +46,11 @@ bool test_pattern_path_tracker_create_function_call_2 (Test *test)
         CATCH (!(branch = pattern_branch_create (tokens)));
         memory_commit_limit (memory_commit_size () +
                              sizeof (size_t) + sizeof (PatternPathTracker) +
-                             sizeof (size_t) + (64 * sizeof (PatternPath *)) - 1);
-        CATCH (pattern_path_tracker_create (branch));
-        CATCH (error_count () == 0);
-        CATCH (error_at (0).error != ErrorFunctionCall);
-        CATCH (error_at (0).code != 2);
-        pattern_branch_destroy (branch);
-        pattern_tokens_destroy (tokens);
-        PASS ();
-}
-
-bool test_pattern_path_tracker_create_function_call_3 (Test *test)
-{
-        List *tokens;
-        PatternBranch *branch;
-
-        TITLE ();
-        CATCH (!(tokens = pattern_tokens_create ("a")));
-        CATCH (!(branch = pattern_branch_create (tokens)));
-        memory_commit_limit (memory_commit_size () +
-                             sizeof (size_t) + sizeof (PatternPathTracker) +
-                             sizeof (size_t) + (64 * sizeof (PatternPath *)) +
-                             sizeof (size_t) + (8 * sizeof (PatternPathRepeat *) - 1));
-        CATCH (pattern_path_tracker_create (branch));
-        CATCH (error_count () == 0);
-        CATCH (error_at (0).error != ErrorFunctionCall);
-        CATCH (error_at (0).code != 3);
-        pattern_branch_destroy (branch);
-        pattern_tokens_destroy (tokens);
-        PASS ();
-}
-
-bool test_pattern_path_tracker_create_function_call_4 (Test *test)
-{
-        List *tokens;
-        PatternBranch *branch;
-
-        TITLE ();
-        CATCH (!(tokens = pattern_tokens_create ("a")));
-        CATCH (!(branch = pattern_branch_create (tokens)));
-        memory_commit_limit (memory_commit_size () +
-                             sizeof (size_t) + sizeof (PatternPathTracker) +
-                             sizeof (size_t) + (64 * sizeof (PatternPath *)) +
-                             sizeof (size_t) + (8 * sizeof (PatternPathRepeat *)) +
                              sizeof (size_t) + sizeof (PatternPathValue) - 1);
         CATCH (pattern_path_tracker_create (branch));
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorFunctionCall);
-        CATCH (error_at (0).code != 4);
+        CATCH (error_at (0).code != 2);
         pattern_branch_destroy (branch);
         pattern_tokens_destroy (tokens);
         PASS ();
@@ -129,11 +81,11 @@ bool test_pattern_path_tracker_create_branch_function_call_1 (Test *test)
         CATCH (!(tokens = pattern_tokens_create ("(a)b")));
         CATCH (!(branch = pattern_branch_create (tokens)));
         memory_commit_limit (memory_commit_size () + 
-                             path_tracker_size +
+                             sizeof (size_t) + sizeof (PatternPathTracker) +
                              sizeof (size_t) + sizeof (PatternPathValue) +
                              sizeof (size_t) + sizeof (PatternPathValue) - 1);
         CATCH (pattern_path_tracker_create (branch));
-        CATCH (error_count () == 6);
+        CATCH (error_count () != 5);
         CATCH (error_at (2).error != ErrorFunctionCall);
         CATCH (error_at (2).code != 1);
         pattern_branch_destroy (branch);
@@ -150,7 +102,7 @@ bool test_pattern_path_tracker_create_branch_function_call_2 (Test *test)
         CATCH (!(tokens = pattern_tokens_create ("a")));
         CATCH (!(branch = pattern_branch_create (tokens)));
         memory_commit_limit (memory_commit_size () + 
-                             path_tracker_size +
+                             sizeof (size_t) + sizeof (PatternPathTracker) +
                              sizeof (size_t) + sizeof (PatternPathValue) - 1);
         CATCH (pattern_path_tracker_create (branch));
         CATCH (error_count () != 4);
@@ -200,7 +152,7 @@ bool test_pattern_path_tracker_create_not_function_call (Test *test)
         CATCH (!(tokens = pattern_tokens_create ("!ab")));
         CATCH (!(branch = pattern_branch_create (tokens)));
         memory_commit_limit (memory_commit_size () + 
-                             path_tracker_size +
+                             sizeof (size_t) + sizeof (PatternPathTracker) +
                              sizeof (size_t) + sizeof (PatternPathValue) +
                              sizeof (size_t) + sizeof (PatternPathValue) - 1);
         CATCH (pattern_path_tracker_create (branch));
@@ -290,7 +242,7 @@ bool test_pattern_path_tracker_create_or_function_call_1 (Test *test)
         CATCH (!(tokens = pattern_tokens_create ("a|b")));
         CATCH (!(branch = pattern_branch_create (tokens)));
         memory_commit_limit (memory_commit_size () + 
-                             path_tracker_size +
+                             sizeof (size_t) + sizeof (PatternPathTracker) +
                              sizeof (size_t) + sizeof (PatternPathOr) - 1);
         CATCH (pattern_path_tracker_create (branch));
         CATCH (error_count () != 4);
@@ -310,7 +262,7 @@ bool test_pattern_path_tracker_create_or_function_call_2 (Test *test)
         CATCH (!(tokens = pattern_tokens_create ("a|b")));
         CATCH (!(branch = pattern_branch_create (tokens)));
         memory_commit_limit (memory_commit_size () + 
-                             path_tracker_size +
+                             sizeof (size_t) + sizeof (PatternPathTracker) +
                              sizeof (size_t) + sizeof (PatternPathOr) +
                              sizeof (size_t) + sizeof (PatternPathValue) - 1);
         CATCH (pattern_path_tracker_create (branch));
@@ -331,7 +283,7 @@ bool test_pattern_path_tracker_create_or_function_call_3 (Test *test)
         CATCH (!(tokens = pattern_tokens_create ("a|b")));
         CATCH (!(branch = pattern_branch_create (tokens)));
         memory_commit_limit (memory_commit_size () + 
-                             path_tracker_size +
+                             sizeof (size_t) + sizeof (PatternPathTracker) +
                              sizeof (size_t) + sizeof (PatternPathOr) +
                              sizeof (size_t) + sizeof (PatternPathValue) +
                              sizeof (size_t) + sizeof (PatternPathValue) - 1);
@@ -376,7 +328,7 @@ bool test_pattern_path_tracker_create_repeat_function_call_1 (Test *test)
         CATCH (!(tokens = pattern_tokens_create ("a{0-1}")));
         CATCH (!(branch = pattern_branch_create (tokens)));
         memory_commit_limit (memory_commit_size () + 
-                             path_tracker_size +
+                             sizeof (size_t) + sizeof (PatternPathTracker) +
                              sizeof (size_t) + sizeof (PatternPathRepeat) - 1);
         CATCH (pattern_path_tracker_create (branch));
         CATCH (error_count () != 4);
@@ -393,31 +345,10 @@ bool test_pattern_path_tracker_create_repeat_function_call_2 (Test *test)
         PatternBranch *branch;
 
         TITLE ();
-        CATCH (!(tokens = pattern_tokens_create ("a{-}a{-}a{-}a{-}a{-}a{-}a{-}a{-}a{-}")));
-        CATCH (!(branch = pattern_branch_create (tokens)));
-        memory_commit_limit (memory_commit_size () + 
-                             path_tracker_size +
-                             9 * (sizeof (size_t) + sizeof (PatternPathRepeat) +
-                                  sizeof (size_t) + sizeof (PatternPathValue)));
-        CATCH (pattern_path_tracker_create (branch));
-        CATCH (error_count () != 5);
-        CATCH (error_at (2).error != ErrorFunctionCall);
-        CATCH (error_at (2).code != 2);
-        pattern_branch_destroy (branch);
-        pattern_tokens_destroy (tokens);
-        PASS ();
-}
-
-bool test_pattern_path_tracker_create_repeat_function_call_3 (Test *test)
-{
-        List *tokens;
-        PatternBranch *branch;
-
-        TITLE ();
         CATCH (!(tokens = pattern_tokens_create ("(ab){0-1}c")));
         CATCH (!(branch = pattern_branch_create (tokens)));
         memory_commit_limit (memory_commit_size () + 
-                             path_tracker_size +
+                             sizeof (size_t) + sizeof (PatternPathTracker) +
                              sizeof (size_t) + sizeof (PatternPathValue) +
                              sizeof (size_t) + sizeof (PatternPathValue) +
                              sizeof (size_t) + sizeof (PatternPathValue) +
@@ -425,7 +356,7 @@ bool test_pattern_path_tracker_create_repeat_function_call_3 (Test *test)
         CATCH (pattern_path_tracker_create (branch));
         CATCH (error_count () != 6);
         CATCH (error_at (2).error != ErrorFunctionCall);
-        CATCH (error_at (2).code != 3);
+        CATCH (error_at (2).code != 2);
         pattern_branch_destroy (branch);
         pattern_tokens_destroy (tokens);
         PASS ();
@@ -460,7 +391,7 @@ bool test_pattern_path_tracker_create_repeat (Test *test)
         PASS ();
 }
 
-bool test_pattern_path_tracker_create_range_function_call_1 (Test *test)
+bool test_pattern_path_tracker_create_range_function_call (Test *test)
 {
         List *tokens;
         PatternBranch *branch;
@@ -469,41 +400,13 @@ bool test_pattern_path_tracker_create_range_function_call_1 (Test *test)
         CATCH (!(tokens = pattern_tokens_create ("[a-z]")));
         CATCH (!(branch = pattern_branch_create (tokens)));
         memory_commit_limit (memory_commit_size () + 
-                             path_tracker_size +
+                             sizeof (size_t) + sizeof (PatternPathTracker) +
                              sizeof (size_t) + sizeof (PatternPathRange) - 1);
         CATCH (pattern_path_tracker_create (branch));
         CATCH (error_count () != 4);
         CATCH (error_at (2).error != ErrorFunctionCall);
-        CATCH (error_at (2).code != 1);
         pattern_branch_destroy (branch);
         pattern_tokens_destroy (tokens);
-        PASS ();
-}
-
-bool test_pattern_path_tracker_create_range_function_call_2 (Test *test)
-{
-        List *tokens;
-        PatternBranch *branch;
-        char *string;
-        size_t i;
-
-        TITLE ();
-        CATCH (!(string = string_create ("")));
-        for (i = 0; i < 65; i++) {
-                CATCH (!string_append (&string, "[a-z]"));
-        }
-        CATCH (!(tokens = pattern_tokens_create (string)));
-        CATCH (!(branch = pattern_branch_create (tokens)));
-        memory_commit_limit (memory_commit_size () + 
-                             path_tracker_size +
-                             65 * (sizeof (size_t) + sizeof (PatternPathRange)));
-        CATCH (pattern_path_tracker_create (branch));
-        CATCH (error_count () != 5);
-        CATCH (error_at (2).error != ErrorFunctionCall);
-        CATCH (error_at (2).code != 2);
-        pattern_branch_destroy (branch);
-        pattern_tokens_destroy (tokens);
-        string_destroy (string);
         PASS ();
 }
 
@@ -528,7 +431,7 @@ bool test_pattern_path_tracker_create_range (Test *test)
         PASS ();
 }
 
-bool test_pattern_path_tracker_create_set_function_call_1 (Test *test)
+bool test_pattern_path_tracker_create_set_function_call (Test *test)
 {
         List *tokens;
         PatternBranch *branch;
@@ -537,41 +440,13 @@ bool test_pattern_path_tracker_create_set_function_call_1 (Test *test)
         CATCH (!(tokens = pattern_tokens_create ("<abc>")));
         CATCH (!(branch = pattern_branch_create (tokens)));
         memory_commit_limit (memory_commit_size () + 
-                             path_tracker_size +
+                             sizeof (size_t) + sizeof (PatternPathTracker) +
                              sizeof (size_t) + sizeof (PatternPathSet) - 1);
         CATCH (pattern_path_tracker_create (branch));
         CATCH (error_count () != 4);
         CATCH (error_at (2).error != ErrorFunctionCall);
-        CATCH (error_at (2).code != 1);
         pattern_branch_destroy (branch);
         pattern_tokens_destroy (tokens);
-        PASS ();
-}
-
-bool test_pattern_path_tracker_create_set_function_call_2 (Test *test)
-{
-        List *tokens;
-        PatternBranch *branch;
-        char *string;
-        size_t i;
-
-        TITLE ();
-        CATCH (!(string = string_create ("")));
-        for (i = 0; i < 65; i++) {
-                CATCH (!string_append (&string, "<abc>"));
-        }
-        CATCH (!(tokens = pattern_tokens_create (string)));
-        CATCH (!(branch = pattern_branch_create (tokens)));
-        memory_commit_limit (memory_commit_size () + 
-                             path_tracker_size +
-                             65 * (sizeof (size_t) + sizeof (PatternPathSet)));
-        CATCH (pattern_path_tracker_create (branch));
-        CATCH (error_count () != 5);
-        CATCH (error_at (2).error != ErrorFunctionCall);
-        CATCH (error_at (2).code != 2);
-        pattern_branch_destroy (branch);
-        pattern_tokens_destroy (tokens);
-        string_destroy (string);
         PASS ();
 }
 
@@ -598,7 +473,7 @@ bool test_pattern_path_tracker_create_set (Test *test)
         PASS ();
 }
 
-bool test_pattern_path_tracker_create_value_function_call_1 (Test *test)
+bool test_pattern_path_tracker_create_value_function_call (Test *test)
 {
         List *tokens;
         PatternBranch *branch;
@@ -607,41 +482,13 @@ bool test_pattern_path_tracker_create_value_function_call_1 (Test *test)
         CATCH (!(tokens = pattern_tokens_create ("a")));
         CATCH (!(branch = pattern_branch_create (tokens)));
         memory_commit_limit (memory_commit_size () + 
-                             path_tracker_size +
+                             sizeof (size_t) + sizeof (PatternPathTracker) +
                              sizeof (size_t) + sizeof (PatternPathValue) - 1);
         CATCH (pattern_path_tracker_create (branch));
         CATCH (error_count () != 4);
         CATCH (error_at (2).error != ErrorFunctionCall);
-        CATCH (error_at (2).code != 1);
         pattern_branch_destroy (branch);
         pattern_tokens_destroy (tokens);
-        PASS ();
-}
-
-bool test_pattern_path_tracker_create_value_function_call_2 (Test *test)
-{
-        List *tokens;
-        PatternBranch *branch;
-        char *string;
-        size_t i;
-
-        TITLE ();
-        CATCH (!(string = string_create ("")));
-        for (i = 0; i < 65; i++) {
-                CATCH (!string_append (&string, "a"));
-        }
-        CATCH (!(tokens = pattern_tokens_create (string)));
-        CATCH (!(branch = pattern_branch_create (tokens)));
-        memory_commit_limit (memory_commit_size () + 
-                             path_tracker_size +
-                             65 * (sizeof (size_t) + sizeof (PatternPathValue)));
-        CATCH (pattern_path_tracker_create (branch));
-        CATCH (error_count () != 5);
-        CATCH (error_at (2).error != ErrorFunctionCall);
-        CATCH (error_at (2).code != 2);
-        pattern_branch_destroy (branch);
-        pattern_tokens_destroy (tokens);
-        string_destroy (string);
         PASS ();
 }
 

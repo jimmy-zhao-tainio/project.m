@@ -233,6 +233,7 @@ static bool tokenize_repeat (const char *pattern, size_t length, size_t *i, Patt
 		return false;
 	}
 	if ((*token)->type != PatternTokenTypeParenthesesClose &&
+	    (*token)->type != PatternTokenTypeRepeat &&
 	    (*token)->type != PatternTokenTypeRange &&
 	    (*token)->type != PatternTokenTypeSet &&
 	    (*token)->type != PatternTokenTypeValue) {
