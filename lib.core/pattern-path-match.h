@@ -3,6 +3,6 @@
 
 #include <lib.core/pattern-path.h>
 
-bool pattern_path_match (PatternPathTracker *tracker, unsigned char *buffer, size_t buffer_length);
+bool pattern_path_match (PatternPathTracker *tracker, unsigned char *buffer, size_t buffer_length, size_t *match_to);
 
 #endif

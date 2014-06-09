@@ -22,6 +22,7 @@
 #include "test-pattern-token.h"
 #include "test-pattern-branch.h"
 #include "test-pattern-path.h"
+#include "test-pattern-path-match.h"
 
 bool (*tests[]) (Test *test) =
 {
@@ -503,6 +504,7 @@ bool (*tests[]) (Test *test) =
         &test_pattern_path_tracker_create_value_function_call,
         &test_pattern_path_tracker_create_value,
         &test_pattern_path_tracker_destroy,
+        &test_pattern_path_match_1,
         NULL
 };
 
