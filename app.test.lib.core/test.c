@@ -26,7 +26,7 @@
 
 bool (*tests[]) (Test *test) =
 {
-        /*&test_defines,
+        &test_defines,
         &test_size_t_add,
         &test_size_t_mul,
         &test_size_t_private_max,
@@ -299,10 +299,10 @@ bool (*tests[]) (Test *test) =
         &test_file_directory_read_5,
         &test_file_directory_read_6,
         &test_file_directory_find_invalid_argument,
-        &test_file_directory_find,*/
+        &test_file_directory_find,
         /*&test_file_open_fail,
         &test_file_open_fail_multiple,*/
-        /*&test_file_open,
+        &test_file_open,
         &test_file_close,
         &test_file_readline_f1,
         &test_file_readline_f2,
@@ -505,7 +505,7 @@ bool (*tests[]) (Test *test) =
         &test_pattern_path_tracker_create_set,
         &test_pattern_path_tracker_create_value_function_call,
         &test_pattern_path_tracker_create_value,
-        &test_pattern_path_tracker_destroy,*/
+        &test_pattern_path_tracker_destroy,
         &test_pattern_path_match_1,
         &test_pattern_path_match_2,
         &test_pattern_path_match_not_1,
