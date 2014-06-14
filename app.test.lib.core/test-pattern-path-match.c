@@ -56,7 +56,7 @@ bool test_pattern_path_match_not_1 (Test *test)
         CATCH (!(branch = pattern_branch_create (tokens)));
         CATCH (!(tracker = pattern_path_tracker_create (branch)));
         CATCH (pattern_path_match (tracker, "abxd", string_length ("abxd"), &match_to));
-        CATCH (pattern_path_match (tracker, "abcd", string_length ("abcd"), &match_to));
+        CATCH (pattern_path_match (tracker, "xbcd", string_length ("xbcd"), &match_to));
         pattern_path_tracker_destroy (tracker);
         pattern_branch_destroy (branch);
         pattern_tokens_destroy (tokens);
@@ -258,6 +258,45 @@ bool test_pattern_path_match_range_2 (Test *test)
         CATCH (!pattern_path_match (tracker, "a", string_length ("a"), &match_to));
         CATCH (match_to != 1);
         CATCH (!pattern_path_match (tracker, "z", string_length ("z"), &match_to));
+        CATCH (match_to != 1);
+        pattern_path_tracker_destroy (tracker);
+        pattern_branch_destroy (branch);
+        pattern_tokens_destroy (tokens);
+        PASS ();
+}
+
+bool test_pattern_path_match_set_1 (Test *test)
+{
+        List *tokens;
+        PatternBranch *branch;
+        PatternPathTracker *tracker;
+        size_t match_to;
+
+        TITLE ();
+        CATCH (!(tokens = pattern_tokens_create ("<ac>")));
+        CATCH (!(branch = pattern_branch_create (tokens)));
+        CATCH (!(tracker = pattern_path_tracker_create (branch)));
+        CATCH (pattern_path_match (tracker, "b", string_length ("b"), &match_to));
+        pattern_path_tracker_destroy (tracker);
+        pattern_branch_destroy (branch);
+        pattern_tokens_destroy (tokens);
+        PASS ();
+}
+
+bool test_pattern_path_match_set_2 (Test *test)
+{
+        List *tokens;
+        PatternBranch *branch;
+        PatternPathTracker *tracker;
+        size_t match_to;
+
+        TITLE ();
+        CATCH (!(tokens = pattern_tokens_create ("<ac>")));
+        CATCH (!(branch = pattern_branch_create (tokens)));
+        CATCH (!(tracker = pattern_path_tracker_create (branch)));
+        CATCH (!pattern_path_match (tracker, "a", string_length ("a"), &match_to));
+        CATCH (match_to != 1);
+        CATCH (!pattern_path_match (tracker, "c", string_length ("c"), &match_to));
         CATCH (match_to != 1);
         pattern_path_tracker_destroy (tracker);
         pattern_branch_destroy (branch);

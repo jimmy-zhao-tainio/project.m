@@ -519,6 +519,8 @@ bool (*tests[]) (Test *test) =
         &test_pattern_path_match_repeat_6,
         &test_pattern_path_match_range_1,
         &test_pattern_path_match_range_2,
+        &test_pattern_path_match_set_2,
+        &test_pattern_path_match_set_2,
         NULL
 };
 

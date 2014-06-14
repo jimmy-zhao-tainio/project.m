@@ -16,5 +16,7 @@ bool test_pattern_path_match_repeat_5 (Test *test);
 bool test_pattern_path_match_repeat_6 (Test *test);
 bool test_pattern_path_match_range_1 (Test *test);
 bool test_pattern_path_match_range_2 (Test *test);
+bool test_pattern_path_match_set_1 (Test *test);
+bool test_pattern_path_match_set_2 (Test *test);
 
 #endif
