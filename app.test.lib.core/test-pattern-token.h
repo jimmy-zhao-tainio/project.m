@@ -3,7 +3,8 @@
 
 #include <lib.test/test.h>
 
-bool test_pattern_tokens_invalid_argument (Test *test);
+bool test_pattern_tokens_invalid_argument_1 (Test *test);
+bool test_pattern_tokens_invalid_argument_2 (Test *test);
 bool test_pattern_tokens_function_call (Test *test);
 bool test_pattern_tokens_1 (Test *test);
 bool test_pattern_tokens_overflow (Test *test);
@@ -12,6 +13,7 @@ bool test_pattern_tokens_3 (Test *test);
 bool test_pattern_tokens_parentheses_open_function_call (Test *test);
 bool test_pattern_tokens_parentheses_open (Test *test);
 bool test_pattern_tokens_parentheses_mismatch (Test *test);
+bool test_pattern_tokens_parentheses_close_parentheses_empty (Test *test);
 bool test_pattern_tokens_parentheses_close_function_call (Test *test);
 bool test_pattern_tokens_parentheses_close (Test *test);
 bool test_pattern_tokens_not_missing_operand (Test *test);

@@ -3,14 +3,16 @@
 static bool track (PatternPathTracker *tracker, PatternPath *path, unsigned char match);
 static void track_push (PatternPathTracker *tracker, PatternPath *path);
 static PatternPath *track_pop (PatternPathTracker *tracker);
+static void repeat_reset (PatternPathTracker *tracker);
 
-bool pattern_path_match (PatternPathTracker *tracker, unsigned char *buffer, size_t length, size_t *match_to)
+bool pattern_path_match (PatternPathTracker *tracker, char *buffer, size_t length, size_t *match_to)
 {
         PatternPath *path;
         size_t buffer_index;
         size_t track_count;
         size_t track_index;
         
+        repeat_reset (tracker);
         tracker->track_first = NULL;
         tracker->track_last = NULL;
         track_push (tracker, tracker->path);
@@ -21,13 +23,14 @@ bool pattern_path_match (PatternPathTracker *tracker, unsigned char *buffer, siz
                         if (!(path = track_pop (tracker))) {
                                 return false;
                         }
-                        if (track (tracker, path, buffer[buffer_index])) {
-                                *match_to = buffer_index;
+                        if (track (tracker, path, (unsigned char)buffer[buffer_index])) {
+                                *match_to = buffer_index + 1;
                         }
                 }
         }
         while (track_pop (tracker)) {
         }
+
         if (*match_to != 0) {
                 return true;
         }
@@ -141,4 +144,13 @@ static PatternPath *track_pop (PatternPathTracker *tracker)
         }
         tracker->track_count--;
         return path;
+}
+
+static void repeat_reset (PatternPathTracker *tracker)
+{
+        PatternPathRepeat *repeat;
+
+        for (repeat = tracker->repeat; repeat; repeat = repeat->next_repeat) {
+                repeat->repeated = 0;
+        }
 }

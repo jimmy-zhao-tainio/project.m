@@ -9,12 +9,24 @@
 
 #include "test-pattern-token.h"
 
-bool test_pattern_tokens_invalid_argument (Test *test)
+bool test_pattern_tokens_invalid_argument_1 (Test *test)
 {
 	TITLE ();
 	CATCH (pattern_tokens_create (NULL));
 	CATCH (error_count () != 1);
 	CATCH (error_at (0).error != ErrorInvalidArgument);
+        CATCH (error_at (0).code != 1);
+	PASS ();
+}
+
+bool test_pattern_tokens_invalid_argument_2 (Test *test)
+{
+	TITLE ();
+	memory_commit_limit (0);
+	CATCH (pattern_tokens_create (""));
+	CATCH (error_count () == 0);
+	CATCH (error_at (0).error != ErrorInvalidArgument);
+        CATCH (error_at (0).code != 2);
 	PASS ();
 }
 
@@ -22,7 +34,7 @@ bool test_pattern_tokens_function_call (Test *test)
 {
 	TITLE ();
 	memory_commit_limit (0);
-	CATCH (pattern_tokens_create (""));
+	CATCH (pattern_tokens_create ("a"));
 	CATCH (error_count () == 0);
 	CATCH (error_at (0).error != ErrorFunctionCall);
 	PASS ();
@@ -33,8 +45,8 @@ bool test_pattern_tokens_1 (Test *test)
 	List *list;
 
 	TITLE ();
-	CATCH (!(list = pattern_tokens_create ("")));
-	CATCH (list_count (list) != 0);
+	CATCH (!(list = pattern_tokens_create ("a")));
+	CATCH (list_count (list) != 1);
 	pattern_tokens_destroy (list);
 	PASS ();
 }	
@@ -61,7 +73,7 @@ bool test_pattern_tokens_3 (Test *test)
 	List *list;
 
 	TITLE ();
-	CATCH (!(list = pattern_tokens_create ("()")));
+	CATCH (!(list = pattern_tokens_create ("(a)")));
 	pattern_tokens_destroy (list);
 	PASS ();
 }
@@ -82,8 +94,8 @@ bool test_pattern_tokens_parentheses_open (Test *test)
 	PatternToken *token;
 
 	TITLE ();
-	CATCH (!(list = pattern_tokens_create ("()")));
-	CATCH (list_count (list) == 0);
+	CATCH (!(list = pattern_tokens_create ("(a)")));
+	CATCH (list_count (list) != 3);
 	token = list_first (list)->data;
 	CATCH (token->type != PatternTokenTypeParenthesesOpen);
 	pattern_tokens_destroy (list);
@@ -99,15 +111,26 @@ bool test_pattern_tokens_parentheses_mismatch (Test *test)
 	PASS ();
 }
 
+bool test_pattern_tokens_parentheses_close_parentheses_empty (Test *test)
+{
+	TITLE ();
+	CATCH (pattern_tokens_create ("()"));
+	CATCH (error_count () != 1);
+	CATCH (error_at (0).error != ErrorPatternParenthesesEmpty);
+	PASS ();
+}
+
 bool test_pattern_tokens_parentheses_close_function_call (Test *test)
 {
 	TITLE ();
 	memory_commit_limit (sizeof (size_t) + sizeof (List) +
 			     sizeof (size_t) + sizeof (PatternToken) +
 			     sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternTokenValue) +
+			     sizeof (size_t) + sizeof (ListNode) +
 			     sizeof (size_t) + sizeof (PatternToken) - 
 			     1);
-	CATCH (pattern_tokens_create ("()"));
+	CATCH (pattern_tokens_create ("(a)"));
 	CATCH (error_count () != 2);
 	CATCH (error_at (0).error != ErrorFunctionCall);
 	PASS ();
@@ -119,9 +142,9 @@ bool test_pattern_tokens_parentheses_close (Test *test)
 	PatternToken *token;
 
 	TITLE ();
-	CATCH (!(list = pattern_tokens_create ("()")));
-	CATCH (list_count (list) != 2);
-	token = list_first (list)->next->data;
+	CATCH (!(list = pattern_tokens_create ("(a)")));
+	CATCH (list_count (list) != 3);
+	token = list_last (list)->data;
 	CATCH (token->type != PatternTokenTypeParenthesesClose);
 	pattern_tokens_destroy (list);
 	PASS ();
@@ -139,7 +162,7 @@ bool test_pattern_tokens_not_missing_operand (Test *test)
 bool test_pattern_tokens_not_invalid_operand (Test *test)
 {
 	TITLE ();
-	CATCH (pattern_tokens_create ("!()"));
+	CATCH (pattern_tokens_create ("!(a)"));
 	CATCH (error_count () != 1);
 	CATCH (error_at (0).error != ErrorPatternNotInvalidOperand);
 	PASS ();

@@ -26,15 +26,16 @@ List *pattern_tokens_create (const char *pattern)
 	size_t length;
 
 	if (!pattern) {
-		error (InvalidArgument);
+		error_code (InvalidArgument, 1);
 		return NULL;
 	}
+        if ((length = string_length (pattern)) == 0) {
+                error_code (InvalidArgument, 2);
+                return NULL;
+        }
 	if (!(tokens = list_create ())) {
 		error (FunctionCall);
 		return NULL;
-	}
-	if ((length = string_length (pattern)) == 0) {
-		return tokens;
 	}
 	if (!size_t_add (length, length, NULL)) {
 		pattern_tokens_destroy (tokens);
@@ -166,6 +167,10 @@ static bool tokenize_parentheses_open (size_t *i, PatternToken **token)
 
 static bool tokenize_parentheses_close (size_t *i, PatternToken **token)
 {
+        if (*token && (*token)->type == PatternTokenTypeParenthesesOpen) {
+                error (PatternParenthesesEmpty);
+                return false;
+        }
 	if (!(*token = memory_create (sizeof (PatternToken)))) {
 		error (FunctionCall);
 		return false;

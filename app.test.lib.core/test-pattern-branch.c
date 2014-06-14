@@ -22,7 +22,7 @@ bool test_pattern_branch_create_function_call_1 (Test *test)
 	List *tokens;
 
 	TITLE ();
-	CATCH (!(tokens = pattern_tokens_create ("")));
+	CATCH (!(tokens = pattern_tokens_create ("a")));
 	memory_commit_limit (memory_commit_size ());
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 3);
@@ -37,10 +37,15 @@ bool test_pattern_branch_create_function_call_2 (Test *test)
 	List *tokens;
 
 	TITLE ();
-	CATCH (!(tokens = pattern_tokens_create ("")));
-	memory_commit_limit (167);
+	CATCH (!(tokens = pattern_tokens_create ("a")));
+	memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) - 1);
 	CATCH (pattern_branch_create (tokens));
-	CATCH (error_count () != 4);
+	CATCH (error_count () != 3);
 	CATCH (error_at (0).error != ErrorFunctionCall);
 	CATCH (error_at (0).code != 2);
 	pattern_tokens_destroy (tokens);
@@ -53,7 +58,7 @@ bool test_pattern_branch_create_invalid_operation (Test *test)
 	PatternBranch *branch;
 
 	TITLE ();
-	CATCH (!(tokens = pattern_tokens_create ("")));
+	CATCH (!(tokens = pattern_tokens_create ("a")));
 	CATCH (!(branch = pattern_branch_create (tokens)));
 	pattern_branch_destroy (branch);
 	pattern_tokens_destroy (tokens);
@@ -66,7 +71,7 @@ bool test_pattern_branch_create (Test *test)
 	PatternBranch *branch;
 
 	TITLE ();
-	CATCH (!(tokens = pattern_tokens_create ("")));
+	CATCH (!(tokens = pattern_tokens_create ("a")));
 	CATCH (!(branch = pattern_branch_create (tokens)));
 	pattern_branch_destroy (branch);
 	pattern_tokens_destroy (tokens);
@@ -87,8 +92,9 @@ bool test_pattern_branch_create_parenthesize_main_branch_function_call_1 (Test *
 	List *tokens;
 
 	TITLE ();
-	CATCH (!(tokens = pattern_tokens_create ("")));
-	memory_commit_limit (32);
+	CATCH (!(tokens = pattern_tokens_create ("a")));
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 3);
 	CATCH (error_at (1).error != ErrorFunctionCall);
@@ -102,8 +108,10 @@ bool test_pattern_branch_create_parenthesize_main_branch_function_call_2 (Test *
 	List *tokens;
 
 	TITLE ();
-	CATCH (!(tokens = pattern_tokens_create ("")));
-	memory_commit_limit (44);
+	CATCH (!(tokens = pattern_tokens_create ("a")));
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 4);
 	CATCH (error_at (1).error != ErrorFunctionCall);
@@ -117,8 +125,11 @@ bool test_pattern_branch_create_parenthesize_main_branch_function_call_3 (Test *
 	List *tokens;
 
 	TITLE ();
-	CATCH (!(tokens = pattern_tokens_create ("")));
-	memory_commit_limit (76);
+	CATCH (!(tokens = pattern_tokens_create ("a")));
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 3);
 	CATCH (error_at (1).error != ErrorFunctionCall);
@@ -132,8 +143,12 @@ bool test_pattern_branch_create_parenthesize_main_branch_function_call_4 (Test *
 	List *tokens;
 
 	TITLE ();
-	CATCH (!(tokens = pattern_tokens_create ("")));
-	memory_commit_limit (88);
+	CATCH (!(tokens = pattern_tokens_create ("a")));
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 4);
 	CATCH (error_at (1).error != ErrorFunctionCall);
@@ -148,9 +163,9 @@ bool test_pattern_branch_create_parenthesize_main_branch (Test *test)
 	PatternBranch *branch;
 
 	TITLE ();
-	CATCH (!(tokens = pattern_tokens_create ("")));
+	CATCH (!(tokens = pattern_tokens_create ("a")));
 	CATCH (!(branch = pattern_branch_create (tokens)));
-	CATCH (list_count (branch->parts) != 0);
+	CATCH (list_count (branch->parts) != 1);
 	pattern_branch_destroy (branch);
 	pattern_tokens_destroy (tokens);
 	CATCH (error_count () != 0);
@@ -162,8 +177,13 @@ bool test_pattern_branch_create_branch_create_function_call_1 (Test *test)
 	List *tokens;
 
 	TITLE ();
-	CATCH (!(tokens = pattern_tokens_create ("")));
-	memory_commit_limit (120);
+	CATCH (!(tokens = pattern_tokens_create ("a")));
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 3);
 	CATCH (error_at (1).error != ErrorFunctionCall);
@@ -177,8 +197,14 @@ bool test_pattern_branch_create_branch_create_function_call_2 (Test *test)
 	List *tokens;
 
 	TITLE ();
-	CATCH (!(tokens = pattern_tokens_create ("")));
-	memory_commit_limit (120 + sizeof (size_t) + sizeof (PatternBranch));
+	CATCH (!(tokens = pattern_tokens_create ("a")));
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 4);
 	CATCH (error_at (1).error != ErrorFunctionCall);
@@ -192,8 +218,15 @@ bool test_pattern_branch_create_branch_create_function_call_3 (Test *test)
 	List *tokens;
 
 	TITLE ();
-	CATCH (!(tokens = pattern_tokens_create ("()")));
-	memory_commit_limit (256);
+	CATCH (!(tokens = pattern_tokens_create ("(a)")));
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranchPartValue) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 4);
 	CATCH (error_at (1).error != ErrorFunctionCall);
@@ -208,7 +241,21 @@ bool test_pattern_branch_create_branch_create_function_call_4 (Test *test)
 
 	TITLE ();
 	CATCH (!(tokens = pattern_tokens_create ("a|b")));
-	memory_commit_limit (492);
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranchPartValue) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranchPartOr) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (ListNode) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 4);
 	CATCH (error_at (1).error != ErrorFunctionCall);
@@ -223,7 +270,15 @@ bool test_pattern_branch_create_branch_create_function_call_5 (Test *test)
 
 	TITLE ();
 	CATCH (!(tokens = pattern_tokens_create ("a")));
-	memory_commit_limit (240);
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranchPartValue) +
+                             sizeof (size_t) + sizeof (ListNode) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 4);
 	CATCH (error_at (1).error != ErrorFunctionCall);
@@ -240,15 +295,18 @@ bool test_pattern_branch_create_part_branch_recursion_depth (Test *test)
 
 	TITLE ();
 	CATCH (!(input = string_create_with_size (PATTERN_BRANCH_RECURSION_DEPTH + 1 +
+                                                  1 +
 						  PATTERN_BRANCH_RECURSION_DEPTH + 1 + 
 						  1)));
 	for (i = 0; i < PATTERN_BRANCH_RECURSION_DEPTH + 1; i++) {
 		input[i] = '(';
 	}
-	for (; i < 2 * (PATTERN_BRANCH_RECURSION_DEPTH + 1); i++) {
+        input[i] = 'a';
+        i++;
+	for (; i < (2 * (PATTERN_BRANCH_RECURSION_DEPTH + 1)) + 1; i++) {
 		input[i] = ')';
 	}
-	input[2 * (PATTERN_BRANCH_RECURSION_DEPTH + 1)] = '\0';
+	input[(2 * (PATTERN_BRANCH_RECURSION_DEPTH + 1)) + 1] = '\0';
 	CATCH (!(tokens = pattern_tokens_create (input)));
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 1);
@@ -264,8 +322,15 @@ bool test_pattern_branch_create_part_branch_function_call_1 (Test *test)
 	List *tokens;
 
 	TITLE ();
-	CATCH (!(tokens = pattern_tokens_create ("()")));
-	memory_commit_limit (256);
+	CATCH (!(tokens = pattern_tokens_create ("(a)")));
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranchPartBranch) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 4);
 	CATCH (error_at (2).error != ErrorFunctionCall);
@@ -279,8 +344,16 @@ bool test_pattern_branch_create_part_branch_function_call_2 (Test *test)
 	List *tokens;
 
 	TITLE ();
-	CATCH (!(tokens = pattern_tokens_create ("()")));
-	memory_commit_limit (280);
+	CATCH (!(tokens = pattern_tokens_create ("(a)")));
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranchPartBranch) +
+                             sizeof (size_t) + sizeof (PatternBranch) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 5);
 	CATCH (error_at (2).error != ErrorFunctionCall);
@@ -295,7 +368,14 @@ bool test_pattern_branch_create_part_not_function_call_1 (Test *test)
 
 	TITLE ();
 	CATCH (!(tokens = pattern_tokens_create ("!a")));
-	memory_commit_limit (260);
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranchPartNot) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 4);
 	CATCH (error_at (2).error != ErrorFunctionCall);
@@ -310,7 +390,14 @@ bool test_pattern_branch_create_part_not_function_call_2 (Test *test)
 
 	TITLE ();
 	CATCH (!(tokens = pattern_tokens_create ("!a")));
-	memory_commit_limit (284);
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranchPartNot));
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 5);
 	CATCH (error_at (2).error != ErrorFunctionCall);
@@ -325,7 +412,16 @@ bool test_pattern_branch_create_part_or_function_call_1 (Test *test)
 
 	TITLE ();
 	CATCH (!(tokens = pattern_tokens_create ("a|b")));
-	memory_commit_limit (364);
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranchPartValue) +
+                             sizeof (size_t) + sizeof (ListNode) + 
+                             sizeof (size_t) + sizeof (PatternBranchPartOr) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 4);
 	CATCH (error_at (2).error != ErrorFunctionCall);
@@ -340,7 +436,17 @@ bool test_pattern_branch_create_part_or_function_call_2 (Test *test)
 
 	TITLE ();
 	CATCH (!(tokens = pattern_tokens_create ("a|b")));
-	memory_commit_limit (396);
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranchPartValue) +
+                             sizeof (size_t) + sizeof (ListNode) + 
+                             sizeof (size_t) + sizeof (PatternBranchPartOr) +
+                             sizeof (size_t) + sizeof (PatternBranch) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 4);
 	CATCH (error_at (2).error != ErrorFunctionCall);
@@ -355,7 +461,18 @@ bool test_pattern_branch_create_part_or_function_call_3 (Test *test)
 
 	TITLE ();
 	CATCH (!(tokens = pattern_tokens_create ("a|b")));
-	memory_commit_limit (412);
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranchPartValue) +
+                             sizeof (size_t) + sizeof (ListNode) + 
+                             sizeof (size_t) + sizeof (PatternBranchPartOr) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 5);
 	CATCH (error_at (2).error != ErrorFunctionCall);
@@ -370,7 +487,19 @@ bool test_pattern_branch_create_part_or_function_call_4 (Test *test)
 
 	TITLE ();
 	CATCH (!(tokens = pattern_tokens_create ("a|b")));
-	memory_commit_limit (444);
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranchPartValue) +
+                             sizeof (size_t) + sizeof (ListNode) + 
+                             sizeof (size_t) + sizeof (PatternBranchPartOr) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranch) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 4);
 	CATCH (error_at (2).error != ErrorFunctionCall);
@@ -385,7 +514,20 @@ bool test_pattern_branch_create_part_or_function_call_5 (Test *test)
 
 	TITLE ();
 	CATCH (!(tokens = pattern_tokens_create ("a|b")));
-	memory_commit_limit (460);
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranchPartValue) +
+                             sizeof (size_t) + sizeof (ListNode) + 
+                             sizeof (size_t) + sizeof (PatternBranchPartOr) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 5);
 	CATCH (error_at (2).error != ErrorFunctionCall);
@@ -400,7 +542,16 @@ bool test_pattern_branch_create_part_repeat_function_call (Test *test)
 
 	TITLE ();
 	CATCH (!(tokens = pattern_tokens_create ("a{0-1}")));
-	memory_commit_limit (336);
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranchPartValue) +
+                             sizeof (size_t) + sizeof (ListNode) + 
+                             sizeof (size_t) + sizeof (PatternBranchPartRepeat) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 4);
 	CATCH (error_at (2).error != ErrorFunctionCall);
@@ -414,7 +565,14 @@ bool test_pattern_branch_create_part_range_function_call (Test *test)
 
 	TITLE ();
 	CATCH (!(tokens = pattern_tokens_create ("[a-b]")));
-	memory_commit_limit (216);
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranchPartRange) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 4);
 	CATCH (error_at (2).error != ErrorFunctionCall);
@@ -428,7 +586,14 @@ bool test_pattern_branch_create_part_set_function_call (Test *test)
 
 	TITLE ();
 	CATCH (!(tokens = pattern_tokens_create ("<a>")));
-	memory_commit_limit (216);
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranchPartSet) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 4);
 	CATCH (error_at (2).error != ErrorFunctionCall);
@@ -442,7 +607,14 @@ bool test_pattern_branch_create_part_value_function_call (Test *test)
 
 	TITLE ();
 	CATCH (!(tokens = pattern_tokens_create ("a")));
-	memory_commit_limit (216);
+        memory_commit_limit (memory_commit_size () + 
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternToken) +
+                             sizeof (size_t) + sizeof (ListNode) +
+                             sizeof (size_t) + sizeof (PatternBranch) +
+                             sizeof (size_t) + sizeof (List) +
+                             sizeof (size_t) + sizeof (PatternBranchPartValue) - 1);
 	CATCH (pattern_branch_create (tokens));
 	CATCH (error_count () != 4);
 	CATCH (error_at (2).error != ErrorFunctionCall);
@@ -457,14 +629,14 @@ bool test_pattern_branch_create_1 (Test *test)
 	PatternBranchPartBranch *part_branch;
 
 	TITLE ();
-	CATCH (!(tokens = pattern_tokens_create ("()")));
+	CATCH (!(tokens = pattern_tokens_create ("(a)")));
 	CATCH (!(branch = pattern_branch_create (tokens)));
 	CATCH (!branch->parts);
 	CATCH (list_count (branch->parts) != 1);
 	CATCH (!(part_branch = (PatternBranchPartBranch *)branch->parts->first->data));
 	CATCH (!part_branch->branch);
 	CATCH (!part_branch->branch->parts);
-	CATCH (list_count (part_branch->branch->parts) != 0);
+	CATCH (list_count (part_branch->branch->parts) != 1);
 	pattern_branch_destroy (branch);
 	pattern_tokens_destroy (tokens);
 	CATCH (error_count () != 0);

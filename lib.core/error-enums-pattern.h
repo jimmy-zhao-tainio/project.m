@@ -1,3 +1,4 @@
+ERROR (PatternParenthesesEmpty)
 ERROR (PatternParenthesesMismatch)
 ERROR (PatternNotMissingOperand)
 ERROR (PatternNotInvalidOperand)
