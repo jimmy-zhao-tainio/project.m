@@ -28,7 +28,9 @@ lib.core
                 stopwatch
                         Stopwatch to record time spent computing.
                 tainio-tree
-                        My solution to the reservoir problem. A self-balanced tree turned to output a range of natural numbers having uniformly random distribution. Suitable for large values of N and distributed computation.
+                        My solution to the reservoir problem. 
+                        A self-balanced tree turned to output a range of natural numbers having uniformly 
+                        random distribution. Suitable for large values of N and distributed computation.
                 object
                         Unique identification for objects.
                 file
