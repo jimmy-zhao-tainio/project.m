@@ -571,10 +571,10 @@ bool test_tree_iterator_path_size_1 (Test *test)
 	CATCH (!(tree = tree_create ()));
 	CATCH (!(iterator = tree_iterator_create (tree)));
 	CATCH (memory_commit_size () !=
-	      sizeof (size_t) + sizeof (Tree) +
-	      sizeof (size_t) + sizeof (TreeNode) +
-	      sizeof (size_t) + sizeof (TreeIterator) + 
-	      sizeof (size_t) + ((sizeof (TreeNode *) * TREE_ITERATOR_PATH_SIZE)));
+	       sizeof (size_t) + sizeof (Tree) +
+	       sizeof (size_t) + sizeof (TreeNode) +
+	       sizeof (size_t) + sizeof (TreeIterator) + 
+	       sizeof (size_t) + ((sizeof (TreeNode *) * TREE_ITERATOR_PATH_SIZE)));
 	tree_iterator_destroy (iterator);
 	tree_destroy (tree);
 	PASS ();
@@ -584,18 +584,16 @@ bool test_tree_iterator_path_size_2 (Test *test)
 {
 	Tree *tree;
 	TreeIterator *iterator;
-	unsigned long long size;
 
 	TITLE ();
 	tree_iterator_path_size (123);
 	CATCH (!(tree = tree_create ()));
-	size = memory_commit_size ();
 	CATCH (!(iterator = tree_iterator_create (tree)));
 	CATCH (memory_commit_size () !=
-	      sizeof (size_t) + sizeof (Tree) +
-	      sizeof (size_t) + sizeof (TreeNode) +
-	      sizeof (size_t) + sizeof (TreeIterator) + 
-	      sizeof (size_t) + ((sizeof (TreeNode *) * 123)));
+	       sizeof (size_t) + sizeof (Tree) +
+	       sizeof (size_t) + sizeof (TreeNode) +
+	       sizeof (size_t) + sizeof (TreeIterator) + 
+	       sizeof (size_t) + ((sizeof (TreeNode *) * 123)));
 	tree_iterator_destroy (iterator);
 	tree_destroy (tree);
 	PASS ();

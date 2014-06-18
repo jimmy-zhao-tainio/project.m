@@ -27,6 +27,9 @@ bool test_compile_create_not_app_or_lib (Test *test)
 	project = directory_open (path);
 	directory_read (project);
 	directory = directory_find_directory (project, "test_compile_create_bad_directory");
+        /*
+                d stage/test_compile_create_bad_directory
+         */
 	CATCH (compile_create (project, directory));
 	directory_close (project);
 	string_destroy (path);
@@ -48,6 +51,9 @@ bool test_compile_create_app_empty (Test *test)
 	project = directory_open (path);
 	directory_read (project);
 	directory = directory_find_directory (project, "app.test_compile_create");
+        /*
+                d stage/app.test_compile_create
+         */
 	CATCH (!(compile = compile_create (project, directory)));
 	CATCH (!compile->libraries);
 	CATCH (tree_count (compile->libraries) != 0);
@@ -73,6 +79,9 @@ bool test_compile_create_lib_empty (Test *test)
 	project = directory_open (path);
 	directory_read (project);
 	directory = directory_find_directory (project, "lib.test_compile_create");
+        /*
+                d stage/lib.test_compile_create
+         */
 	CATCH (!(compile = compile_create (project, directory)));
 	CATCH (!compile->libraries);
 	CATCH (tree_count (compile->libraries) != 0);
@@ -97,6 +106,12 @@ bool test_compile_create_no_och_files (Test *test)
 	project = directory_open (path);
 	directory_read (project);
 	directory = directory_find_directory (project, "lib.test_compile_create_no_och_files");
+        /*
+                d stage/lib.test_compile_create_no_och_files
+                f file.3
+                f file.1
+                f file.2
+         */
 	CATCH (!(compile = compile_create (project, directory)));
 	CATCH (!compile->libraries);
 	CATCH (tree_count (compile->libraries) != 0);
@@ -121,6 +136,12 @@ bool test_compile_create_h_files (Test *test)
 	project = directory_open (path);
 	directory_read (project);
 	directory = directory_find_directory (project, "lib.test_compile_create_h_files");
+        /*
+                d stage/lib.test_compile_create_h_files
+                f file2.h
+                f file1.h
+                f file3.h
+         */
 	CATCH (!(compile = compile_create (project, directory)));
 	CATCH (!compile->libraries);
 	CATCH (tree_count (compile->libraries) != 0);
@@ -145,6 +166,12 @@ bool test_compile_create_c_files (Test *test)
 	project = directory_open (path);
 	directory_read (project);
 	directory = directory_find_directory (project, "lib.test_compile_create_c_files");
+        /*
+                d stage/lib.test_compile_create_c_files
+                f file2.c
+                f file1.c
+                f file3.c
+         */
 	CATCH (!(compile = compile_create (project, directory)));
 	CATCH (!compile->libraries);
 	CATCH (tree_count (compile->libraries) != 0);
@@ -169,6 +196,12 @@ bool test_compile_create_co_files (Test *test)
 	project = directory_open (path);
 	directory_read (project);
 	directory = directory_find_directory (project, "lib.test_compile_create_co_files");
+        /*
+                d stage/lib.test_compile_create_co_files
+                f file2.c
+                f file1.c
+                f file3.c
+         */
 	CATCH (!(compile = compile_create (project, directory)));
 	CATCH (!compile->libraries);
 	CATCH (tree_count (compile->libraries) != 0);
@@ -193,6 +226,9 @@ bool test_compile_create_o_files (Test *test)
 	project = directory_open (path);
 	directory_read (project);
 	directory = directory_find_directory (project, "lib.test_compile_create_o_files");
+        /*
+                d stage/lib.test_compile_create_o_files
+         */
 	compile_print_set_enabled (false);
 	CATCH (!(compile = compile_create (project, directory)));
 	CATCH (!compile->libraries);

@@ -48,5 +48,5 @@ bool (*tests[]) (Test *test) =
 
 int main (void)
 {
-	return test_array (tests);
+	return test_array (tests) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

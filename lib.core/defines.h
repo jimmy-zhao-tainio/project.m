@@ -1,6 +1,7 @@
 #ifndef defines_h
 #define defines_h
 
+#include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>

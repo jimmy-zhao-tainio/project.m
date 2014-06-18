@@ -35,7 +35,7 @@ int main (int argc, char **argv)
 	if (sub_name) {
 		string_destroy (sub_name);
 	}
-	return result ? 0 : -1;
+	return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 static bool try (int argc, char **argv, CompileProject **project, char **path, char **name, char **sub_path, char **sub_name)

@@ -4,8 +4,9 @@ static bool track (PatternPathTracker *tracker, PatternPath *path, unsigned char
 static void track_push (PatternPathTracker *tracker, PatternPath *path);
 static PatternPath *track_pop (PatternPathTracker *tracker);
 static void repeat_reset (PatternPathTracker *tracker);
+static bool repeat_end (PatternPathRepeat *repeat);
 
-bool pattern_path_match (PatternPathTracker *tracker, char *buffer, size_t length, size_t *match_to)
+bool pattern_path_match (PatternPathTracker *tracker, const char *buffer, size_t buffer_length, size_t match_from, size_t *match_to)
 {
         PatternPath *path;
         size_t buffer_index;
@@ -17,7 +18,7 @@ bool pattern_path_match (PatternPathTracker *tracker, char *buffer, size_t lengt
         tracker->track_last = NULL;
         track_push (tracker, tracker->path);
         *match_to = 0;
-        for (buffer_index = 0; buffer_index < length; buffer_index++) {
+        for (buffer_index = match_from; buffer_index < buffer_length; buffer_index++) {
                 track_count = tracker->track_count;
                 for (track_index = 0; track_index < track_count; track_index++) {
                         if (!(path = track_pop (tracker))) {
@@ -28,9 +29,14 @@ bool pattern_path_match (PatternPathTracker *tracker, char *buffer, size_t lengt
                         }
                 }
         }
-        while (track_pop (tracker)) {
+        while ((path = track_pop (tracker))) {
+                if (path->type != PatternPathTypeRepeat) {
+                        continue;
+                }
+                if (repeat_end ((PatternPathRepeat *)path)) {
+                        *match_to = buffer_index;
+                }
         }
-
         if (*match_to != 0) {
                 return true;
         }
@@ -46,6 +52,9 @@ static bool track (PatternPathTracker *tracker, PatternPath *path, unsigned char
         PatternPathValue *value;
         size_t i;
 
+        if (!path) {
+                return true;
+        }
         switch (path->type) {
         case PatternPathTypeOr:
                 or = (PatternPathOr *)path;
@@ -98,6 +107,8 @@ static bool track (PatternPathTracker *tracker, PatternPath *path, unsigned char
                         return true;
                 }
                 track_push (tracker, value->next);
+                return false;
+        default:
                 return false;
         }
 }
@@ -153,4 +164,19 @@ static void repeat_reset (PatternPathTracker *tracker)
         for (repeat = tracker->repeat; repeat; repeat = repeat->next_repeat) {
                 repeat->repeated = 0;
         }
+}
+
+static bool repeat_end (PatternPathRepeat *repeat)
+{
+        if (repeat->repeated == repeat->token.to ||
+            repeat->repeated >= repeat->token.from) {
+                if (repeat->next == NULL) {
+                        return true;
+                }
+                if (repeat->next->type != PatternPathTypeRepeat) {
+                        return false;
+                }
+                return repeat_end ((PatternPathRepeat *)repeat->next);
+        }
+        return false;
 }

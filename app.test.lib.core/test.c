@@ -23,6 +23,7 @@
 #include "test-pattern-branch.h"
 #include "test-pattern-path.h"
 #include "test-pattern-path-match.h"
+#include "test-pattern-search.h"
 
 bool (*tests[]) (Test *test) =
 {
@@ -508,6 +509,7 @@ bool (*tests[]) (Test *test) =
         &test_pattern_path_tracker_destroy,
         &test_pattern_path_match_1,
         &test_pattern_path_match_2,
+        &test_pattern_path_match_3,
         &test_pattern_path_match_not_1,
         &test_pattern_path_match_not_2,
         &test_pattern_path_match_or,
@@ -521,10 +523,25 @@ bool (*tests[]) (Test *test) =
         &test_pattern_path_match_range_2,
         &test_pattern_path_match_set_2,
         &test_pattern_path_match_set_2,
+        &test_pattern_search_create_function_call_1,
+        &test_pattern_search_create_function_call_2,
+        &test_pattern_search_create_function_call_3,
+        &test_pattern_search_create_function_call_4,
+        &test_pattern_search_create_function_call_5,
+        &test_pattern_search_create,
+        &test_pattern_search_next_1,
+        &test_pattern_search_next_2,
+        &test_pattern_search_next_3,
+        &test_pattern_search_next_4,
+        &test_pattern_search_next_5,
+        &test_pattern_search_next_6,
+        &test_pattern_search_next_7,
+        &test_pattern_search_next_8,
+        &test_pattern_search_next_9,
         NULL
 };
 
 int main (void)
 {
-        return test_array (tests);
+        return test_array (tests) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

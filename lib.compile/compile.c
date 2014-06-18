@@ -609,8 +609,8 @@ static bool compile_o_file_try (Compile *compile, File *file, char **c_path, cha
 	}
 	(*c_path)[string_length (*c_path) - 1] = 'c';
 	(*c_name)[string_length (*c_name) - 1] = 'c';
-	if (!string_append (&action->command, "clang") ||
-	    !string_append (&action->command, " -std=gnu99 -pedantic -g -O3 -Wall -Wextra -Wconversion -Wformat-security -Werror -I") ||
+	if (!string_append (&action->command, "gcc") ||
+	    !string_append (&action->command, " -std=gnu99 -O3 -pedantic -g -Wall -Wextra -Wconversion -Wformat-security -Werror -I") ||
 	    !string_append (&action->command, project_path) ||
 	    !string_append (&action->command, " -c ") ||
 	    !string_append (&action->command, *c_path)) {
@@ -855,8 +855,8 @@ static bool link_library_try (Compile *compile, char **lib_path, char **lib_file
 static bool link_application (Compile *compile)
 {
 	CompileAction *action;
-	const char *linker = "clang -O3 -lrt -lm ";
-	const char *flag = "-o ";
+	const char *linker = "gcc -lrt -lm ";
+	const char *flag = "-O3 -o ";
 	bool newer_library = 0;
 	File *app_file;
 	File *file;

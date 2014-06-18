@@ -70,7 +70,13 @@ bool test_array (bool (*tests[]) (Test *test))
 	else {
 		printf ("No tests!\n");
 	}
-	return test_count == 0 || test_count - test_count_ok != 0 ? 1 : 0;
+        if (test_count == 0) {
+                return false;
+        }
+	if (test_count == test_count_ok) {
+                return true;
+        }
+        return false;
 }
 
 static void print_catch (Test *test)

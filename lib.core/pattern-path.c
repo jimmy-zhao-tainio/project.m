@@ -51,7 +51,7 @@ void pattern_path_tracker_destroy (PatternPathTracker *tracker)
 
 static PatternPath *path_create_branch (PatternBranch *branch, PatternPath *last, PatternPathTracker *tracker)
 {
-        PatternPath *path;
+        PatternPath *path = NULL;
         ListNode *node;
 
         for (node = list_last (branch->parts); node; node = node->previous) {
@@ -87,6 +87,8 @@ static PatternPath *path_create_part (PatternBranchPart *part, PatternPath *last
                 return path_create_part_set ((PatternBranchPartSet *)part, last);
         case PatternBranchPartTypeValue:
                 return path_create_part_value ((PatternBranchPartValue *)part, last);
+        default:
+                return NULL;
         };
 }
 

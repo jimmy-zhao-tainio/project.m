@@ -191,7 +191,7 @@ static PatternBranchPart *branch_part_create_branch (ListNode *node, ListNode **
                 pattern_error_code (FunctionCall, 1);
                 return NULL;
         }
-        if (!(branch->branch = branch_create (node, end, depth - 1))) {
+        if (!(branch->branch = branch_create (node, end, (uint8_t)(depth - 1)))) {
                 branch_part_destroy_branch (branch);
                 pattern_error_code (FunctionCall, 2);
                 return NULL;
@@ -209,7 +209,7 @@ static PatternBranchPart *branch_part_create_not (ListNode *node, ListNode **end
                 return NULL;
         }
         not->base.type = PatternBranchPartTypeNot;
-        if (!(not->part = branch_part_create (node->next, end, depth - 1))) {
+        if (!(not->part = branch_part_create (node->next, end, (uint8_t)(depth - 1)))) {
                 branch_part_destroy_not (not);
                 pattern_error_code (FunctionCall, 2);
                 return NULL;

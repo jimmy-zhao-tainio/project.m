@@ -323,6 +323,7 @@ bool test_file_directory_read_1 (Test *test)
 	TITLE ();
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/empty"));
+        /* d stage/empty */
 	CATCH (!(directory = directory_open (path)));
 	CATCH (!directory_read (directory));
 	CATCH (!directory->directories);
@@ -340,6 +341,11 @@ bool test_file_directory_read_2 (Test *test)
 	TITLE ();
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/1d_1f"));
+        /*
+                d stage/1d_1f
+                f f1
+                d stage/1d_1f/d1
+         */
 	CATCH (!(directory = directory_open (path)));
 	string_destroy (path);
 	CATCH (!directory_read (directory));
@@ -361,6 +367,11 @@ bool test_file_directory_read_3 (Test *test)
 	TITLE ();
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/1d_1f"));
+        /*
+                d stage/1d_1f
+                f f1
+                d stage/1d_1f/d1
+         */
 	CATCH (!(directory = directory_open (path)));
 	string_destroy (path);
 	CATCH (!directory_read (directory));
@@ -385,6 +396,17 @@ bool test_file_directory_read_4 (Test *test)
 	TITLE ();
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/9d_9f"));
+        /*
+                d stage/9d_9f/d8
+                d stage/9d_9f/d7
+                d stage/9d_9f/d1
+                d stage/9d_9f/d4
+                d stage/9d_9f/d9
+                d stage/9d_9f/d2
+                d stage/9d_9f/d5
+                d stage/9d_9f/d3
+                d stage/9d_9f/d6
+         */
 	CATCH (!(directory = directory_open (path)));
 	string_destroy (path);
 	CATCH (!directory_read (directory));
@@ -407,6 +429,14 @@ bool test_file_directory_read_5 (Test *test)
 	TITLE ();
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/d3_1f"));
+        /*
+                d stage/d3_1f
+                d stage/d3_1f/d1
+                f f1
+                d stage/d3_1f/d1/d2
+                d stage/d3_1f/d1/d2/d3
+                f f1
+         */
 	CATCH (!(d3_1f = directory_open (path)));
 	string_destroy (path);
 	CATCH (!directory_read (d3_1f));
@@ -437,6 +467,14 @@ bool test_file_directory_read_6 (Test *test)
 	TITLE ();
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/d3_1f"));
+        /*
+                d stage/d3_1f
+                d stage/d3_1f/d1
+                f f1
+                d stage/d3_1f/d1/d2
+                d stage/d3_1f/d1/d2/d3
+                f f1
+         */
 	CATCH (!(d3_1f = directory_open (path)));
 	string_destroy (path);
 	CATCH (!directory_read (d3_1f));
@@ -464,6 +502,11 @@ bool test_file_directory_find_invalid_argument (Test *test)
 	TITLE ();
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/find"));
+        /*
+                d stage/find
+                f f1
+                d stage/find/d1
+         */
 	CATCH (!(directory = directory_open (path)));
 	string_destroy (path);
 	CATCH (directory_find_file (NULL, "file"));
@@ -496,6 +539,11 @@ bool test_file_directory_find (Test *test)
 	TITLE ();
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/find"));
+        /*
+                d stage/find
+                f f1
+                d stage/find/d1
+         */
 	CATCH (!(directory = directory_open (path)));
 	string_destroy (path);
 	CATCH (!directory_read (directory));
@@ -522,6 +570,7 @@ bool test_file_open_fail (Test *test)
 	TITLE ();
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/open_fail"));
+        /* stage does not exist */
 	CATCH (!(directory = directory_open (path)));
 	string_destroy (path);
 	CATCH (!directory_read (directory));
@@ -546,6 +595,10 @@ bool test_file_open_fail_multiple (Test *test)
 	TITLE ();
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/open"));
+        /*
+                d stage/open
+                f f1
+         */
 	CATCH (!(directory = directory_open (path)));
 	string_destroy (path);
 	CATCH (!directory_read (directory));
@@ -565,6 +618,10 @@ bool test_file_open (Test *test)
 	TITLE ();
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/open"));
+        /*
+                d stage/open
+                f f1
+         */
 	CATCH (!(directory = directory_open (path)));
 	string_destroy (path);
 	CATCH (!directory_read (directory));
@@ -583,6 +640,10 @@ bool test_file_close (Test *test)
 	TITLE ();
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/open"));
+        /*
+                d stage/open
+                f f1
+         */
 	CATCH (!(directory = directory_open (path)));
 	string_destroy (path);
 	CATCH (!directory_read (directory));
@@ -603,6 +664,22 @@ bool test_file_readline_f1 (Test *test)
 	TITLE ();
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/readline"));
+        /*
+                d stage/readline
+                f f2
+                f f3 \
+                         \
+                        0 \
+                        AB \
+                        012 \
+                        ABCD \
+                        01234 \
+                        ABCD \
+                        012 \
+                        AB \
+                        0
+                f f1
+         */
 	CATCH (!(directory = directory_open (path)));
 	string_destroy (path);
 	CATCH (!directory_read (directory));
@@ -628,6 +705,22 @@ bool test_file_readline_f2 (Test *test)
 	TITLE ();
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/readline"));
+        /*
+                d stage/readline
+                f f2
+                f f3 \
+                         \
+                        0 \
+                        AB \
+                        012 \
+                        ABCD \
+                        01234 \
+                        ABCD \
+                        012 \
+                        AB \
+                        0
+                f f1
+         */
 	CATCH (!(directory = directory_open (path)));
 	string_destroy (path);
 	CATCH (!directory_read (directory));
@@ -665,6 +758,22 @@ bool test_file_readline_f3 (Test *test)
 	TITLE ();
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/readline"));
+        /*
+                d stage/readline
+                f f2
+                f f3 \
+                         \
+                        0 \
+                        AB \
+                        012 \
+                        ABCD \
+                        01234 \
+                        ABCD \
+                        012 \
+                        AB \
+                        0
+                f f1
+         */
 	CATCH (!(directory = directory_open (path)));
 	string_destroy (path);
 	directory_read (directory);
@@ -720,6 +829,7 @@ bool test_file_remove (Test *test)
 	CATCH (file_remove ("badpathformat"));
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/remove/file"));
+        /* d stage/remove */
 	if (!file_exists (path)) {
 		CATCH (!(file = fopen (path, "ab+")));
 		fclose (file);
@@ -739,6 +849,10 @@ bool test_file_exists (Test *test)
 	CATCH (file_exists ("badpathformat"));
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/exists/12"));
+        /* 
+                d stage/exists
+                f 1234 
+        */
 	CATCH (file_exists (path));
 	CATCH (!string_append (&path, "34"));
 	CATCH (!file_exists (path));
