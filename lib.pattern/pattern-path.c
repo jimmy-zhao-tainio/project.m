@@ -1,6 +1,6 @@
-#include <lib.core/pattern-path.h>
 #include <lib.core/memory.h>
 #include <lib.core/error.h>
+#include <lib.pattern/pattern-path.h>
 
 static PatternPath *path_create_branch (PatternBranch *branch, PatternPath *last, PatternPathTracker *tracker);
 static PatternPath *path_create_part (PatternBranchPart *part, PatternPath *last, PatternPathTracker *tracker);

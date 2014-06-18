@@ -2,7 +2,7 @@
 #include <lib.core/string.h>
 #include <lib.core/error.h>
 #include <lib.core/memory.h>
-#include <lib.core/pattern-search.h>
+#include <lib.pattern/pattern-search.h>
 
 #include "test-pattern-search.h"
 

@@ -7,8 +7,8 @@
 #include <lib.core/convert.h>
 #include <lib.core/ascii.h>
 #include <lib.core/error.h>
-#include <lib.core/pattern-token.h>
-#include <lib.core/pattern-token-private.h>
+#include <lib.pattern/pattern-token.h>
+#include <lib.pattern/pattern-token-private.h>
 
 static bool tokenize_create_try (const char *pattern, size_t length, List *tokens);
 static bool tokenize_parentheses_open (size_t *i, PatternToken **token);

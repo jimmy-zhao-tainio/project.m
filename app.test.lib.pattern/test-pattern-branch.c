@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include <lib.core/pattern-whitespace.h>
-#include <lib.core/pattern-token.h>
-#include <lib.core/pattern-branch.h>
+#include <lib.pattern/pattern-whitespace.h>
+#include <lib.pattern/pattern-token.h>
+#include <lib.pattern/pattern-branch.h>
 #include <lib.core/string.h>
 #include <lib.core/memory.h>
 #include <lib.core/error.h>

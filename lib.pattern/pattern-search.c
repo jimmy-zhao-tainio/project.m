@@ -2,12 +2,12 @@
 #include <lib.core/string.h>
 #include <lib.core/list.h>
 #include <lib.core/error.h>
-#include <lib.core/pattern-whitespace.h>
-#include <lib.core/pattern-token.h>
-#include <lib.core/pattern-branch.h>
-#include <lib.core/pattern-path.h>
-#include <lib.core/pattern-path-match.h>
-#include <lib.core/pattern-search.h>
+#include <lib.pattern/pattern-whitespace.h>
+#include <lib.pattern/pattern-token.h>
+#include <lib.pattern/pattern-branch.h>
+#include <lib.pattern/pattern-path.h>
+#include <lib.pattern/pattern-path-match.h>
+#include <lib.pattern/pattern-search.h>
 
 PatternSearch *pattern_search_create (const unsigned char *buffer, size_t buffer_length, const char *pattern, bool strip_whitespace)
 {

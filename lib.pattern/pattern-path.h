@@ -3,7 +3,7 @@
 
 #include <lib.core/defines.h>
 #include <lib.core/list.h>
-#include <lib.core/pattern-branch.h>
+#include <lib.pattern/pattern-branch.h>
 
 typedef struct s_PatternPathTracker PatternPathTracker;
 typedef struct s_PatternPath        PatternPath;

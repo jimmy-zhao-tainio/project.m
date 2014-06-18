@@ -1,4 +1,4 @@
-#include <lib.core/pattern-path.h>
+#include <lib.pattern/pattern-path.h>
 
 static bool track (PatternPathTracker *tracker, PatternPath *path, unsigned char match);
 static void track_push (PatternPathTracker *tracker, PatternPath *path);

@@ -2,7 +2,7 @@
 #include <lib.core/string.h>
 #include <lib.core/ascii.h>
 #include <lib.core/error.h>
-#include <lib.core/pattern-whitespace.h>
+#include <lib.pattern/pattern-whitespace.h>
 
 char *pattern_whitespace (const char *pattern)
 {

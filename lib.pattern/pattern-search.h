@@ -2,9 +2,9 @@
 #define pattern_search_h
 
 #include <lib.core/defines.h>
-#include <lib.core/pattern-token.h>
-#include <lib.core/pattern-branch.h>
-#include <lib.core/pattern-path.h>
+#include <lib.pattern/pattern-token.h>
+#include <lib.pattern/pattern-branch.h>
+#include <lib.pattern/pattern-path.h>
 
 typedef struct s_PatternSearch PatternSearch;
 

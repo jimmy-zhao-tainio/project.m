@@ -1,5 +1,5 @@
-#include <lib.core/pattern-token.h>
-#include <lib.core/pattern-token-private.h>
+#include <lib.pattern/pattern-token.h>
+#include <lib.pattern/pattern-token-private.h>
 #include <lib.core/string.h>
 #include <lib.core/memory.h>
 #include <lib.core/defines-private.h>

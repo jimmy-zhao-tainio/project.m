@@ -1,4 +1,4 @@
-#include <lib.core/pattern-whitespace.h>
+#include <lib.pattern/pattern-whitespace.h>
 #include <lib.core/string.h>
 #include <lib.core/memory.h>
 #include <lib.core/defines-private.h>

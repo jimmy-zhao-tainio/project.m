@@ -3,8 +3,8 @@
 #include <lib.core/list.h>
 #include <lib.core/string.h>
 #include <lib.core/error.h>
-#include <lib.core/pattern-token.h>
-#include <lib.core/pattern-branch.h>
+#include <lib.pattern/pattern-token.h>
+#include <lib.pattern/pattern-branch.h>
 
 static bool parenthesize_main_branch (List *tokens);
 static PatternBranch *branch_create (ListNode *node, ListNode **end, uint8_t depth);

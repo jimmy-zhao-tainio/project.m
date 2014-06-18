@@ -2,7 +2,7 @@
 #define pattern_branch_h
 
 #include <lib.core/list.h>
-#include <lib.core/pattern-token.h>
+#include <lib.pattern/pattern-token.h>
 
 #define PATTERN_BRANCH_RECURSION_DEPTH 255
 

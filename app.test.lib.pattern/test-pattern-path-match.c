@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <lib.core/pattern-path.h>
-#include <lib.core/pattern-path-match.h>
+#include <lib.pattern/pattern-path.h>
+#include <lib.pattern/pattern-path-match.h>
 #include <lib.core/string.h>
 #include <lib.core/error.h>
 

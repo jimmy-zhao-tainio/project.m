@@ -2,7 +2,7 @@
 #include <lib.core/defines.h>
 #include <lib.core/error.h>
 #include <lib.core/file-reader.h>
-#include <lib.core/pattern-search.h>
+#include <lib.pattern/pattern-search.h>
 
 static bool try (FileReader **reader, PatternSearch **search, const char *pattern, const char *file);
 static bool print_range (const char *buffer, size_t from, size_t to);
