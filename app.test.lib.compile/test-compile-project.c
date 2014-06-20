@@ -48,10 +48,7 @@ bool test_compile_project_create (Test *test)
 	TITLE ();
 	path = directory_current_path ();
 	string_append (&path, "/stage/project.test_compile_project_create");
-        /*
-                d stage/project.test_compile_project_create
-         */
-	CATCH (!(project = compile_project_create (path)));
+        CATCH (!(project = compile_project_create (path)));
 	compile_project_destroy (project);
 	string_destroy (path);
 	PASS ();
@@ -74,10 +71,7 @@ bool test_compile_project_prepare_empty (Test *test)
 	TITLE ();
 	path = directory_current_path ();
 	string_append (&path, "/stage/project.test_compile_project_prepare_empty");
-        /*
-                d stage/project.test_compile_project_prepare_empty
-         */
-	project = compile_project_create (path);
+        project = compile_project_create (path);
 	CATCH (!compile_project_prepare (project));
 	compile_project_destroy (project);
 	string_destroy (path);
@@ -95,24 +89,7 @@ bool test_compile_project_prepare_lib (Test *test)
 	TITLE ();
 	path = directory_current_path ();
 	string_append (&path, "/stage/project.test_compile_project_prepare_lib");
-        /*
-                d stage/project.test_compile_project_prepare_lib
-                d stage/project.test_compile_project_prepare_lib/lib.test
-                f test.h
-                        #ifndef test_h \
-                        #define test_h \
-                         \
-                        void test_test (void); \
-                         \
-                        #endif
-                f test.c
-                        #include <lib.test/test.h> \
-                         \
-                        void test_test (void) \
-                        { \
-                        }
-         */
-	project = compile_project_create (path);
+        project = compile_project_create (path);
 	CATCH (!compile_project_prepare (project));
 	CATCH (topological_count_vertices (project->topological) != 1);
 	CATCH (project->sorted->count != 1);
@@ -151,35 +128,7 @@ bool test_compile_project_prepare_lib_and_app (Test *test)
 	TITLE ();
 	CATCH (!(path = directory_current_path ()));
 	CATCH (!string_append (&path, "/stage/project.test_compile_project_prepare_lib_and_app"));
-        /*
-                d stage/project.test_compile_project_prepare_lib_and_app
-                d stage/project.test_compile_project_prepare_lib_and_app/app.test
-                f main.c \
-                        #include <stdio.h> \
-                         \
-                        #include <lib.test/test.h> \
-                         \
-                        int main (int argc, char **argv) \
-                        { \
-                                test_test (); \
-                                return 0; \
-                        }
-                d stage/project.test_compile_project_prepare_lib_and_app/lib.test
-                f test.h \
-                        #ifndef test_h \
-                        #define test_h \
-                         \
-                        void test_test (void); \
-                         \
-                        #endif
-                f test.c \
-                        #include <lib.test/test.h> \
-                         \
-                        void test_test (void) \
-                        { \
-                        }
-         */
-	CATCH (!(project = compile_project_create (path)));
+        CATCH (!(project = compile_project_create (path)));
 	CATCH (!compile_project_prepare (project));
 	CATCH (!(app_directory = directory_find_directory (project->directory, "app.test")));
 	CATCH (!(lib_directory = directory_find_directory (project->directory, "lib.test")));
@@ -244,65 +193,7 @@ bool test_compile_project_prepare_libs_and_app (Test *test)
 	TITLE ();
 	path = directory_current_path ();
 	string_append (&path, "/stage/project.test_compile_project_prepare_libs_and_app");
-        /*
-                d stage/project.test_compile_project_prepare_libs_and_app
-                d stage/project.test_compile_project_prepare_libs_and_app/lib.test2
-                f test.h \
-                        #ifndef test2_h \
-                        #define test2_h \
-                         \
-                        void test_test (void); \
-                         \
-                        #endif
-                f test.c \
-                        #include <lib.test2/test.h> \
-                        #include <lib.test3/test.h> \
-                         \
-                        void test_test (void) \
-                        { \
-                        }
-                d stage/project.test_compile_project_prepare_libs_and_app/lib.test1
-                f test.h \
-                        #ifndef test1_h \
-                        #define test1_h \
-                         \
-                        void test_test (void); \
-                         \
-                        #endif
-                f test.c \
-                        #include <lib.test1/test.h> \
-                        #include <lib.test2/test.h> \
-                         \
-                        void test_test (void) \
-                        { \
-                        }
-                d stage/project.test_compile_project_prepare_libs_and_app/app.test
-                f main.c \
-                        #include <stdio.h> \
-                         \
-                        #include <lib.test1/test.h> \
-                         \
-                        int main (int argc, char **argv) \
-                        { \
-                                test_test (); \
-                                return 0; \
-                        }
-                d stage/project.test_compile_project_prepare_libs_and_app/lib.test3
-                f test.h \
-                        #ifndef test3_h \
-                        #define test3_h \
-                         \
-                        void test_test (void); \
-                         \
-                        #endif
-                f test.c \
-                        #include <lib.test3/test.h> \
-                         \
-                        void test_test (void) \
-                        { \
-                        }
-         */
-	project = compile_project_create (path);
+        project = compile_project_create (path);
 	CATCH (!compile_project_prepare (project));
 	CATCH (!(app_directory = directory_find_directory (project->directory, "app.test")));
 	CATCH (!(lib1_directory = directory_find_directory (project->directory, "lib.test1")));
@@ -399,67 +290,7 @@ bool test_compile_project_prepare_libs_and_app_circle (Test *test)
 	compile_print_set_enabled (false);
 	path = directory_current_path ();
 	string_append (&path, "/stage/project.test_compile_project_prepare_libs_and_app_circle");
-        /*
-                d stage/project.test_compile_project_prepare_libs_and_app_circle
-                d stage/project.test_compile_project_prepare_libs_and_app_circle/lib.test2
-                f test.h \
-                        #ifndef test2_h \
-                        #define test2_h \
-                         \
-                        void test_test (void); \
-                         \
-                        #endif
-                f test.c \
-                        #include <lib.test2/test.h> \
-                        #include <lib.test3/test.h> \
-                         \
-                        void test_test (void) \
-                        { \
-                        }
-                d stage/project.test_compile_project_prepare_libs_and_app_circle/lib.test1
-                f test.h \
-                        #ifndef test1_h \
-                        #define test1_h \
-                         \
-                        void test_test (void); \
-                         \
-                        #endif
-                f test.c \
-                        #include <lib.test1/test.h> \
-                        #include <lib.test2/test.h> \
-                         \
-                        void test_test (void) \
-                        { \
-                        }
-                d stage/project.test_compile_project_prepare_libs_and_app_circle/app.test
-                f main.c \
-                        #include <stdio.h> \
-                         \
-                        #include <lib.test1/test.h> \
-                         \
-                        int main (int argc, char **argv) \
-                        { \
-                                test_test (); \
-                                return 0; \
-                        }
-                d stage/project.test_compile_project_prepare_libs_and_app_circle/lib.test3
-                f test.h \
-                        #ifndef test3_h \
-                        #define test3_h \
-                         \
-                        void test_test (void); \
-                         \
-                        #endif
-                f test.c \
-                        #include <lib.test3/test.h> \
-                        #include <lib.test1/test.h> \
-                         \
-                        void test_test (void) \
-                        { \
-                        }
-
-         */
-	project = compile_project_create (path);
+        project = compile_project_create (path);
 	CATCH (compile_project_prepare (project));
 	compile_project_destroy (project);
 	string_destroy (path);
@@ -484,52 +315,7 @@ bool test_compile_project_prepare_app_indirect_lib (Test *test)
 	TITLE ();
 	path = directory_current_path ();
 	string_append (&path, "/stage/project.test_compile_project_prepare_app_indirect_lib");
-        /*
-                d stage/project.test_compile_project_prepare_app_indirect_lib
-                d stage/project.test_compile_project_prepare_app_indirect_lib/lib.test2
-                f test.h \
-                        #ifndef test2_h \
-                        #define test2_h \
-                         \
-                        void test_test2 (void); \
-                         \
-                        #endif
-                f test.c \
-                        #include <lib.test2/test.h> \
-                         \
-                        void test_test2 (void) \
-                        { \
-                        }
-                d stage/project.test_compile_project_prepare_app_indirect_lib/lib.test1
-                f test.h \
-                        #ifndef test1_h \
-                        #define test1_h \
-                         \
-                        void test_test (void); \
-                         \
-                        #endif
-                f test.c \
-                        #include <lib.test1/test.h> \
-                        #include <lib.test2/test.h> \
-                         \
-                        void test_test (void) \
-                        { \
-                                test_test2 (); \
-                        }
-                d stage/project.test_compile_project_prepare_app_indirect_lib/app.test
-                f main.c \
-                        #include <stdio.h> \
-                         \
-                        #include <lib.test1/test.h> \
-                         \
-                        int main (int argc, char **argv) \
-                        { \
-                                test_test (); \
-                                return 0; \
-                        }
-
-         */
-	project = compile_project_create (path);
+        project = compile_project_create (path);
 	CATCH (!compile_project_prepare (project));
 	CATCH (!(app_directory = directory_find_directory (project->directory, "app.test")));
 	CATCH (!(lib1_directory = directory_find_directory (project->directory, "lib.test1")));
@@ -611,16 +397,7 @@ bool test_compile_project_prepare_app_invalid_lib_include (Test *test)
 	compile_print_set_enabled (false);
 	path = directory_current_path ();
 	string_append (&path, "/stage/project.test_compile_project_prepare_app_invalid_lib_include");
-        /*
-                d stage/project.test_compile_project_prepare_app_invalid_lib_include
-                d stage/project.test_compile_project_prepare_app_invalid_lib_include/app.test.lib.core
-                f test-pattern.h \
-                        #include <lib.test/test.h>
-                d stage/project.test_compile_project_prepare_app_invalid_lib_include/lib.core
-
-
-         */
-	project = compile_project_create (path);
+        project = compile_project_create (path);
 	CATCH (compile_project_prepare (project));
 	compile_project_destroy (project);
 	string_destroy (path);
@@ -654,25 +431,7 @@ bool test_compile_project_execute_lib (Test *test)
 	TITLE ();
 	path = directory_current_path ();
 	string_append (&path, "/stage/project.test_compile_project_execute_lib");
-        /*
-                d stage/project.test_compile_project_execute_lib
-                d stage/project.test_compile_project_execute_lib/lib.test1
-                f test1.c \
-                        #include \"test1.h\" \
-                         \
-                        int test1 (void) \
-                        { \
-                                return 0; \
-                        }
-                f test1.h \
-                        #ifndef lib_test1_h \
-                        #define lib_test1_h \
-                         \
-                        int test1 (void); \
-                         \
-                        #endif
-         */
-	libtest1a = string_create (path);
+        libtest1a = string_create (path);
 	test1o = string_create (path);
 	string_append (&libtest1a, "/lib.test1/lib.test1.a");
 	string_append (&test1o, "/lib.test1/test1.o");
@@ -709,18 +468,7 @@ bool test_compile_project_execute_app_twice (Test *test)
 	TITLE ();
 	path = directory_current_path ();
 	string_append (&path, "/stage/project.test_compile_project_execute_app_twice");
-        /*
-                d stage/project.test_compile_project_execute_app_twice
-                d stage/project.test_compile_project_execute_app_twice/app.test
-                f test1.c \
-                        #include <stdio.h> \
-                         \
-                        int main (void) \
-                        { \
-                                return 0; \
-                        }
-         */
-	test1o = string_create (path);
+        test1o = string_create (path);
 	apptest = string_create (path);
 	string_append (&test1o, "/app.test/test1.o");
 	string_append (&apptest, "/app.test/app.test");
@@ -777,18 +525,7 @@ bool test_compile_project_execute_lib_twice (Test *test)
 	TITLE ();
 	path = directory_current_path ();
 	string_append (&path, "/stage/project.test_compile_project_execute_lib_twice");
-        /*
-                d stage/project.test_compile_project_execute_lib_twice
-                d stage/project.test_compile_project_execute_lib_twice/lib.test
-                f test1.c \
-                        #include <stdio.h> \
-                         \
-                        int test1 (void) \
-                        { \
-                                return 0; \
-                        }
-         */
-	test1o = string_create (path);
+        test1o = string_create (path);
 	libtest = string_create (path);
 	string_append (&test1o, "/lib.test/test1.o");
 	string_append (&libtest, "/lib.test/lib.test.a");
@@ -850,33 +587,7 @@ bool test_compile_project_execute_lib_and_app_twice (Test *test)
 	TITLE ();
 	path = directory_current_path ();
 	string_append (&path, "/stage/project.test_compile_project_execute_lib_and_app_twice");
-        /*
-                d stage/project.test_compile_project_execute_lib_and_app_twice
-                d stage/project.test_compile_project_execute_lib_and_app_twice/lib.test1
-                f test1.c \
-                        #include <lib.test1/test1.h> \
-                         \
-                        int test1 (void) \
-                        { \
-                                return 0; \
-                        }
-                f test1.h \
-                        #ifndef lib_test1_h \
-                        #define lib_test1_h \
-                         \
-                        int test1 (void); \
-                         \
-                        #endif
-                d stage/project.test_compile_project_execute_lib_and_app_twice/app.test1
-                f main.c \
-                        #include <lib.test1/test1.h> \
-                         \
-                        int main (void) \
-                        { \
-                                return test1(); \
-                        }
-         */
-	libtest1a = string_create (path);
+        libtest1a = string_create (path);
 	libtest1_test1o = string_create (path);
 	apptest1 = string_create (path);
 	maino = string_create (path);
@@ -976,33 +687,7 @@ bool test_compile_project_execute_lib_and_lib_twice (Test *test)
 	TITLE ();
 	path = directory_current_path ();
 	string_append (&path, "/stage/project.test_compile_project_execute_lib_and_lib_twice");
-        /*
-                d stage/project.test_compile_project_execute_lib_and_lib_twice
-                d stage/project.test_compile_project_execute_lib_and_lib_twice/lib.test2
-                f test2.c \
-                        #include <lib.test1/test1.h> \
-                         \
-                        int test2 (void) \
-                        { \
-                                return test1(); \
-                        }
-                d stage/project.test_compile_project_execute_lib_and_lib_twice/lib.test1
-                f test1.c \
-                        #include <lib.test1/test1.h> \
-                         \
-                        int test1 (void) \
-                        { \
-                                return 0; \
-                        }
-                f test1.h \
-                        #ifndef lib_test1_h \
-                        #define lib_test1_h \
-                         \
-                        int test1 (void); \
-                         \
-                        #endif
-         */
-	libtest1a = string_create (path);
+        libtest1a = string_create (path);
 	libtest1_test1o = string_create (path);
 	libtest2a = string_create (path);
 	libtest2_test2o = string_create (path);
@@ -1104,79 +789,7 @@ bool test_compile_project_execute_2libs_and_1app (Test *test)
 	TITLE ();
 	path = directory_current_path ();
 	string_append (&path, "/stage/project.test_compile_project_execute_2libs_and_1app");
-        /*
-                d stage/project.test_compile_project_execute_2libs_and_1app
-                d stage/project.test_compile_project_execute_2libs_and_1app/lib.test2
-                f test3.c \
-                        #include \"test3.h\" \
-                         \
-                        int test3 (void) \
-                        { \
-                                return 0; \
-                        }
-                f test4.h \
-                        #ifndef lib_test4_h \
-                        #define lib_test4_h \
-                         \
-                        int test4 (void); \
-                         \
-                        #endif
-                f test4.c \
-                        #include \"test4.h\" \
-                         \
-                        int test4 (void) \
-                        { \
-                                return 0; \
-                        }
-                f test3.h \
-                        #ifndef lib_test3_h \
-                        #define lib_test3_h \
-                         \
-                        int test3 (void); \
-                         \
-                        #endif
-                d stage/project.test_compile_project_execute_2libs_and_1app/lib.test1
-                f test2.h \
-                        #ifndef lib_test2_h \
-                        #define lib_test2_h \
-                         \
-                        int test2 (void); \
-                         \
-                        #endif
-                f test1.c \
-                        #include \"test1.h\" \
-                         \
-                        int test1 (void) \
-                        { \
-                                return 0; \
-                        }
-                f test2.c \
-                        #include \"test2.h\" \
-                         \
-                        int test2 (void) \
-                        { \
-                                return 0; \
-                        }
-                f test1.h \
-                        #ifndef lib_test1_h \
-                        #define lib_test1_h \
-                         \
-                        int test1 (void); \
-                         \
-                        #endif
-                d stage/project.test_compile_project_execute_2libs_and_1app/app.test1
-                f main.c \
-                        #include <lib.test1/test1.h> \
-                        #include <lib.test1/test2.h> \
-                        #include <lib.test2/test3.h> \
-                        #include <lib.test2/test4.h> \
-                         \
-                        int main (void) \
-                        { \
-                                return test1 () && test2 () && test3 () && test4 (); \
-                        }
-         */
-	libtest1a = string_create (path);
+        libtest1a = string_create (path);
 	libtest2a = string_create (path);
 	libtest1_test1o = string_create (path);
 	libtest1_test2o = string_create (path);
@@ -1262,104 +875,7 @@ bool test_compile_project_execute_3libs_and_2app (Test *test)
 	TITLE ();
 	path = directory_current_path ();
 	string_append (&path, "/stage/project.test_compile_project_execute_3libs_and_2app");
-        /*
-                d stage/project.test_compile_project_execute_3libs_and_2app
-                d stage/project.test_compile_project_execute_3libs_and_2app/lib.shared
-                f shared.c \
-                        #include <lib.shared/shared.h> \
-                         \
-                        int shared (void) \
-                        { \
-                                return 0; \
-                        }
-                f shared.h \
-                        #ifndef lib_shared_h \
-                        #define lib_shared_h \
-                         \
-                        int shared (void); \
-                         \
-                        #endif
-                d stage/project.test_compile_project_execute_3libs_and_2app/lib.test2
-                f test3.c \
-                        #include \"test3.h\" \
-                         \
-                        int test3 (void) \
-                        { \
-                                return 0; \
-                        }
-                f test4.h \
-                        #ifndef lib_test4_h \
-                        #define lib_test4_h \
-                         \
-                        int test4 (void); \
-                         \
-                        #endif
-                f test4.c \
-                        #include \"test4.h\" \
-                         \
-                        int test4 (void) \
-                        { \
-                                return 0; \
-                        }
-                f test3.h \
-                        #ifndef lib_test3_h \
-                        #define lib_test3_h \
-                         \
-                        int test3 (void); \
-                         \
-                        #endif
-                d stage/project.test_compile_project_execute_3libs_and_2app/lib.test1
-                f test2.h \
-                        #ifndef lib_test2_h \
-                        #define lib_test2_h \
-                         \
-                        int test2 (void); \
-                         \
-                        #endif
-                f test1.c \
-                        #include \"test1.h\" \
-                        #include <lib.shared/shared.h> \
-                         \
-                        int test1 (void) \
-                        { \
-                                return 0 + shared (); \
-                        }
-                f test2.c \
-                        #include \"test2.h\" \
-                        #include <lib.shared/shared.h> \
-                         \
-                        int test2 (void) \
-                        { \
-                                return 0 + shared (); \
-                        }
-                f test1.h \
-                        #ifndef lib_test1_h \
-                        #define lib_test1_h \
-                         \
-                        int test1 (void); \
-                         \
-                        #endif
-                d stage/project.test_compile_project_execute_3libs_and_2app/app.test2
-                f main.c \
-                        #include <lib.shared/shared.h> \
-                         \
-                        int main (void) \
-                        { \
-                                return shared (); \
-                        }
-                d stage/project.test_compile_project_execute_3libs_and_2app/app.test1
-                f main.c \
-                        #include <lib.test1/test1.h> \
-                        #include <lib.test1/test2.h> \
-                        #include <lib.test2/test3.h> \
-                        #include <lib.test2/test4.h> \
-                         \
-                        int main (void) \
-                        { \
-                                return test1 () && test2 () && test3 () && test4 (); \
-                        }
-         */
-	libtest1a = string_create (path);
+        libtest1a = string_create (path);
 	libtest2a = string_create (path);
 	libshareda = string_create (path);
 	libtest1_test1o = string_create (path);
@@ -1462,9 +978,6 @@ bool test_compile_project_execute_with_directory_name_null (Test *test)
 	compile_print_set_enabled (false);
 	path = directory_current_path ();
 	string_append (&path, "/stage/project.test_compile_project_create");
-        /*
-                empty project.directory
-         */
 	CATCH (!(project = compile_project_create (path)));
 	CATCH (compile_project_execute_with_directory_name (project, NULL, false));
 	compile_project_destroy (project);
@@ -1506,107 +1019,10 @@ bool test_compile_project_execute_with_directory_name_lib (Test *test)
 	char *apptest1_maino;
 	char *apptest2;
 	char *apptest2_maino;
-
+        
 	TITLE ();
 	path = directory_current_path ();
 	string_append (&path, "/stage/project.test_compile_project_execute_3libs_and_2app");
-        /*
-                d stage/project.test_compile_project_execute_3libs_and_2app
-                d stage/project.test_compile_project_execute_3libs_and_2app/lib.shared
-                f shared.c \
-                        #include <lib.shared/shared.h> \
-                         \
-                        int shared (void) \
-                        { \
-                                return 0; \
-                        }
-                f shared.h \
-                        #ifndef lib_shared_h \
-                        #define lib_shared_h \
-                         \
-                        int shared (void); \
-                         \
-                        #endif
-                d stage/project.test_compile_project_execute_3libs_and_2app/lib.test2
-                f test3.c \
-                        #include \"test3.h\" \
-                         \
-                        int test3 (void) \
-                        { \
-                                return 0; \
-                        }
-                f test4.h \
-                        #ifndef lib_test4_h \
-                        #define lib_test4_h \
-                         \
-                        int test4 (void); \
-                         \
-                        #endif
-                f test4.c \
-                        #include \"test4.h\" \
-                         \
-                        int test4 (void) \
-                        { \
-                                return 0; \
-                        }
-                f test3.h \
-                        #ifndef lib_test3_h \
-                        #define lib_test3_h \
-                         \
-                        int test3 (void); \
-                         \
-                        #endif
-                d stage/project.test_compile_project_execute_3libs_and_2app/lib.test1
-                f test2.h \
-                        #ifndef lib_test2_h \
-                        #define lib_test2_h \
-                         \
-                        int test2 (void); \
-                         \
-                        #endif
-                f test1.c \
-                        #include \"test1.h\" \
-                        #include <lib.shared/shared.h> \
-                         \
-                        int test1 (void) \
-                        { \
-                                return 0 + shared (); \
-                        }
-                f test2.c \
-                        #include \"test2.h\" \
-                        #include <lib.shared/shared.h> \
-                         \
-                        int test2 (void) \
-                        { \
-                                return 0 + shared (); \
-                        }
-                f test1.h \
-                        #ifndef lib_test1_h \
-                        #define lib_test1_h \
-                         \
-                        int test1 (void); \
-                         \
-                        #endif
-                d stage/project.test_compile_project_execute_3libs_and_2app/app.test2
-                f main.c \
-                        #include <lib.shared/shared.h> \
-                         \
-                        int main (void) \
-                        { \
-                                return shared (); \
-                        }
-                d stage/project.test_compile_project_execute_3libs_and_2app/app.test1
-                f main.c \
-                        #include <lib.test1/test1.h> \
-                        #include <lib.test1/test2.h> \
-                        #include <lib.test2/test3.h> \
-                        #include <lib.test2/test4.h> \
-                         \
-                        int main (void) \
-                        { \
-                                return test1 () && test2 () && test3 () && test4 (); \
-                        }
-         */
 	libtest1a = string_create (path);
 	libtest2a = string_create (path);
 	libshareda = string_create (path);
