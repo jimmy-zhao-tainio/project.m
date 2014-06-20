@@ -47,7 +47,7 @@ lib.compile
 lib.pattern
 
         Regular expression engine, better called "pattern" due to it's non standard syntax. 
-        It uses a thompson construct and is impervious to state explosions and regex attacks.
+        It uses a thompson construct and is immune to state explosions and regex attacks.
         Internally, pattern strings are first turned into an intermediate branch structure, 
         before being transformed into a path structure which is used while matching.
 
