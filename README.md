@@ -29,7 +29,7 @@ lib.core
                         Stopwatch to record time spent computing.
                 tainio-tree
                         My solution to the reservoir problem. 
-                        A self-balanced tree turned to output a range of natural numbers having uniformly 
+                        A self-balanced tree turned to output a range of natural numbers with uniformly 
                         random distribution. Suitable for large values of N and distributed computation.
                 object
                         Unique identification for objects.
@@ -73,7 +73,7 @@ lib.test
 
 app.compile
 
-        Application using lib.compile.
+        Automatic build system using lib.compile. A bit centric to this project.
 
 app.pattern.replace
 
