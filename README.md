@@ -22,7 +22,7 @@ lib.core
                 convert
                         String to integer conversion.
                 permute
-                        Permutions of size_t integers.
+                        Permutations of size_t integers.
                 random
                         Random bytes or unsigned long long integers from /dev/urandom.
                 stopwatch
@@ -30,7 +30,7 @@ lib.core
                 tainio-tree
                         My solution to the reservoir problem. 
                         A self-balanced tree turned to output a range of natural numbers with uniformly 
-                        random distribution. Suitable for large values of N and distributed computation.
+                        random distribution. Suitable for large values of N and distributed computing.
                 object
                         Unique identification for objects.
                 file

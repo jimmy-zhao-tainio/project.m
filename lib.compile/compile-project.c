@@ -3,6 +3,7 @@
 
 #include <lib.core/string.h>
 #include <lib.core/memory.h>
+#include <lib.core/error.h>
 #include <lib.compile/compile-project.h>
 #include <lib.compile/compile-print.h>
 #include <lib.compile/compile.h>
@@ -17,37 +18,39 @@ CompileProject *compile_project_create (const char *path)
 	CompileProject *project = NULL;
 
 	if (!file_path_is_valid (path)) {
-		compile_debug ();
 		compile_print ("The path is not valid: %s\n", path);
+                error_code (FunctionCall, 1);
 		return NULL;
 	}
 	if (!(project = memory_create (sizeof (CompileProject)))) {
-		compile_debug_allocate_memory ();
+                error_code (FunctionCall, 2);
 		return NULL;
 	}
 	if (!(project->topological = topological_create ())) {
-		compile_debug_allocate_memory ();
 		compile_project_destroy (project);
+                error_code (FunctionCall, 3);
 		return NULL;
 	}
 	if (!(project->nodes = list_create ())) {
-		compile_debug_allocate_memory ();
 		compile_project_destroy (project);
+                error_code (FunctionCall, 4);
 		return NULL;
 	}
 	if (!(project->directory_to_compile = tree_create ())) {
-		compile_debug_allocate_memory ();
 		compile_project_destroy (project);
+                error_code (FunctionCall, 5);
 		return NULL;
 	}
 	if (!(project->directory = directory_open (path))) {
-		compile_print ("Failed to open the path: %s\n", path);
+		compile_print ("Failed to open the directory: %s\n", path);
 		compile_project_destroy (project);
+                error_code (FunctionCall, 6);
 		return NULL;
 	}
 	if (!string_begins_with (project->directory->name, "project.")) {
 		compile_print ("The directory name must begin with 'project.'.\n");
 		compile_project_destroy (project);
+                error_code (FunctionCall, 7);
 		return NULL;
 	}
 	project->sorted = NULL;
@@ -63,56 +66,62 @@ bool compile_project_prepare (CompileProject *project)
 	TreeIterator *iterator;
 
 	if (!project) {
-		compile_debug_invalid_arguments ();
+                error (InvalidArgument);
 		return false;
 	}
 	if (!directory_read (project->directory)) {
 		compile_print ("Failed to read directory: %s\n", project->directory->name);
+                error_code (FunctionCall, 1);
 		return false;
 	}
 	for (node = list_first (project->directory->directories); node; node = node->next) {
 		if (!(sub_directory = node->data)) {
-			compile_debug_invalid_value ();
+                        error_code (InvalidOperation, 1);
 			return false;
 		}
 		if (!string_begins_with (sub_directory->name, "lib.") &&
 		    !string_begins_with (sub_directory->name, "app.")) {
+                        error_code (InvalidOperation, 2);
 			continue;
 		}
 		if (!(compile = compile_create (project->directory, sub_directory))) {
+                        error_code (FunctionCall, 2);
 			return false;
 		}
 		if (!list_append (project->nodes, compile)) {
-			compile_debug_operation_failed ();
 			compile_destroy (compile);
+                        error_code (FunctionCall, 3);
 			return false;
 		}
 		if (!topological_add_vertex (project->topological, (Object *)compile)) {
-			compile_debug_operation_failed ();
+                        error_code (FunctionCall, 4);
 			return false;
 		}
 		if (!tree_insert (project->directory_to_compile, (Object *)sub_directory, compile)) {
-			compile_debug_operation_failed ();
+                        error_code (FunctionCall, 5);
 			return false;
 		}
 	}
 	for (node = list_first (project->directory->directories); node; node = node->next) {
 		if (!(sub_directory = node->data)) {
-			compile_debug_invalid_value ();
+                        error_code (InvalidOperation, 3);
 			return false;
 		}
                 if (!string_begins_with (sub_directory->name, "lib.") &&
 		    !string_begins_with (sub_directory->name, "app.")) {
+                        error_code (InvalidOperation, 4);
 			continue;
 		}
 		if (!(compile = tree_search (project->directory_to_compile, (Object *)sub_directory))) {
-                        compile_debug_operation_failed ();
+                        error_code (InvalidOperation, 5);
 			return false;
 		}
 		if (!compile_prepare (compile)) {
+                        error_code (FunctionCall, 6);
 			return false;
 		}
 		if (!(iterator = tree_iterator_create (compile->libraries))) {
+                        error_code (FunctionCall, 7);
 			return false;
 		}
 		while (tree_iterator_next (iterator)) {
@@ -121,19 +130,20 @@ bool compile_project_prepare (CompileProject *project)
 			}
 			if (!(sub_compile = tree_search (project->directory_to_compile, iterator->key))) {
 				tree_iterator_destroy (iterator);
-				compile_debug_operation_failed ();
+                                error_code (InvalidOperation, 6);
 				return false;
 			}
 			if (!topological_set_edge (project->topological, (Object *)compile, (Object *)sub_compile)) {
 				tree_iterator_destroy (iterator);
-				compile_debug_operation_failed ();
+				error_code (FunctionCall, 8);
 				return false;
 			}
 		}
 		tree_iterator_destroy (iterator);
 	}
 	if (!(project->sorted = topological_sort (project->topological))) {
-		compile_print ("Topological sort of project directories failed.\n");	
+		compile_print ("Topological sort of project directories failed.\n");
+                error_code (InvalidOperation, 7);        
 		return false;
 	}
 	for (node = list_first (project->sorted); node; node = node->next) {
@@ -146,6 +156,7 @@ bool compile_project_prepare (CompileProject *project)
 	}
 	for (node = list_last (project->sorted); node; node = node->previous) {
 		if (!compile_actions (node->data, project->directory->path)) {
+                        error_code (FunctionCall, 9);
 			return false;
 		}
 	}
