@@ -5,6 +5,106 @@
 
 #include "test-convert.h"
 
+bool test_convert_string_to_int_invalid_argument_1 (Test *test)
+{
+	int result;
+        size_t digits;
+
+	TITLE ();
+	CATCH (convert_string_to_int (NULL, &result, &digits));
+	CATCH (error_count () != 1);
+	CATCH (error_at (0).error != ErrorInvalidArgument);
+	CATCH (error_at (0).code != 1);
+	PASS ();
+}
+
+bool test_convert_string_to_int_invalid_argument_2 (Test *test)
+{
+        size_t digits;
+
+	TITLE ();
+	CATCH (convert_string_to_int ("1", NULL, &digits));
+	CATCH (error_count () != 1);
+	CATCH (error_at (0).error != ErrorInvalidArgument);
+	CATCH (error_at (0).code != 2);
+	PASS ();
+}
+
+bool test_convert_string_to_int_invalid_argument_3 (Test *test)
+{
+        int result;
+
+	TITLE ();
+	CATCH (convert_string_to_int ("1", &result, NULL));
+	CATCH (error_count () != 1);
+	CATCH (error_at (0).error != ErrorInvalidArgument);
+	CATCH (error_at (0).code != 3);
+	PASS ();
+}
+
+bool test_convert_string_to_int_invalid_operation_1 (Test *test)
+{
+	int result;
+        size_t digits;
+
+	TITLE ();
+	CATCH (convert_string_to_int ("", &result, &digits));
+	CATCH (error_count () != 1);
+	CATCH (error_at (0).error != ErrorInvalidOperation);
+	CATCH (error_at (0).code != 1);
+	PASS ();
+}
+
+bool test_convert_string_to_int_invalid_operation_2 (Test *test)
+{
+	int result;
+        size_t digits;
+
+	TITLE ();
+	CATCH (convert_string_to_int ("-", &result, &digits));
+	CATCH (error_count () != 1);
+	CATCH (error_at (0).error != ErrorInvalidOperation);
+	CATCH (error_at (0).code != 2);
+	PASS ();
+}
+
+bool test_convert_string_to_int_invalid_operation_3 (Test *test)
+{
+	int result;
+        size_t digits;
+
+	TITLE ();
+	CATCH (convert_string_to_int ("-01", &result, &digits));
+	CATCH (error_count () != 1);
+	CATCH (error_at (0).error != ErrorInvalidOperation);
+	CATCH (error_at (0).code != 3);
+	PASS ();
+}
+
+bool test_convert_string_to_int_invalid_operation_4 (Test *test)
+{
+	int result;
+        size_t digits;
+
+	TITLE ();
+	CATCH (convert_string_to_int ("01", &result, &digits));
+	CATCH (error_count () != 1);
+	CATCH (error_at (0).error != ErrorInvalidOperation);
+	CATCH (error_at (0).code != 4);
+	PASS ();
+}
+
+bool test_convert_string_to_int_overflow_1 (Test *test)
+{
+        int result;
+        size_t digits;
+
+        TITLE ();
+	CATCH (convert_string_to_int ("99999999999999999999", &result, &digits));
+	CATCH (convert_string_to_int ("-99999999999999999999", &result, &digits));
+        PASS ();
+}
+
 bool test_convert_string_to_size_t_invalid_argument (Test *test)
 {
         TITLE ();

@@ -11,6 +11,7 @@ static const char *error_literals[] = {
 #define ERROR(e) ERROR_STRING(Error##e)
 #include <lib.core/error-enums.h>
 #include <lib.core/error-enums-pattern.h>
+#include <lib.core/error-enums-app.h>
 	NULL
 #undef ERROR_STRING
 #undef ERROR

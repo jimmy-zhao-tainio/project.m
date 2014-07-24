@@ -10,6 +10,7 @@ typedef enum {
 #define ERROR(e) Error##e,
 #include <lib.core/error-enums.h>
 #include <lib.core/error-enums-pattern.h>
+#include <lib.core/error-enums-app.h>
 	ErrorNull
 #undef ERROR
 } Error;

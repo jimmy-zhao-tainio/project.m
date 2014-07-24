@@ -7,10 +7,12 @@
 #include <lib.core/memory.h>
 #include <lib.core/error.h>
 
-static TainioTreeNode *node_insert  (TainioTree *tree, TainioTreeNode *root, unsigned long long from, unsigned long long to, unsigned long long *value);
-static void            node_destroy (TainioTree *tree, TainioTreeNode *node);
-unsigned long long     node_count   (TainioTree *tree, TainioTreeNode *node);
-
+static TainioTreeNode *node_insert (TainioTree *tree, TainioTreeNode *root, 
+                                    unsigned long long from, 
+                                    unsigned long long to, 
+                                    unsigned long long *value);
+static void node_destroy (TainioTree *tree, TainioTreeNode *node);
+unsigned long long node_count (TainioTree *tree, TainioTreeNode *node);
 static TainioTreeNode *skew  (TainioTree *tree, TainioTreeNode *root);
 static TainioTreeNode *split (TainioTree *tree, TainioTreeNode *root);
 
@@ -82,7 +84,10 @@ bool tainio_tree_next (TainioTree *tree, unsigned long long *value)
 	return true;
 }
 
-static TainioTreeNode *node_insert (TainioTree *tree, TainioTreeNode *root, unsigned long long from, unsigned long long to, unsigned long long *value)
+static TainioTreeNode *node_insert (TainioTree *tree, TainioTreeNode *root, 
+                                    unsigned long long from, 
+                                    unsigned long long to, 
+                                    unsigned long long *value)
 {
 	TainioTreeNode *node = NULL;
 	int direction;
