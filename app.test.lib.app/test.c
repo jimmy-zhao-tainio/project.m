@@ -16,6 +16,7 @@ bool (*tests[]) (Test *test) =
 	&test_app_arguments_validate_boolean_value_pointer_is_null,
 	&test_app_arguments_validate_integer_value_pointer_is_null,
 	&test_app_arguments_validate_string_value_pointer_is_null,
+	&test_app_arguments_validate_ordinal_required_discontinuity,
 	&test_app_arguments_validate_missing_short_or_long_form,
 	&test_app_arguments_validate_invalid_short_form_length,
 	&test_app_arguments_validate_short_form_missing_single_dash,

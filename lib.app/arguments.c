@@ -202,6 +202,7 @@ static bool validate (AppArgument *arguments)
 {
         size_t i, k;
         size_t length;
+        bool have_not_required = false;
 
         for (i = 0; arguments[i].type != AppArgumentTypeEnd; i++) {
                 switch (arguments[i].value_type) {
@@ -224,7 +225,16 @@ static bool validate (AppArgument *arguments)
                         }
                         break;
                 }
-                if (arguments[i].type != AppArgumentTypeNamed) {
+                if (arguments[i].type == AppArgumentTypeOrdinal) {
+                        if (arguments[i].required) {
+                                if (have_not_required) {
+                                        error (AppArgumentOrdinalRequiredDiscontinuity);
+                                        return false;
+                                }
+                        }
+                        else {
+                                have_not_required = true;
+                        }
                         continue;
                 }
                 if (!arguments[i].object.named.short_form &&

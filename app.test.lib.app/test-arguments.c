@@ -150,6 +150,25 @@ bool test_app_arguments_validate_string_value_pointer_is_null (Test *test)
         PASS ();
 }
 
+bool test_app_arguments_validate_ordinal_required_discontinuity (Test *test)
+{
+        char *argv[] = { "./app", "--argument" };
+        int value_1;
+        int value_2;
+
+        AppArgument arguments[] = {
+                ARGUMENT_ORDINAL_INTEGER (1, false, &value_1, "test"),
+                ARGUMENT_ORDINAL_INTEGER (1, true, &value_2, "test"),
+                ARGUMENT_END
+        };
+
+        TITLE ();
+        CATCH (app_arguments (2, argv, arguments))
+        CATCH (error_count () < 2);
+        CATCH (error_at (1).error != ErrorAppArgumentOrdinalRequiredDiscontinuity);
+        PASS ();
+}
+
 bool test_app_arguments_validate_missing_short_or_long_form (Test *test)
 {
         char *argv[] = { "./app", "--argument" };

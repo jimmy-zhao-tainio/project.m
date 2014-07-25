@@ -13,6 +13,7 @@ bool test_app_arguments_function_call_4 (Test *test);
 bool test_app_arguments_validate_boolean_value_pointer_is_null (Test *test);
 bool test_app_arguments_validate_integer_value_pointer_is_null (Test *test);
 bool test_app_arguments_validate_string_value_pointer_is_null (Test *test);
+bool test_app_arguments_validate_ordinal_required_discontinuity (Test *test);
 bool test_app_arguments_validate_missing_short_or_long_form (Test *test);
 bool test_app_arguments_validate_invalid_short_form_length (Test *test);
 bool test_app_arguments_validate_short_form_missing_single_dash (Test *test);
