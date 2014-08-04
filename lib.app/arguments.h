@@ -33,24 +33,28 @@ struct s_AppArgument
         enum {
                 AppArgumentBoolean,
                 AppArgumentInteger,
+                AppArgumentUInt64,
                 AppArgumentString
         } value_type;
         bool have_value;
         union {
                 bool boolean;
                 int integer;
+                uint64_t uint64;
                 char *string;
         } value_default;
         bool required;
         union {
                 bool *boolean;
                 int *integer;
+                uint64_t *uint64;
                 char **string;
         } value;
         char *description;
 };
 
-bool app_arguments (int argc, char **argv, AppArgument *array);
+bool app_arguments (int argc, char **argv, AppArgument *arguments);
+void app_arguments_usage (int argc, char **argv, AppArgument *arguments);
 
 #define ARGUMENT_ORDINAL_INTEGER(m_value_default, \
                                  m_required, \
@@ -64,6 +68,20 @@ bool app_arguments (int argc, char **argv, AppArgument *array);
                 .value_default.integer = m_value_default, \
                 .required = m_required, \
                 .value.integer = m_value, \
+                .description = m_description \
+        }
+#define ARGUMENT_ORDINAL_UINT64(m_value_default, \
+                                m_required, \
+                                m_value, \
+                                m_description) \
+        { \
+                .type = AppArgumentTypeOrdinal, \
+                .object.ordinal = { 0 }, \
+                .value_type = AppArgumentUInt64, \
+                .have_value = false, \
+                .value_default.uint64 = m_value_default, \
+                .required = m_required, \
+                .value.uint64 = m_value, \
                 .description = m_description \
         }
 #define ARGUMENT_ORDINAL_STRING(m_value_default, \
@@ -110,6 +128,22 @@ bool app_arguments (int argc, char **argv, AppArgument *array);
                 .value_default.integer = m_value_default, \
                 .required = m_required, \
                 .value.integer = m_value, \
+                .description = m_description \
+        }
+#define ARGUMENT_NAMED_UINT64(m_short_form, \
+                              m_long_form, \
+                              m_value_default, \
+                              m_required, \
+                              m_value, \
+                              m_description) \
+        { \
+                .type = AppArgumentTypeNamed, \
+                .object.named = { m_short_form, m_long_form }, \
+                .value_type = AppArgumentUInt64, \
+                .have_value = false, \
+                .value_default.uint64 = m_value_default, \
+                .required = m_required, \
+                .value.uint64 = m_value, \
                 .description = m_description \
         }
 #define ARGUMENT_NAMED_STRING(m_short_form, \

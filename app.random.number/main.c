@@ -3,22 +3,30 @@
 #include <lib.core/random.h>
 #include <lib.core/convert.h>
 #include <lib.core/string.h>
+#include <lib.app/arguments.h>
 
-static bool try (char **argv);
-static void usage (const char *name);
+static bool try (uint64_t from, uint64_t to, uint64_t count);
 
 int main (int argc, char **argv)
 {
-        if (argc != 4) {
-                usage (argv[0]);
-		return EXIT_FAILURE;
-	}
+        uint64_t from, to, count;
+        AppArgument arguments[] = {
+                ARGUMENT_ORDINAL_UINT64 (0, true, &from, "Minimum value."),
+                ARGUMENT_ORDINAL_UINT64 (0, true, &to, "Maximum value."),
+                ARGUMENT_ORDINAL_UINT64 (0, true, &count, "Number of random numbers to generate."),
+                ARGUMENT_END
+        };
+
+        if (!app_arguments (argc, argv, arguments)) {
+                app_arguments_usage (argc, argv, arguments);
+                return EXIT_FAILURE;
+        }
         if (!random_open ()) {
                 error_code (FunctionCall, 1);
                 error_print ();
                 return EXIT_FAILURE;
         }
-        if (!try (argv)) {
+        if (!try (from, to, count)) {
                 error_code (FunctionCall, 2);
                 error_print ();
                 random_close ();
@@ -28,26 +36,10 @@ int main (int argc, char **argv)
 	return EXIT_SUCCESS;
 }
 
-static bool try (char **argv)
+static bool try (uint64_t from, uint64_t to, uint64_t count)
 {
-        unsigned long long from, to, count, value;
-        size_t digits;
+        unsigned long long value;
 
-        if (!convert_string_to_unsigned_long_long (argv[1], &from, &digits) ||
-            string_length (argv[1]) != digits) {
-                error_code (InvalidArgument, 1);
-                return false;
-        }
-        if (!convert_string_to_unsigned_long_long (argv[2], &to, &digits) ||
-            string_length (argv[2]) != digits) {
-                error_code (InvalidArgument, 2);
-                return false;
-        }
-        if (!convert_string_to_unsigned_long_long (argv[3], &count, &digits) ||
-            string_length (argv[3]) != digits) {
-                error_code (InvalidArgument, 3);
-                return false;
-        }
         if (from > to) {
                 error (InvalidOperation);
                 return false;
@@ -63,9 +55,4 @@ static bool try (char **argv)
                 }
         }
 	return true;
-}
-
-static void usage (const char *name)
-{
-	printf ("%s from to count\n", name);
 }

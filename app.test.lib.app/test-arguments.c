@@ -135,6 +135,21 @@ bool test_app_arguments_validate_integer_value_pointer_is_null (Test *test)
         PASS ();
 }
 
+bool test_app_arguments_validate_uint64_value_pointer_is_null (Test *test)
+{
+        char *argv[] = { "./app", "--argument" };
+        AppArgument arguments[] = {
+                ARGUMENT_NAMED_UINT64 (NULL, "--argument", 123, true, NULL, "test"),
+                ARGUMENT_END
+        };
+
+        TITLE ();
+        CATCH (app_arguments (2, argv, arguments))
+        CATCH (error_count () < 2);
+        CATCH (error_at (1).error != ErrorAppArgumentUInt64ValuePointerIsNull);
+        PASS ();
+}
+
 bool test_app_arguments_validate_string_value_pointer_is_null (Test *test)
 {
         char *argv[] = { "./app", "--argument" };
@@ -383,6 +398,22 @@ bool test_app_arguments_named_missing_integer_value (Test *test)
         PASS ();
 }
 
+bool test_app_arguments_named_missing_uint64_value (Test *test)
+{
+        char *argv[] = { "./app", "-a" };
+        uint64_t value;
+        AppArgument arguments[] = {
+                ARGUMENT_NAMED_UINT64 ("-a", NULL, 123, true, &value, "test"),
+                ARGUMENT_END
+        };
+
+        TITLE ();
+        CATCH (app_arguments (2, argv, arguments))
+        CATCH (error_count () < 2);
+        CATCH (error_at (1).error != ErrorAppArgumentMissingUInt64Value);
+        PASS ();
+}
+
 bool test_app_arguments_named_function_call (Test *test)
 {
         char *argv[] = { "./app", "-a", "abc" };
@@ -412,6 +443,22 @@ bool test_app_arguments_named_invalid_integer_value (Test *test)
         CATCH (app_arguments (3, argv, arguments))
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentInvalidIntegerValue);
+        PASS ();
+}
+
+bool test_app_arguments_named_invalid_uint64_value (Test *test)
+{
+        char *argv[] = { "./app", "-a", "123abc" };
+        uint64_t value;
+        AppArgument arguments[] = {
+                ARGUMENT_NAMED_UINT64 ("-a", NULL, (uint64_t)123, true, &value, "test"),
+                ARGUMENT_END
+        };
+
+        TITLE ();
+        CATCH (app_arguments (3, argv, arguments))
+        CATCH (error_count () < 2);
+        CATCH (error_at (1).error != ErrorAppArgumentInvalidUInt64Value);
         PASS ();
 }
 
@@ -480,6 +527,22 @@ bool test_app_arguments_ordinal_invalid_integer_value (Test *test)
         PASS ();
 }
 
+bool test_app_arguments_ordinal_invalid_uint64_value (Test *test)
+{
+        char *argv[] = { "./app", "123abc" };
+        uint64_t value;
+        AppArgument arguments[] = {
+                ARGUMENT_ORDINAL_UINT64 (123, true, &value, "test"),
+                ARGUMENT_END
+        };
+
+        TITLE ();
+        CATCH (app_arguments (2, argv, arguments))
+        CATCH (error_count () < 2);
+        CATCH (error_at (1).error != ErrorAppArgumentInvalidUInt64Value);
+        PASS ();
+}
+
 bool test_app_arguments_ordinal_unknown_argument (Test *test)
 {
         char *argv[] = { "./app", "123", "unknown" };
@@ -518,32 +581,40 @@ bool test_app_arguments (Test *test)
         char *argv[] = { 
                 "./app", 
                 "321",
+                "654",
                 "cba",
                 "-b",
                 "--named-integer", "-2",
+                "--named-uint64", "2",
                 "-s", "test"
         };
         int ordinal_integer;
+        uint64_t ordinal_uint64;
         char *ordinal_string;
         bool named_boolean;
         int named_integer;
+        uint64_t named_uint64;
         char *named_string;
         AppArgument arguments[] = {
                 ARGUMENT_ORDINAL_INTEGER (123, true, &ordinal_integer, "test"),
+                ARGUMENT_ORDINAL_UINT64 (123, true, &ordinal_uint64, "test"),
                 ARGUMENT_ORDINAL_STRING ("abc", true, &ordinal_string, "test"),
                 ARGUMENT_NAMED_BOOLEAN ("-b", "--named-boolean", false, true, &named_boolean, "test"),
                 ARGUMENT_NAMED_INTEGER ("-i", "--named-integer", 1, true, &named_integer, "test"),
+                ARGUMENT_NAMED_UINT64 ("-u", "--named-uint64", 1, true, &named_uint64, "test"),
                 ARGUMENT_NAMED_STRING ("-s", "--named-string", "abc", true, &named_string, "test"),
                 ARGUMENT_END
         };
 
         TITLE ();
-        CATCH (!app_arguments (8, argv, arguments))
+        CATCH (!app_arguments (11, argv, arguments))
         CATCH (error_count () != 0);
         CATCH (ordinal_integer != 321);
+        CATCH (ordinal_uint64 != 654);
         CATCH (!string_equals (ordinal_string, "cba"));
         CATCH (named_boolean != true);
         CATCH (named_integer != -2);
+        CATCH (named_uint64 != 2);
         CATCH (!string_equals (named_string, "test"));
         PASS ();
 }

@@ -2,6 +2,7 @@
 #include <lib.core/error.h>
 #include <lib.core/string.h>
 #include <lib.core/convert.h>
+#include <stdio.h>
 
 static bool argument_named (int argc, char **argv, int *argi, AppArgument *arguments);
 static bool argument_ordinal (int argc, char **argv, int *argi, AppArgument *arguments, int *order);
@@ -9,6 +10,7 @@ static bool check_required (AppArgument *arguments);
 static void set_ordinal (AppArgument *arguments);
 static void set_default (AppArgument *arguments);
 static bool validate (AppArgument *arguments);
+static void print_value_type (int type);
 
 bool app_arguments (int argc, char **argv, AppArgument *arguments)
 {
@@ -54,6 +56,154 @@ bool app_arguments (int argc, char **argv, AppArgument *arguments)
         return true;
 }
 
+void app_arguments_usage (int argc, char **argv, AppArgument *arguments)
+{
+        size_t i;
+        size_t required_arguments = 0;
+        size_t optional_arguments = 0;
+        size_t required_named_arguments = 0;
+        size_t optional_named_arguments = 0;
+        int indent_usage;
+
+        if (argc < 0) {
+                error_code (InvalidArgument, 1);
+                error_print ();
+                return;
+        }
+        if (!argv) {
+                error_code (InvalidArgument, 2);
+                error_print ();
+                return;
+        }
+        if (!arguments) {
+                error_code (InvalidArgument, 3);
+                error_print ();
+                return;
+        }
+        if (!validate (arguments)) {
+                error_code (FunctionCall, 1);
+                error_print ();
+                return;
+        }
+        printf ("Usage: %s", argv[0]);
+        indent_usage = (int)(string_length ("Usage: ") + string_length (argv[0]) + 1);
+        for (i = 0; arguments[i].type != AppArgumentTypeEnd; i++) {
+                if (arguments[i].type == AppArgumentTypeOrdinal) {
+                        if (arguments[i].required) {
+                                required_arguments++;
+                        }
+                        else {
+                                optional_arguments++;
+                        }
+                }
+                else {
+                        if (arguments[i].required) {
+                                required_named_arguments++;
+                        }
+                        else {
+                                optional_named_arguments++;
+                        }
+                }
+        }
+        if (required_arguments != 0) {
+                printf (" [%zu required argument%s]\n", 
+                        required_arguments, required_arguments == 1 ? "" : "s");
+                printf ("%*s", indent_usage, "");
+        }
+        if (optional_arguments != 0) {
+                printf (" (%zu optional argument%s)\n", 
+                        optional_arguments, optional_arguments == 1 ? "" : "s");
+                printf ("%*s", indent_usage, "");
+        }
+        if (required_named_arguments != 0) {
+                printf (" [%zu required named argument%s]\n", 
+                        required_named_arguments, required_named_arguments == 1 ? "" : "s");
+                printf ("%*s", indent_usage, "");
+        }
+        if (optional_named_arguments != 0) {
+                printf (" (%zu optional named argument%s)\n", 
+                        optional_named_arguments, optional_named_arguments == 1 ? "" : "s");
+        }
+        if (required_arguments != 0) {
+                printf ("\nRequired arguments:\n\n");
+                for (i = 0; arguments[i].type != AppArgumentTypeEnd; i++) {
+                        if (arguments[i].type != AppArgumentTypeOrdinal) {
+                                continue;
+                        }
+                        if (!arguments[i].required) {
+                                continue;
+                        }
+                        printf ("\t");
+                        print_value_type (arguments[i].value_type);
+                        printf ("\n\t    %s\n\n", arguments[i].description);
+                }
+        }
+        if (optional_arguments != 0) {
+                printf ("\nOptional arguments:\n\n");
+                for (i = 0; arguments[i].type != AppArgumentTypeEnd; i++) {
+                        if (arguments[i].type != AppArgumentTypeOrdinal) {
+                                continue;
+                        }
+                        if (arguments[i].required) {
+                                continue;
+                        }
+                        printf ("\t");
+                        print_value_type (arguments[i].value_type);
+                        printf ("\n\t    %s\n\n", arguments[i].description);
+                }
+        }
+        if (required_named_arguments != 0) {
+                printf ("\nRequired named arguments:\n\n");
+                for (i = 0; arguments[i].type != AppArgumentTypeEnd; i++) {
+                        if (arguments[i].type == AppArgumentTypeOrdinal) {
+                                continue;
+                        }
+                        if (!arguments[i].required) {
+                                continue;
+                        }
+                        if (arguments[i].object.named.short_form) {
+                                printf ("\t%s", arguments[i].object.named.short_form);
+                        }
+                        if (arguments[i].object.named.long_form) {
+                                if (arguments[i].object.named.short_form) {
+                                        printf (" | %s", arguments[i].object.named.short_form);
+                                }
+                                else {
+                                        printf ("\t%s", arguments[i].object.named.short_form);
+                                }
+                        }
+                        printf (" ");
+                        print_value_type (arguments[i].value_type);
+                        printf ("\n\t    %s\n\n", arguments[i].description);
+                }
+        }
+        if (optional_named_arguments != 0) {
+                printf ("\nOptional named arguments:\n\n");
+                for (i = 0; arguments[i].type != AppArgumentTypeEnd; i++) {
+                        if (arguments[i].type == AppArgumentTypeOrdinal) {
+                                continue;
+                        }
+                        if (arguments[i].required) {
+                                continue;
+                        }
+                        if (arguments[i].object.named.short_form) {
+                                printf ("\t%s", arguments[i].object.named.short_form);
+                        }
+                        if (arguments[i].object.named.long_form) {
+                                if (arguments[i].object.named.short_form) {
+                                        printf (" | %s", arguments[i].object.named.short_form);
+                                }
+                                else {
+                                        printf ("\t%s", arguments[i].object.named.short_form);
+                                }
+                        }
+                        printf (" ");
+                        print_value_type (arguments[i].value_type);
+                        printf ("\n\t    %s\n\n", arguments[i].description);
+                }
+        }
+}
+
 static bool argument_named (int argc, char **argv, int *argi, AppArgument *arguments)
 {
         size_t i, digits;
@@ -87,6 +237,24 @@ static bool argument_named (int argc, char **argv, int *argi, AppArgument *argum
                         }
                         if (digits != string_length (argv[*argi + 1])) {
                                 error (AppArgumentInvalidIntegerValue);
+                                return false;
+                        }
+                        arguments[i].have_value = true;
+                        *argi += 2;
+                        return true;
+                case AppArgumentUInt64:
+                        if (*argi + 1 == argc) {
+                                error (AppArgumentMissingUInt64Value);
+                                return false;
+                        }
+                        if (!convert_string_to_unsigned_long_long (argv[*argi + 1], 
+                                                                   (unsigned long long *)arguments[i].value.uint64, 
+                                                                   &digits)) {
+                                error (FunctionCall);
+                                return false;
+                        }
+                        if (digits != string_length (argv[*argi + 1])) {
+                                error (AppArgumentInvalidUInt64Value);
                                 return false;
                         }
                         arguments[i].have_value = true;
@@ -130,6 +298,21 @@ static bool argument_ordinal (int argc, char **argv, int *argi, AppArgument *arg
                         }
                         if (digits != string_length (argv[*argi])) {
                                 error (AppArgumentInvalidIntegerValue);
+                                return false;
+                        }
+                        arguments[i].have_value = true;
+                        *argi += 1;
+                        *order += 1;
+                        return true;
+                case AppArgumentUInt64:
+                        if (!convert_string_to_unsigned_long_long (argv[*argi], 
+                                                                   (unsigned long long *)arguments[i].value.uint64, 
+                                                                   &digits)) {
+                                error (FunctionCall);
+                                return false;
+                        }
+                        if (digits != string_length (argv[*argi])) {
+                                error (AppArgumentInvalidUInt64Value);
                                 return false;
                         }
                         arguments[i].have_value = true;
@@ -191,6 +374,9 @@ static void set_default (AppArgument *arguments)
                 case AppArgumentInteger:
                         *arguments[i].value.integer = arguments[i].value_default.integer;
                         break;
+                case AppArgumentUInt64:
+                        *arguments[i].value.uint64 = arguments[i].value_default.uint64;
+                        break;
                 case AppArgumentString:
                         *arguments[i].value.string = arguments[i].value_default.string;
                         break;
@@ -215,6 +401,12 @@ static bool validate (AppArgument *arguments)
                 case AppArgumentInteger:
                         if (!arguments[i].value.integer) {
                                 error (AppArgumentIntegerValuePointerIsNull);
+                                return false;
+                        }
+                        break;
+                case AppArgumentUInt64:
+                        if (!arguments[i].value.uint64) {
+                                error (AppArgumentUInt64ValuePointerIsNull);
                                 return false;
                         }
                         break;
@@ -255,7 +447,9 @@ static bool validate (AppArgument *arguments)
                                 error_code (AppArgumentInvalidShortFormName, 1);
                                 return false;
                         }
-                        if (!((arguments[i].object.named.short_form[1] >= 'a' &&
+                        if (!((arguments[i].object.named.short_form[1] >= '0' &&
+                               arguments[i].object.named.short_form[1] <= '9') ||
+                              (arguments[i].object.named.short_form[1] >= 'a' &&
                                arguments[i].object.named.short_form[1] <= 'z') ||
                               (arguments[i].object.named.short_form[1] >= 'A' &&
                                arguments[i].object.named.short_form[1] <= 'Z'))) {
@@ -277,7 +471,9 @@ static bool validate (AppArgument *arguments)
                                 return false;
                         }
                         for (k = 2; k < length; k++) {
-                                if (!((arguments[i].object.named.long_form[k] == '-') ||
+                                if (!((arguments[i].object.named.long_form[k] >= '0' &&
+                                       arguments[i].object.named.long_form[k] <= '9') ||
+                                      (arguments[i].object.named.long_form[k] == '-') ||
                                       (arguments[i].object.named.long_form[k] >= 'a' &&
                                        arguments[i].object.named.long_form[k] <= 'z') ||
                                       (arguments[i].object.named.long_form[k] >= 'A' &&
@@ -307,4 +503,21 @@ static bool validate (AppArgument *arguments)
                 }
         }
         return true;
+}
+
+static void print_value_type (int type)
+{
+        switch (type) {
+        case AppArgumentBoolean:
+                break;
+        case AppArgumentInteger:
+                printf ("<Integer>");
+                break;
+        case AppArgumentUInt64:
+                printf ("<UInt64>");
+                break;
+        case AppArgumentString:
+                printf ("<String>");
+                break;
+        }
 }

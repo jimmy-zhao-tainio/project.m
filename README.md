@@ -48,12 +48,12 @@ lib.pattern
 
         Regular expression engine, better called "pattern" due to it's non standard syntax. 
         It uses a thompson construct and is immune to state explosions and regex attacks.
-        Internally, pattern strings are first turned into an intermediate branch structure, 
+        Internally, pattern strings are turned into an intermediate branch structure, 
         before being transformed into a path structure which is used while matching.
 
         Supported syntax:
 
-                ()      Grouping with parentheses, also nested.
+                ()      Grouping with parentheses. Can be nested.
                 !       Not operator for ranges, sets and values.
                 |       Or operator.
                 {m-n}   Repeat operator, m and n being optional.
@@ -71,6 +71,30 @@ lib.test
 
         Unit-testing, checks for memory leaks and more.
 
+lib.app
+
+        Application support.
+        Argument handling, supporting ordinal and named arguments (short and or long format), default values, 
+        required and optional arguments.
+        The usage is very simple, define an array of AppArguments and run app_arguments.
+        
+                AppArgument arguments[] = {
+                        /* The arguments */
+                };
+
+                if (!app_arguments (argc, argv, arguments)) { ... }
+
+        Help macros for AppArgument structures:
+
+                ARGUMENT_ORDINAL_INTEGER (                       default, required, pointer, description)
+                ARGUMENT_ORDINAL_STRING  (                       default, required, pointer, description)
+                ARGUMENT_NAMED_BOOLEAN   (short_form, long_form, default, required, pointer, description)
+                ARGUMENT_NAMED_INTEGER   (short_form, long_form, default, required, pointer, description)
+                ARGUMENT_NAMED_STRING    (short_form, long_form, default, required, pointer, description)
+                ARGUMENT_END
+
+        If app_arguments does not succeed; use 'app_arguments_usage' to print usage help.
+
 app.compile
 
         Automatic build system using lib.compile. A bit centric to this project.
@@ -84,13 +108,8 @@ app.pattern.search
         Search using lib.pattern.
 
 app.test.lib.compile
-        
-        Unit-tests.
-
 app.test.lib.core
-
-        Unit-tests.
-
 app.test.lib.pattern
+app.test.lib.app
 
         Unit-tests.
