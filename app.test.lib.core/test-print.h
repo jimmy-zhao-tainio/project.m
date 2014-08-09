@@ -9,6 +9,7 @@ bool test_print_log_begin_invalid_argument (Test *test);
 bool test_print_log_begin_invalid_operation (Test *test);
 bool test_print_log_begin_function_call (Test *test);
 bool test_print_log_end_invalid_operation (Test *test);
-bool test_print_log (Test *test);
+bool test_print_log_1 (Test *test);
+bool test_print_log_2 (Test *test);
 
 #endif

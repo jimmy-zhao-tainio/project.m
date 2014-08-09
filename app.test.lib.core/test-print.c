@@ -74,7 +74,7 @@ bool test_print_log_end_invalid_operation (Test *test)
         PASS ();
 }
 
-bool test_print_log (Test *test)
+bool test_print_log_1 (Test *test)
 {
         FileReader *reader;
         char *path;
@@ -92,6 +92,29 @@ bool test_print_log (Test *test)
         CATCH (!(reader = file_reader_create (path)));
         print_silent (false);
         CATCH (!string_equals ((const char *)reader->map, "test 1 2 3..."));
+        file_reader_destroy (reader);
+        string_destroy (path);
+        PASS ();
+}
+
+bool test_print_log_2 (Test *test)
+{
+        FileReader *reader;
+        char *path;
+
+        TITLE ();
+        CATCH (!(path = directory_current_path ()));
+        CATCH (!string_append (&path, "/stage/print_log/log"));
+        print_silent (false);
+        if (file_exists (path)) {
+                CATCH (!file_remove (path));
+        }
+        CATCH (!print_log_begin (path));
+        CATCH (!print (" \b"));
+        CATCH (!print_log_end ());
+        CATCH (!(reader = file_reader_create (path)));
+        print_silent (true);
+        CATCH (!string_equals ((const char *)reader->map, " \b"));
         file_reader_destroy (reader);
         string_destroy (path);
         PASS ();
