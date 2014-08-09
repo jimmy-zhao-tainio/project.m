@@ -3,26 +3,26 @@
 
 #include <lib.compile/compile-print.h>
 
-static int is_enabled = 1;
+static bool enabled = true;
 
 void compile_print (const char *format, ...)
 {
 	va_list args;
-	va_start (args, format);
 
-	if (is_enabled == 0) {
-		return;
-	}
+        if (!enabled) {
+                return;
+        }
+	va_start (args, format);
 	vprintf (format, args);
 	va_end (args);
 }
 
-void compile_print_set_enabled (int enabled)
+void compile_print_set_enabled (bool state)
 {
-	is_enabled = enabled;
+	enabled = state;
 }
 
-int compile_print_get_enabled (void)
+bool compile_print_get_enabled (void)
 {
-	return is_enabled;
+	return enabled;
 }

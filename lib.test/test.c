@@ -15,7 +15,6 @@ static void print_catch (Test *test);
 static void print_leak (Test *test);
 static void print_pass (Test *test);
 static void print_memory_size (void);
-
 static bool test_memory_leak (Test *test);
 
 bool test_array (bool (*tests[]) (Test *test))

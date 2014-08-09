@@ -17,6 +17,9 @@
 #include "test-tree.h"
 #include "test-tainio-tree.h"
 #include "test-file.h"
+#include "test-file-reader.h"
+#include "test-file-writer.h"
+#include "test-print.h"
 #include "test-topological.h"
 
 bool (*tests[]) (Test *test) =
@@ -312,6 +315,35 @@ bool (*tests[]) (Test *test) =
         &test_file_readline_f3,
         &test_file_remove,
         &test_file_exists,
+        &test_file_reader_create_function_call_1,
+        &test_file_reader_create_function_call_2,
+        &test_file_reader_create_system_call_1,
+        &test_file_reader_create_system_call_2,
+        &test_file_reader_create_system_call_3,
+        &test_file_reader_create,
+        &test_file_reader_destroy_invalid_argument,
+        &test_file_writer_create_invalid_argument_1,
+        &test_file_writer_create_invalid_argument_2,
+        &test_file_writer_create_function_call_1,
+        &test_file_writer_create_function_call_2,
+        &test_file_writer_create_system_call,
+        &test_file_writer_create_append,
+        &test_file_writer_create_truncate,
+        &test_file_writer_write_invalid_argument_1,
+        &test_file_writer_write_invalid_argument_2,
+        &test_file_writer_write_invalid_argument_3,
+        &test_file_writer_write_system_call,
+        &test_file_writer_write_args_invalid_argument_1,
+        &test_file_writer_write_args_invalid_argument_2,
+        &test_file_writer_write_args_system_call,
+        &test_file_writer_write_args,
+        &test_print,
+        &test_print_silent,
+        &test_print_log_begin_invalid_argument,
+        &test_print_log_begin_invalid_operation,
+        &test_print_log_begin_function_call,
+        &test_print_log_end_invalid_operation,
+        &test_print_log,
         &test_topological_create_function_call_1,
         &test_topological_create_function_call_2,
         &test_topological_create_function_call_3,

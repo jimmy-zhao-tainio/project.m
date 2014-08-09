@@ -11,7 +11,6 @@ struct s_FileReader
 	int file_descriptor;
 	off_t size;
 	unsigned char *map;
-	bool have_error;
 };
 
 FileReader *file_reader_create (const char *path);
