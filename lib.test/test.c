@@ -30,7 +30,7 @@ bool test_array (int argc, char **argv, bool (*tests[]) (Test *test))
 	size_t test_memory_ok = 0;
         size_t i;
         AppArgument arguments[] = {
-                ARGUMENT_SHARED,
+                ARGUMENT_DEFAULT,
                 ARGUMENT_END
         };
 
@@ -137,7 +137,7 @@ static void reset (void)
 {
         size_t_private_max (SIZE_MAX);
         unsigned_long_long_private_max (ULLONG_MAX);
-        memory_commit_limit (app_argument_shared_object.memory_commit_limit);
+        memory_commit_limit (app_argument_default_object.memory_commit_limit);
         memory_total_create_limit (ULLONG_MAX);
         memory_total_reset ();
         if (random_is_open ()) {

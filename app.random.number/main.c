@@ -14,7 +14,7 @@ int main (int argc, char **argv)
                 ARGUMENT_ORDINAL_UINT64 (0, true, &from, "Minimum value."),
                 ARGUMENT_ORDINAL_UINT64 (0, true, &to, "Maximum value."),
                 ARGUMENT_ORDINAL_UINT64 (0, true, &count, "Number of random numbers to generate."),
-                ARGUMENT_SHARED,
+                ARGUMENT_DEFAULT,
                 ARGUMENT_END
         };
 

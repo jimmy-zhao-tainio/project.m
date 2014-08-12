@@ -1,7 +1,7 @@
 #include <lib.app/arguments.h>
 #include <lib.app/arguments-validate.h>
 #include <lib.app/arguments-usage.h>
-#include <lib.app/arguments-shared.h>
+#include <lib.app/arguments-default.h>
 #include <lib.core/error.h>
 #include <lib.core/string.h>
 #include <lib.core/convert.h>
@@ -50,7 +50,7 @@ bool app_arguments (int argc, char **argv, AppArgument *arguments)
                         }
                 }
         }
-        if (!app_arguments_shared (argc, argv, arguments)) {
+        if (!app_arguments_default (argc, argv, arguments)) {
                 error_code (FunctionCall, 4);
                 return false;
         }

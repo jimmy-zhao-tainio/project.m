@@ -44,7 +44,7 @@ static bool try (int argc, char **argv, CompileProject **project, char **path, c
         bool bootstrap;
         AppArgument arguments[] = {
                 ARGUMENT_NAMED_BOOLEAN ("-b", "--bootstrap", false, false, &bootstrap, "Only print commands, don't execute them."),
-                ARGUMENT_SHARED,
+                ARGUMENT_DEFAULT,
                 ARGUMENT_END
         };
         

@@ -22,7 +22,7 @@ int main (int argc, char **argv)
                 ARGUMENT_ORDINAL_STRING (NULL, true, &pattern, "Pattern."),
                 ARGUMENT_ORDINAL_STRING (NULL, true, &replace, "\"Replace with\"."),
                 ARGUMENT_ORDINAL_STRING (NULL, true, &file, "File."),
-                ARGUMENT_SHARED,
+                ARGUMENT_DEFAULT,
                 ARGUMENT_END
         };
         

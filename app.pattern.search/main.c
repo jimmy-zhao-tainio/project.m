@@ -18,7 +18,7 @@ int main (int argc, char **argv)
         AppArgument arguments[] = {
                 ARGUMENT_ORDINAL_STRING (NULL, true, &pattern, "Pattern."),
                 ARGUMENT_ORDINAL_STRING (NULL, true, &file, "File."),
-                ARGUMENT_SHARED,
+                ARGUMENT_DEFAULT,
                 ARGUMENT_END
         };
         
