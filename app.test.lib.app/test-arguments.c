@@ -89,6 +89,22 @@ bool test_app_arguments_function_call_3 (Test *test)
 
 bool test_app_arguments_function_call_4 (Test *test)
 {
+        char *argv[] = { "./app", "--print-log", "invalid/path" };
+        AppArgument arguments[] = {
+                ARGUMENT_DEFAULT,
+                ARGUMENT_END
+        };
+
+        TITLE ();
+        CATCH (app_arguments (3, argv, arguments))
+        CATCH (error_count () == 0);
+        CATCH (error_at (0).error != ErrorFunctionCall);
+        CATCH (error_at (0).code != 4);
+        PASS ();
+}
+
+bool test_app_arguments_function_call_5 (Test *test)
+{
         char *argv[] = { "./app", "--argument" };
         bool value;
         AppArgument arguments[] = {

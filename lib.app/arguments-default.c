@@ -30,3 +30,12 @@ bool app_arguments_default (int argc, char **argv, AppArgument *arguments)
         }
         return true;
 }
+
+void app_arguments_default_reset (void)
+{
+        app_argument_default_object.help = false;
+        app_argument_default_object.memory_commit_limit = UINT64_MAX;
+        app_argument_default_object.print_silent = false;
+        app_argument_default_object.print_log = NULL;
+        app_argument_default_object.print_errors = false;
+}

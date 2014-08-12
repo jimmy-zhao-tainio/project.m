@@ -75,5 +75,6 @@ extern AppArgumentDefault app_argument_default_object;
         }
 
 bool app_arguments_default (int argc, char **argv, AppArgument *arguments);
+void app_arguments_default_reset (void);
 
 #endif

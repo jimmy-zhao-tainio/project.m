@@ -13,6 +13,7 @@ bool (*tests[]) (Test *test) =
         &test_app_arguments_function_call_2,
         &test_app_arguments_function_call_3,
         &test_app_arguments_function_call_4,
+        &test_app_arguments_function_call_5,
 	&test_app_arguments_validate_boolean_value_pointer_is_null,
 	&test_app_arguments_validate_integer_value_pointer_is_null,
 	&test_app_arguments_validate_uint64_value_pointer_is_null,

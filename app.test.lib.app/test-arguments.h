@@ -10,6 +10,7 @@ bool test_app_arguments_function_call_1 (Test *test);
 bool test_app_arguments_function_call_2 (Test *test);
 bool test_app_arguments_function_call_3 (Test *test);
 bool test_app_arguments_function_call_4 (Test *test);
+bool test_app_arguments_function_call_5 (Test *test);
 bool test_app_arguments_validate_boolean_value_pointer_is_null (Test *test);
 bool test_app_arguments_validate_integer_value_pointer_is_null (Test *test);
 bool test_app_arguments_validate_uint64_value_pointer_is_null (Test *test);

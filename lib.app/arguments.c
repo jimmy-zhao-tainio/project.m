@@ -36,6 +36,7 @@ bool app_arguments (int argc, char **argv, AppArgument *arguments)
         }
         set_ordinal (arguments);
         set_default (arguments);
+        app_arguments_default_reset ();
         while (argi < argc) {
                 if (string_begins_with (argv[argi], "-")) {
                         if (!argument_named (argc, argv, &argi, arguments)) {
