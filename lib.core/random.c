@@ -130,3 +130,11 @@ void random_close (void)
 	source_index = 64;
 	return;
 }
+
+bool random_is_open (void)
+{
+        if (!file) {
+                return false;
+        }
+        return true;
+}

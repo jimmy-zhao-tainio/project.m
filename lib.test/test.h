@@ -15,7 +15,7 @@ struct _Test
 	size_t ms;
 };
 
-bool test_array (bool (*tests[]) (Test *test));
+bool test_array (int argc, char **argv, bool (*tests[]) (Test *test));
 
 #define TITLE() \
 	test->title = __FUNCTION__;

@@ -6,12 +6,14 @@
 static bool silent = false;
 static bool log = false;
 static FileWriter *log_writer;
+static uint64_t count = 0;
 
 bool print (const char *format, ...)
 {
         va_list args;
 
         va_start (args, format);
+        count++;
         if (!silent) {
                 if (vprintf (format, args) < 0) {
                         va_end (args);
@@ -63,4 +65,9 @@ bool print_log_end (void)
         file_writer_destroy (log_writer);
         log = false;
         return true;
+}
+
+uint64_t print_count (void)
+{
+        return count;
 }

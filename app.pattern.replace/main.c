@@ -4,22 +4,33 @@
 #include <lib.core/file-reader.h>
 #include <lib.core/string.h>
 #include <lib.pattern/pattern-search.h>
+#include <lib.app/arguments.h>
 
 static bool try (FileReader **reader, PatternSearch **search, const char *pattern, const char *replace, const char *file);
 static bool print_range (const char *buffer, size_t from, size_t to);
-static void usage (const char *name);
 
 int main (int argc, char **argv)
 {
+        char *pattern;
+        char *replace;
+        char *file;
 	FileReader *reader = NULL;
 	PatternSearch *search = NULL;
         bool success;
 
-	if (argc != 4) {
-		usage (argv[0]);
-		return EXIT_FAILURE;
-	}
-        success = try (&reader, &search, argv[1], argv[2], argv[3]);
+        AppArgument arguments[] = {
+                ARGUMENT_ORDINAL_STRING (NULL, true, &pattern, "Pattern."),
+                ARGUMENT_ORDINAL_STRING (NULL, true, &replace, "\"Replace with\"."),
+                ARGUMENT_ORDINAL_STRING (NULL, true, &file, "File."),
+                ARGUMENT_SHARED,
+                ARGUMENT_END
+        };
+        
+        if (!app_arguments (argc, argv, arguments)) {
+                app_arguments_usage (argc, argv, arguments);
+                return EXIT_FAILURE;
+        }
+        success = try (&reader, &search, pattern, replace, file);
         if (reader) {
                 file_reader_destroy (reader);
         }
@@ -27,7 +38,6 @@ int main (int argc, char **argv)
                 pattern_search_destroy (search);
         }
 	if (!success || error_count () != 0) {
-		error_print ();
 		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;
@@ -75,9 +85,4 @@ static bool print_range (const char *buffer, size_t from, size_t to)
                 return false;
         }
         return true;
-}
-
-static void usage (const char *name)
-{
-	printf ("%s pattern replace file\n", name);
 }

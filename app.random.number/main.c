@@ -14,6 +14,7 @@ int main (int argc, char **argv)
                 ARGUMENT_ORDINAL_UINT64 (0, true, &from, "Minimum value."),
                 ARGUMENT_ORDINAL_UINT64 (0, true, &to, "Maximum value."),
                 ARGUMENT_ORDINAL_UINT64 (0, true, &count, "Number of random numbers to generate."),
+                ARGUMENT_SHARED,
                 ARGUMENT_END
         };
 
@@ -23,12 +24,10 @@ int main (int argc, char **argv)
         }
         if (!random_open ()) {
                 error_code (FunctionCall, 1);
-                error_print ();
                 return EXIT_FAILURE;
         }
         if (!try (from, to, count)) {
                 error_code (FunctionCall, 2);
-                error_print ();
                 random_close ();
                 return EXIT_FAILURE;
         }

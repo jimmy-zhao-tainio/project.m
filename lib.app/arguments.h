@@ -2,6 +2,7 @@
 #define app_arguments_h
 
 #include <lib.app/arguments-structures.h>
+#include <lib.app/arguments-shared.h>
 
 bool app_arguments (int argc, char **argv, AppArgument *arguments);
 void app_arguments_usage (int argc, char **argv, AppArgument *arguments);

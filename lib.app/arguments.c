@@ -1,10 +1,11 @@
 #include <lib.app/arguments.h>
 #include <lib.app/arguments-validate.h>
 #include <lib.app/arguments-usage.h>
+#include <lib.app/arguments-shared.h>
 #include <lib.core/error.h>
 #include <lib.core/string.h>
 #include <lib.core/convert.h>
-#include <stdio.h>
+#include <lib.core/print.h>
 
 static bool argument_named (int argc, char **argv, int *argi, AppArgument *arguments);
 static bool argument_ordinal (int argc, char **argv, int *argi, AppArgument *arguments, int *order);
@@ -49,16 +50,15 @@ bool app_arguments (int argc, char **argv, AppArgument *arguments)
                         }
                 }
         }
-        if (!check_required (arguments)) {
+        if (!app_arguments_shared (argc, argv, arguments)) {
                 error_code (FunctionCall, 4);
                 return false;
         }
+        if (!check_required (arguments)) {
+                error_code (FunctionCall, 5);
+                return false;
+        }
         return true;
-}
-
-void app_arguments_usage (int argc, char **argv, AppArgument *arguments)
-{
-        arguments_usage (argc, argv, arguments);
 }
 
 static bool argument_named (int argc, char **argv, int *argi, AppArgument *arguments)
@@ -69,11 +69,16 @@ static bool argument_named (int argc, char **argv, int *argi, AppArgument *argum
                 if (arguments[i].type != AppArgumentTypeNamed) {
                         continue;
                 }
-                if (!string_equals (argv[*argi], arguments[i].object.named.short_form) &&
-                    !string_equals (argv[*argi], arguments[i].object.named.long_form)) {
+                if (!((arguments[i].object.named.short_form && 
+                       string_equals (argv[*argi], arguments[i].object.named.short_form)) ||
+                      (arguments[i].object.named.long_form && 
+                       string_equals (argv[*argi], arguments[i].object.named.long_form)))) {
                         continue;
                 }
                 if (arguments[i].have_value) {
+                        print ("The argument ");
+                        app_arguments_print_named_form (arguments[i]);
+                        print (" is duplicated.\n");
                         error (AppArgumentDuplicate);
                         return false;
                 }
@@ -85,14 +90,23 @@ static bool argument_named (int argc, char **argv, int *argi, AppArgument *argum
                         return true;
                 case AppArgumentInteger:
                         if (*argi + 1 == argc) {
+                                print ("The argument ");
+                                app_arguments_print_named_form (arguments[i]);
+                                print (" is missing an integer value.\n");
                                 error (AppArgumentMissingIntegerValue);
                                 return false;
                         }
                         if (!convert_string_to_int (argv[*argi + 1], arguments[i].value.integer, &digits)) {
-                                error (FunctionCall);
+                                print ("The value '%s' for ", argv[*argi + 1]);
+                                app_arguments_print_named_form (arguments[i]);
+                                print (" could not be converted to an integer value.\n");
+                                error_code (FunctionCall, 2);
                                 return false;
                         }
                         if (digits != string_length (argv[*argi + 1])) {
+                                print ("The value '%s' for ", argv[*argi + 1]);
+                                app_arguments_print_named_form (arguments[i]);
+                                print (" could not be converted to an integer value.\n");
                                 error (AppArgumentInvalidIntegerValue);
                                 return false;
                         }
@@ -101,16 +115,25 @@ static bool argument_named (int argc, char **argv, int *argi, AppArgument *argum
                         return true;
                 case AppArgumentUInt64:
                         if (*argi + 1 == argc) {
+                                print ("The argument ");
+                                app_arguments_print_named_form (arguments[i]);
+                                print (" is missing an UInt64 value.\n");
                                 error (AppArgumentMissingUInt64Value);
                                 return false;
                         }
                         if (!convert_string_to_unsigned_long_long (argv[*argi + 1], 
                                                                    (unsigned long long *)arguments[i].value.uint64, 
                                                                    &digits)) {
-                                error (FunctionCall);
+                                print ("The value '%s' for ", argv[*argi + 1]);
+                                app_arguments_print_named_form (arguments[i]);
+                                print (" could not be converted to an UInt64 value.\n");
+                                error_code (FunctionCall, 3);
                                 return false;
                         }
                         if (digits != string_length (argv[*argi + 1])) {
+                                print ("The value '%s' for ", argv[*argi + 1]);
+                                app_arguments_print_named_form (arguments[i]);
+                                print (" could not be converted to an UInt64 value.\n");
                                 error (AppArgumentInvalidUInt64Value);
                                 return false;
                         }
@@ -119,6 +142,9 @@ static bool argument_named (int argc, char **argv, int *argi, AppArgument *argum
                         return true;
                 case AppArgumentString:
                         if (*argi + 1 == argc) {
+                                print ("The argument ");
+                                app_arguments_print_named_form (arguments[i]);
+                                print (" is missing a string value.\n");
                                 error (AppArgumentMissingStringValue);
                                 return false;
                         }
@@ -128,6 +154,7 @@ static bool argument_named (int argc, char **argv, int *argi, AppArgument *argum
                         return true;
                 }
         }
+        print ("Unrecognized argument '%s'.\n", argv[*argi]);
         error (AppArgumentUnknownNamedArgument);
         return false;
 }
@@ -150,10 +177,12 @@ static bool argument_ordinal (int argc, char **argv, int *argi, AppArgument *arg
                         return false;
                 case AppArgumentInteger:
                         if (!convert_string_to_int (argv[*argi], arguments[i].value.integer, &digits)) {
+                                print ("The value '%s' could not be converted to an integer value.\n", argv[*argi]);
                                 error (FunctionCall);
                                 return false;
                         }
                         if (digits != string_length (argv[*argi])) {
+                                print ("The value '%s' could not be converted to an integer value.\n", argv[*argi]);
                                 error (AppArgumentInvalidIntegerValue);
                                 return false;
                         }
@@ -165,10 +194,12 @@ static bool argument_ordinal (int argc, char **argv, int *argi, AppArgument *arg
                         if (!convert_string_to_unsigned_long_long (argv[*argi], 
                                                                    (unsigned long long *)arguments[i].value.uint64, 
                                                                    &digits)) {
+                                print ("The value '%s' could not be converted to an UInt64 value.\n", argv[*argi]);
                                 error (FunctionCall);
                                 return false;
                         }
                         if (digits != string_length (argv[*argi])) {
+                                print ("The value '%s' could not be converted to an UInt64 value.\n", argv[*argi]);
                                 error (AppArgumentInvalidUInt64Value);
                                 return false;
                         }
@@ -184,6 +215,7 @@ static bool argument_ordinal (int argc, char **argv, int *argi, AppArgument *arg
                         return true;
                 }
         }
+        print ("Unrecognized argument '%s'.\n", argv[*argi]);
         error (AppArgumentUnknownOrdinalArgument);
         return false;
 }
@@ -197,6 +229,14 @@ static bool check_required (AppArgument *arguments)
                         continue;
                 }
                 if (!arguments[i].have_value) {
+                        if (arguments[i].type == AppArgumentTypeOrdinal) {
+                                print ("A required argument is missing.\n");
+                        }
+                        else {
+                                print ("The required argument ");
+                                app_arguments_print_named_form (arguments[i]);
+                                print (" is missing.\n");
+                        }
                         error (AppArgumentMissingRequiredArgument);
                         return false;
                 }

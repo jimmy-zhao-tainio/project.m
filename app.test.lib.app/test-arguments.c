@@ -101,7 +101,7 @@ bool test_app_arguments_function_call_4 (Test *test)
         CATCH (app_arguments (2, argv, arguments))
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorFunctionCall);
-        CATCH (error_at (0).code != 4);
+        CATCH (error_at (0).code != 5);
         PASS ();
 }
 
@@ -476,7 +476,6 @@ bool test_app_arguments_named_missing_string_value (Test *test)
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentMissingStringValue);
         PASS ();
-
 }
 
 bool test_app_arguments_named_unknown_argument (Test *test)

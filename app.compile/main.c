@@ -7,6 +7,7 @@
 #include <lib.compile/compile-project.h>
 #include <lib.compile/compile-print.h>
 #include <lib.compile/compile.h>
+#include <lib.app/arguments.h>
 
 static bool try (int argc, char **argv, CompileProject **project, char **path, char **name, char **sub_path, char **sub_name);
 
@@ -41,12 +42,15 @@ int main (int argc, char **argv)
 static bool try (int argc, char **argv, CompileProject **project, char **path, char **name, char **sub_path, char **sub_name)
 {
         bool bootstrap;
-
-        if (argc == 2 && string_equals (argv[1], "--bootstrap")) {
-                bootstrap = true;
-        }
-        else {
-                bootstrap = false;
+        AppArgument arguments[] = {
+                ARGUMENT_NAMED_BOOLEAN ("-b", "--bootstrap", false, false, &bootstrap, "Only print commands, don't execute them."),
+                ARGUMENT_SHARED,
+                ARGUMENT_END
+        };
+        
+        if (!app_arguments (argc, argv, arguments)) {
+                app_arguments_usage (argc, argv, arguments);
+                return EXIT_FAILURE;
         }
 	if (!(*path = directory_current_path ())) {
 		compile_print ("Failed to get current path.\n");

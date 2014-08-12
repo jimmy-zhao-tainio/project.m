@@ -81,7 +81,6 @@ bool compile_project_prepare (CompileProject *project)
 		}
 		if (!string_begins_with (sub_directory->name, "lib.") &&
 		    !string_begins_with (sub_directory->name, "app.")) {
-                        error_code (InvalidOperation, 2);
 			continue;
 		}
 		if (!(compile = compile_create (project->directory, sub_directory))) {
@@ -109,7 +108,6 @@ bool compile_project_prepare (CompileProject *project)
 		}
                 if (!string_begins_with (sub_directory->name, "lib.") &&
 		    !string_begins_with (sub_directory->name, "app.")) {
-                        error_code (InvalidOperation, 4);
 			continue;
 		}
 		if (!(compile = tree_search (project->directory_to_compile, (Object *)sub_directory))) {

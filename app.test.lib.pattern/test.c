@@ -193,7 +193,7 @@ bool (*tests[]) (Test *test) =
         NULL
 };
 
-int main (void)
+int main (int argc, char **argv)
 {
-        return test_array (tests) ? EXIT_SUCCESS : EXIT_FAILURE;
+        return test_array (argc, argv, tests) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

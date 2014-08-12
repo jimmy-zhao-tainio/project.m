@@ -6,7 +6,7 @@
 
 static void print_value_type (int type);
 
-void arguments_usage (int argc, char **argv, AppArgument *arguments)
+void app_arguments_usage (int argc, char **argv, AppArgument *arguments)
 {
         size_t i;
         size_t required_arguments = 0;
@@ -17,26 +17,22 @@ void arguments_usage (int argc, char **argv, AppArgument *arguments)
 
         if (argc < 0) {
                 error_code (InvalidArgument, 1);
-                error_print ();
                 return;
         }
         if (!argv) {
                 error_code (InvalidArgument, 2);
-                error_print ();
                 return;
         }
         if (!arguments) {
                 error_code (InvalidArgument, 3);
-                error_print ();
                 return;
         }
         if (!arguments_validate (arguments)) {
                 error_code (FunctionCall, 1);
-                error_print ();
                 return;
         }
-        print ("Usage: %s", argv[0]);
-        indent_usage = (int)(string_length ("Usage: ") + string_length (argv[0]) + 1);
+        print ("\nUsage: %s", argv[0]);
+        indent_usage = (int)(string_length ("Usage: ") + string_length (argv[0]));
         for (i = 0; arguments[i].type != AppArgumentTypeEnd; i++) {
                 if (arguments[i].type == AppArgumentTypeOrdinal) {
                         if (arguments[i].required) {
@@ -85,7 +81,7 @@ void arguments_usage (int argc, char **argv, AppArgument *arguments)
                         }
                         print ("\t");
                         print_value_type (arguments[i].value_type);
-                        print ("\n\t    %s\n\n", arguments[i].description);
+                        print ("\n\t    %s\n", arguments[i].description);
                 }
         }
         if (optional_arguments != 0) {
@@ -99,7 +95,7 @@ void arguments_usage (int argc, char **argv, AppArgument *arguments)
                         }
                         print ("\t");
                         print_value_type (arguments[i].value_type);
-                        print ("\n\t    %s\n\n", arguments[i].description);
+                        print ("\n\t    %s\n", arguments[i].description);
                 }
         }
         if (required_named_arguments != 0) {
@@ -111,20 +107,11 @@ void arguments_usage (int argc, char **argv, AppArgument *arguments)
                         if (!arguments[i].required) {
                                 continue;
                         }
-                        if (arguments[i].object.named.short_form) {
-                                print ("\t%s", arguments[i].object.named.short_form);
-                        }
-                        if (arguments[i].object.named.long_form) {
-                                if (arguments[i].object.named.short_form) {
-                                        print (" | %s", arguments[i].object.named.short_form);
-                                }
-                                else {
-                                        print ("\t%s", arguments[i].object.named.short_form);
-                                }
-                        }
+                        print ("\t");
+                        app_arguments_print_named_form (arguments[i]);
                         print (" ");
                         print_value_type (arguments[i].value_type);
-                        print ("\n\t    %s\n\n", arguments[i].description);
+                        print ("\n\t    %s\n", arguments[i].description);
                 }
         }
         if (optional_named_arguments != 0) {
@@ -136,21 +123,29 @@ void arguments_usage (int argc, char **argv, AppArgument *arguments)
                         if (arguments[i].required) {
                                 continue;
                         }
-                        if (arguments[i].object.named.short_form) {
-                                print ("\t%s", arguments[i].object.named.short_form);
-                        }
-                        if (arguments[i].object.named.long_form) {
-                                if (arguments[i].object.named.short_form) {
-                                        print (" | %s", arguments[i].object.named.short_form);
-                                }
-                                else {
-                                        print ("\t%s", arguments[i].object.named.short_form);
-                                }
-                        }
+                        print ("\t");
+                        app_arguments_print_named_form (arguments[i]);
                         print (" ");
                         print_value_type (arguments[i].value_type);
-                        print ("\n\t    %s\n\n", arguments[i].description);
+                        print ("\n\t    %s\n", arguments[i].description);
                 }
+        }
+        print ("\n");
+}
+
+void app_arguments_print_named_form (AppArgument argument)
+{
+        if (argument.type != AppArgumentTypeNamed) {
+                return;
+        }
+        if (argument.object.named.short_form && argument.object.named.long_form) {
+                print ("%s | %s", argument.object.named.short_form, argument.object.named.long_form);
+        }
+        else if (argument.object.named.short_form) {
+                print ("%s", argument.object.named.short_form);
+        }
+        else {
+                print ("%s", argument.object.named.long_form);
         }
 }
 

@@ -108,12 +108,16 @@ bool arguments_validate (AppArgument *arguments)
                         if (k == i) {
                                 continue;
                         }
-                        if (string_equals (arguments[k].object.named.short_form,
+                        if (arguments[k].object.named.short_form &&
+                            arguments[i].object.named.short_form &&
+                            string_equals (arguments[k].object.named.short_form, 
                                            arguments[i].object.named.short_form)) {
                                 error (AppArgumentShortFormDuplicate);
                                 return false;
                         }
-                        if (string_equals (arguments[k].object.named.long_form,
+                        if (arguments[k].object.named.long_form &&
+                            arguments[i].object.named.long_form &&
+                            string_equals (arguments[k].object.named.long_form,
                                            arguments[i].object.named.long_form)) {
                                 error (AppArgumentLongFormDuplicate);
                                 return false;

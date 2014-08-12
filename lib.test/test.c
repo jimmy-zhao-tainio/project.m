@@ -8,6 +8,8 @@
 #include <lib.core/random.h>
 #include <lib.core/tree-private.h>
 #include <lib.core/file-private.h>
+#include <lib.core/print.h>
+#include <lib.app/arguments.h>
 
 #include "test.h"
 
@@ -16,8 +18,9 @@ static void print_leak (Test *test);
 static void print_pass (Test *test);
 static void print_memory_size (void);
 static bool test_memory_leak (Test *test);
+static void reset (void);
 
-bool test_array (bool (*tests[]) (Test *test))
+bool test_array (int argc, char **argv, bool (*tests[]) (Test *test))
 {
 	Test test;
 	Test test_memory;
@@ -25,46 +28,67 @@ bool test_array (bool (*tests[]) (Test *test))
 	size_t test_count_ok = 0;
 	size_t test_ok = 0;
 	size_t test_memory_ok = 0;
+        size_t i;
+        AppArgument arguments[] = {
+                ARGUMENT_SHARED,
+                ARGUMENT_END
+        };
 
+        if (!app_arguments (argc, argv, arguments)) {
+                app_arguments_usage (argc, argv, arguments);
+                return EXIT_FAILURE;
+        }
 	while (tests[test_count]) {
-		size_t_private_max (SIZE_MAX);
-		unsigned_long_long_private_max (ULLONG_MAX);
-		memory_commit_limit (ULLONG_MAX);
-		memory_total_create_limit (ULLONG_MAX);
-		memory_total_reset ();
-		random_close ();
-		error_reset ();
-		object_id_set_counter (0);
-		tree_iterator_path_size (TREE_ITERATOR_PATH_SIZE);
-		file_path_size (FILE_PATH_SIZE);
+		reset ();
 		test.title = NULL;
 		test.line_catch = 0;
 		test_ok = tests[test_count] (&test);
 		test_memory_ok = test_memory_leak (&test_memory);
         	if (test_ok) {
 			if (test_memory_ok) {
+                                tests[test_count] = NULL;
 				test_count_ok++;
 				print_pass (&test);
 			}
 			else {
 				print_leak (&test);
-				print_memory_size ();
 			}
         	}
         	else {
 			print_catch (&test);
-			error_print ();
-			print_memory_size ();
         	}
 		test_count++;
 	}
+        if (test_count_ok != test_count) {
+                /* Rerun failed tests with errors printed. */
+                printf ("\n");
+                error_silent (false);
+                for (i = 0; i < test_count; i++) {
+                        if (!tests[i]) {
+                                continue;
+                        }
+                        reset ();
+                        test_ok = tests[i] (&test);
+                        test_memory_ok = test_memory_leak (&test_memory);
+                        if (test_ok) {
+                                if (test_memory_ok) {
+                                        print_pass (&test);
+                                }
+                                else {
+                                        print_leak (&test);
+                                        print_memory_size ();
+                                }
+                        }
+                        else {
+                                print_catch (&test);
+                                print_memory_size ();
+                        }
+                }
+        }
 	if (test_count != 0) {
 		if (test_count_ok == test_count) {
 			printf ("Okay, good!\n");
 		}
-        	else {
-			printf ("Good, try again!\n");
-        	}
 	}
 	else {
 		printf ("No tests!\n");
@@ -105,10 +129,23 @@ bool test_memory_leak (Test *test)
 
 static void print_memory_size (void)
 {
-	if (memory_commit_limit_get () != (unsigned long long)-1) {
-		printf ("\tmemory_commit_size: %llu\n", memory_commit_size ());
-	}
-	if (memory_total_create_limit_get () != (unsigned long long)-1) {
-		printf ("\tmemory_total_create_size: %llu\n", memory_total_create_size ());
-	}
+	printf ("(memory_commit_size: %llu)\n", memory_commit_size ());
+	printf ("(memory_total_create_size: %llu)\n\n", memory_total_create_size ());
+}
+
+static void reset (void)
+{
+        size_t_private_max (SIZE_MAX);
+        unsigned_long_long_private_max (ULLONG_MAX);
+        memory_commit_limit (app_argument_shared_object.memory_commit_limit);
+        memory_total_create_limit (ULLONG_MAX);
+        memory_total_reset ();
+        if (random_is_open ()) {
+                random_close ();
+        }
+        error_reset ();
+        object_id_set_counter (0);
+        tree_iterator_path_size (TREE_ITERATOR_PATH_SIZE);
+        file_path_size (FILE_PATH_SIZE);
+        print_silent (true);
 }

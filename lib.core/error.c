@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <lib.core/error.h>
 
-static ErrorItem error_items[ERROR_ITEMS_MAX];
-
-static size_t      error_literals_count = 0;
-static const char *error_literals[] = {
+static ErrorItem   items[ERROR_ITEMS_MAX];
+static size_t      literals_count = 0;
+static const char *literals[] = {
 #undef ERROR
 #undef ERROR_STRING
 #define ERROR_STRING(e) #e,
@@ -17,16 +16,20 @@ static const char *error_literals[] = {
 #undef ERROR
 };
 
+static uint64_t count = 0;
+static bool silent = true;
+static void print_item (ErrorItem item, uint64_t item_count);
+
 void error_add (const char *file, const char *function, int line, int code, Error error)
 {
 	size_t i = ERROR_ITEMS_MAX;
 	int invalid_error;
 
-	if (error_literals_count == 0) {
-		while (error_literals[error_literals_count++]);
+	if (literals_count == 0) {
+		while (literals[literals_count++]);
 	}
 	if (error <= 1 || 
-	    error >= error_literals_count - 1 ||
+	    error >= literals_count - 1 ||
 	    !file ||
 	    !function) {
 		invalid_error = error;
@@ -36,21 +39,22 @@ void error_add (const char *file, const char *function, int line, int code, Erro
 		invalid_error = 0;
 	}
 	while (i-- > 1) {
-		error_items[i].file = error_items[i - 1].file;
-		error_items[i].function = error_items[i - 1].function;
-		error_items[i].line = error_items[i - 1].line;
-		error_items[i].code = error_items[i - 1].code;
-		error_items[i].error = error_items[i - 1].error;
-		error_items[i].literal = error_items[i - 1].literal;
-		error_items[i].invalid_error = error_items[i - 1].invalid_error;
+		items[i].file = items[i - 1].file;
+		items[i].function = items[i - 1].function;
+		items[i].line = items[i - 1].line;
+		items[i].code = items[i - 1].code;
+		items[i].error = items[i - 1].error;
+		items[i].literal = items[i - 1].literal;
+		items[i].invalid_error = items[i - 1].invalid_error;
 	}
-	error_items[0].file = file;
-	error_items[0].function = function;
-	error_items[0].line = line;
-	error_items[0].code = code;
-	error_items[0].error = error;
-	error_items[0].literal = error_literals[(size_t)error];
-	error_items[0].invalid_error = invalid_error;
+	items[0].file = file;
+	items[0].function = function;
+	items[0].line = line;
+	items[0].code = code;
+	items[0].error = error;
+	items[0].literal = literals[(size_t)error];
+	items[0].invalid_error = invalid_error;
+        print_item (items[0], ++count);
 }
 
 void error_reset (void)
@@ -58,21 +62,22 @@ void error_reset (void)
 	size_t i = ERROR_ITEMS_MAX;
 
 	while (i-- > 0) {
-		error_items[i].file = NULL;
-		error_items[i].function = NULL;
-		error_items[i].line = 0;
-		error_items[i].code = 0;
-		error_items[i].error = ErrorReserved;
-		error_items[i].literal = NULL;
-		error_items[i].invalid_error = 0;
+		items[i].file = NULL;
+		items[i].function = NULL;
+		items[i].line = 0;
+		items[i].code = 0;
+		items[i].error = ErrorReserved;
+		items[i].literal = NULL;
+		items[i].invalid_error = 0;
 	}
+        count = 0;
 }
 
 size_t error_count (void)
 {
 	size_t i = 0;
 
-	while (i < ERROR_ITEMS_MAX && error_items[i].error != ErrorReserved) {
+	while (i < ERROR_ITEMS_MAX && items[i].error != ErrorReserved) {
 		i++;
 	}
 	return i;
@@ -85,31 +90,42 @@ ErrorItem error_at (size_t index)
 	if (index >= ERROR_ITEMS_MAX) {
 		return item;
 	}
-	item.file = error_items[index].file;
-	item.function = error_items[index].function;
-	item.line = error_items[index].line;
-	item.code = error_items[index].code;
-	item.error = error_items[index].error;
-	item.literal = error_items[index].literal;
-	item.invalid_error = error_items[index].invalid_error;
+	item.file = items[index].file;
+	item.function = items[index].function;
+	item.line = items[index].line;
+	item.code = items[index].code;
+	item.error = items[index].error;
+	item.literal = items[index].literal;
+	item.invalid_error = items[index].invalid_error;
 	return item;
 }
 
-void error_print (void)
+void error_silent (bool state)
 {
-	size_t i = 0;
+        silent = state;
+}
 
-	while (i < ERROR_ITEMS_MAX && error_items[i].error != ErrorReserved) {
-		printf ("\t%s: %i\n\t\t%s", 
-			error_items[i].function,
-			error_items[i].line,
-			error_items[i].literal);
-		if (error_items[i].code != 0) {
-			printf (" #%i\n", (int)error_items[i].code);
-		}
-		else {
-			printf ("\n");
-		}
-		i++;
-	}
+static void print_item (ErrorItem item, uint64_t item_count)
+{
+        if (!silent) {
+                fflush (stdout);
+                fprintf (stderr, 
+                         ">| Error %llu:\n"
+                                ">|\t File:     %s\n"
+                                ">|\t Function: %s\n"
+                                ">|\t Line:     %i\n"
+                                ">|\t Enum:     %s",
+                        (unsigned long long)item_count,
+                        item.file,
+                        item.function,
+                        item.line,
+                        item.literal);
+                if (item.code != 0) {
+                        fprintf (stderr, " #%i\n", (int)item.code);
+                }
+                else {
+                        fprintf (stderr, "\n");
+                }
+                fflush (stderr);
+        }
 }

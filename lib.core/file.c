@@ -200,8 +200,12 @@ void directory_close (Directory *directory)
 	if (directory->name) {
 		string_destroy (directory->name);
 	}
-	list_destroy (directory->directories);
-	list_destroy (directory->files);
+        if (directory->directories) {
+	        list_destroy (directory->directories);
+        }
+        if (directory->files) {
+	        list_destroy (directory->files);
+        }
 	memory_destroy (directory);
 }
 
