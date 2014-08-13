@@ -3,6 +3,7 @@
 #include <lib.test/test.h>
 
 #include "test-arguments.h"
+#include "test-arguments-validate.h"
 
 bool (*tests[]) (Test *test) =
 {
@@ -14,7 +15,21 @@ bool (*tests[]) (Test *test) =
         &test_app_arguments_function_call_3,
         &test_app_arguments_function_call_4,
         &test_app_arguments_function_call_5,
-	&test_app_arguments_validate_boolean_value_pointer_is_null,
+	&test_app_arguments_named_duplicate,
+	&test_app_arguments_named_missing_integer_value,
+	&test_app_arguments_named_missing_uint64_value,
+	&test_app_arguments_named_function_call,
+	&test_app_arguments_named_invalid_integer_value,
+	&test_app_arguments_named_invalid_uint64_value,
+	&test_app_arguments_named_missing_string_value,
+	&test_app_arguments_named_unknown_argument,
+	&test_app_arguments_ordinal_function_call,
+	&test_app_arguments_ordinal_invalid_integer_value,
+	&test_app_arguments_ordinal_invalid_uint64_value,
+	&test_app_arguments_ordinal_unknown_argument,
+	&test_app_arguments_missing_required_argument,
+	&test_app_arguments,
+        &test_app_arguments_validate_boolean_value_pointer_is_null,
 	&test_app_arguments_validate_integer_value_pointer_is_null,
 	&test_app_arguments_validate_uint64_value_pointer_is_null,
 	&test_app_arguments_validate_string_value_pointer_is_null,
@@ -30,20 +45,6 @@ bool (*tests[]) (Test *test) =
 	&test_app_arguments_validate_invalid_long_form_name_2,
 	&test_app_arguments_validate_short_form_duplicate,
 	&test_app_arguments_validate_long_form_duplicate,
-	&test_app_arguments_named_duplicate,
-	&test_app_arguments_named_missing_integer_value,
-	&test_app_arguments_named_missing_uint64_value,
-	&test_app_arguments_named_function_call,
-	&test_app_arguments_named_invalid_integer_value,
-	&test_app_arguments_named_invalid_uint64_value,
-	&test_app_arguments_named_missing_string_value,
-	&test_app_arguments_named_unknown_argument,
-	&test_app_arguments_ordinal_function_call,
-	&test_app_arguments_ordinal_invalid_integer_value,
-	&test_app_arguments_ordinal_invalid_uint64_value,
-	&test_app_arguments_ordinal_unknown_argument,
-	&test_app_arguments_missing_required_argument,
-	&test_app_arguments,
 	NULL
 };
 

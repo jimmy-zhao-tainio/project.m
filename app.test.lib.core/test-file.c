@@ -200,7 +200,7 @@ bool test_file_directory_open_function_call_1 (Test *test)
 	CATCH (directory_open ("/"));
 	CATCH (error_count () != 2);
 	CATCH (error_at (0).error != ErrorFunctionCall);
-	CATCH (error_at (0).line != 148);
+	CATCH (error_at (0).code != 1);
 	CATCH (error_at (1).error != ErrorMemoryCommitLimit);
 	PASS ();	
 }
@@ -213,7 +213,7 @@ bool test_file_directory_open_function_call_2 (Test *test)
 	CATCH (directory_open ("/"));
 	CATCH (error_count () != 3);
 	CATCH (error_at (0).error != ErrorFunctionCall);
-	CATCH (error_at (0).line != 154);
+	CATCH (error_at (0).code != 2);
 	CATCH (error_at (1).error != ErrorFunctionCall);
 	CATCH (error_at (2).error != ErrorMemoryCommitLimit);
 	PASS ();	
@@ -228,7 +228,7 @@ bool test_file_directory_open_function_call_3 (Test *test)
 	CATCH (directory_open ("/"));
 	CATCH (error_count () != 4);
 	CATCH (error_at (0).error != ErrorFunctionCall);
-	CATCH (error_at (0).line != 160);
+	CATCH (error_at (0).code != 3);
 	CATCH (error_at (1).error != ErrorFunctionCall);
 	CATCH (error_at (2).error != ErrorFunctionCall);
 	CATCH (error_at (3).error != ErrorMemoryCommitLimit);

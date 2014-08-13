@@ -8,6 +8,8 @@
 #include <lib.core/random.h>
 #include <lib.core/tree-private.h>
 #include <lib.core/file-private.h>
+#include <lib.core/file.h>
+#include <lib.core/string.h>
 #include <lib.core/print.h>
 #include <lib.app/arguments.h>
 
@@ -33,9 +35,42 @@ bool test_array (int argc, char **argv, bool (*tests[]) (Test *test))
                 ARGUMENT_DEFAULT,
                 ARGUMENT_END
         };
-
+        FILE *sh;
+        char *path;
+        char *path_pre_sh;
+        char *path_post_sh;
+        
+        if (!(path = directory_current_path ())) {
+                return EXIT_FAILURE;
+        }
+        if (!(path_pre_sh = string_create (path))) {
+                string_destroy (path);
+                return EXIT_FAILURE;
+        }
+        if (!string_append (&path_pre_sh, "/pre.sh")) {
+                string_destroy (path);
+                string_destroy (path_pre_sh);
+                return EXIT_FAILURE;
+        }
+        if (!(path_post_sh = string_create (path))) {
+                string_destroy (path);
+                string_destroy (path_pre_sh);
+                return EXIT_FAILURE;
+        }
+        if (!string_append (&path_post_sh, "/post.sh")) {
+                string_destroy (path);
+                string_destroy (path_pre_sh);
+                string_destroy (path_post_sh);
+                return EXIT_FAILURE;
+        }
+        if (file_exists (path_pre_sh) && (sh = popen ("./pre.sh", "r"))) {
+                pclose (sh);
+        }
         if (!app_arguments (argc, argv, arguments)) {
                 app_arguments_usage (argc, argv, arguments);
+                string_destroy (path);
+                string_destroy (path_pre_sh);
+                string_destroy (path_post_sh);
                 return EXIT_FAILURE;
         }
 	while (tests[test_count]) {
@@ -93,6 +128,12 @@ bool test_array (int argc, char **argv, bool (*tests[]) (Test *test))
 	else {
 		printf ("No tests!\n");
 	}
+        if (file_exists (path_post_sh) && (sh = popen ("./post.sh", "r"))) {
+                pclose (sh);
+        }
+        string_destroy (path);
+        string_destroy (path_pre_sh);
+        string_destroy (path_post_sh);
         if (test_count == 0) {
                 return false;
         }

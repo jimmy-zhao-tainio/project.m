@@ -44,6 +44,26 @@ char *directory_current_path (void)
 	return path;
 }
 
+char *directory_current_path_append (const char *partial_path)
+{
+        char *path;
+
+        if (!partial_path) {
+                error (InvalidArgument);
+                return NULL;
+        }
+        if (!(path = directory_current_path ())) {
+                error_code (FunctionCall, 1);
+                return NULL;
+        }
+        if (!string_append (&path, partial_path)) {
+                string_destroy (path);
+                error_code (FunctionCall, 2);
+                return NULL;
+        }
+        return path;
+}
+
 bool file_path_is_valid (const char *path)
 {
 	size_t length;
@@ -145,19 +165,19 @@ Directory *directory_open (const char *path)
 		return NULL;
 	}
 	if (!(directory = memory_create (sizeof (Directory)))) {
-		error (FunctionCall);
+		error_code (FunctionCall, 1);
         	return NULL;
 	}
 	directory->object.id = object_id ();
 	if (!(directory->path = string_create (path))) {
 		memory_destroy (directory);
-		error (FunctionCall);
+		error_code (FunctionCall, 2);
 		return NULL;
 	}
 	if (!(directory->name = file_name_from_path (path))) {
 		string_destroy (directory->path);
 		memory_destroy (directory);
-		error (FunctionCall);
+		error_code (FunctionCall, 3);
 		return NULL;
 	}
 	directory->directories = NULL;

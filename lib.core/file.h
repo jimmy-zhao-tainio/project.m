@@ -29,8 +29,9 @@ struct _File
 	void *private;
 };
 
-char *directory_current_path (void);
-char *directory_sub_path     (const char *path);
+char *directory_current_path        (void);
+char *directory_current_path_append (const char *partial_path);
+char *directory_sub_path            (const char *path);
 
 Directory *directory_open         (const char *path);
 Directory *directory_open_current (void);
