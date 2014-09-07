@@ -1,6 +1,8 @@
 project.m
 =========
 
+My recreational programming project. Just over 20.000 lines of C code, 
+
 lib.core
 
         Shared library containing various basic programming concepts.
@@ -39,6 +41,8 @@ lib.core
                         Combinations of two.
                 ascii
                         Help functions for ASCII.
+
+                ... and more ...
 
 lib.compile
 

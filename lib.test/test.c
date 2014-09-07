@@ -79,18 +79,10 @@ bool test_array (int argc, char **argv, bool (*tests[]) (Test *test))
 		test.line_catch = 0;
 		test_ok = tests[test_count] (&test);
 		test_memory_ok = test_memory_leak (&test_memory);
-        	if (test_ok) {
-			if (test_memory_ok) {
-                                tests[test_count] = NULL;
-				test_count_ok++;
-				print_pass (&test);
-			}
-			else {
-				print_leak (&test);
-			}
-        	}
-        	else {
-			print_catch (&test);
+        	if (test_ok && test_memory_ok) {
+                        tests[test_count] = NULL;
+		        test_count_ok++;
+		        print_pass (&test);
         	}
 		test_count++;
 	}
@@ -103,6 +95,7 @@ bool test_array (int argc, char **argv, bool (*tests[]) (Test *test))
                                 continue;
                         }
                         reset ();
+                        print_silent (false);
                         test_ok = tests[i] (&test);
                         test_memory_ok = test_memory_leak (&test_memory);
                         if (test_ok) {

@@ -28,7 +28,7 @@ void app_arguments_usage (int argc, char **argv, AppArgument *arguments)
                 return;
         }
         if (!arguments_validate (arguments)) {
-                error_code (FunctionCall, 1);
+                error (FunctionCall);
                 return;
         }
         print ("\nUsage: %s", argv[0]);

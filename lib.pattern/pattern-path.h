@@ -19,7 +19,8 @@ struct s_PatternPathTracker
         PatternPath *path;
         PatternPath *track_first;
         PatternPath *track_last;
-        size_t track_count;
+        size_t       track_count;
+        List *paths;
 };
 
 struct s_PatternPath
@@ -35,7 +36,6 @@ struct s_PatternPath
         PatternPath *track_previous;
         PatternPath *track_next;
         bool         track_pushed;
-        bool destroy;
 };
 
 struct s_PatternPathOr

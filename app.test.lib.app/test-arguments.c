@@ -2,8 +2,13 @@
 #include <lib.core/string.h>
 #include <lib.core/error.h>
 #include <lib.core/file.h>
+#include <lib.core/file-reader.h>
+#include <lib.core/print.h>
 
 #include "test-arguments.h"
+
+static bool log_begin (void);
+static bool log_end (const char *equals);
 
 bool test_app_arguments_invalid_argument_1 (Test *test)
 {
@@ -132,9 +137,11 @@ bool test_app_arguments_named_duplicate (Test *test)
         };
 
         TITLE ();
+        CATCH (!log_begin ());
         CATCH (app_arguments (5, argv, arguments))
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentDuplicate);
+        CATCH (!log_end ("The argument -a is duplicated.\n"));
         PASS ();
 }
 
@@ -148,29 +155,15 @@ bool test_app_arguments_named_missing_integer_value (Test *test)
         };
 
         TITLE ();
+        CATCH (!log_begin ());
         CATCH (app_arguments (2, argv, arguments))
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentMissingIntegerValue);
+        CATCH (!log_end ("The argument -a is missing an integer value.\n"));
         PASS ();
 }
 
-bool test_app_arguments_named_missing_uint64_value (Test *test)
-{
-        char *argv[] = { "./app", "-a" };
-        uint64_t value;
-        AppArgument arguments[] = {
-                ARGUMENT_NAMED_UINT64 ("-a", NULL, 123, true, &value, "test"),
-                ARGUMENT_END
-        };
-
-        TITLE ();
-        CATCH (app_arguments (2, argv, arguments))
-        CATCH (error_count () < 2);
-        CATCH (error_at (1).error != ErrorAppArgumentMissingUInt64Value);
-        PASS ();
-}
-
-bool test_app_arguments_named_function_call (Test *test)
+bool test_app_arguments_named_function_call_1 (Test *test)
 {
         char *argv[] = { "./app", "-a", "abc" };
         int value;
@@ -180,9 +173,12 @@ bool test_app_arguments_named_function_call (Test *test)
         };
 
         TITLE ();
+        CATCH (!log_begin ());
         CATCH (app_arguments (3, argv, arguments))
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorFunctionCall);
+        CATCH (error_at (1).code != 1);
+        CATCH (!log_end ("The value 'abc' for -a could not be converted to an integer value.\n"));
         PASS ();
 }
 
@@ -196,9 +192,49 @@ bool test_app_arguments_named_invalid_integer_value (Test *test)
         };
 
         TITLE ();
+        CATCH (!log_begin ());
         CATCH (app_arguments (3, argv, arguments))
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentInvalidIntegerValue);
+        CATCH (!log_end ("The value '123abc' for -a could not be converted to an integer value.\n"));
+        PASS ();
+}
+
+
+bool test_app_arguments_named_missing_uint64_value (Test *test)
+{
+        char *argv[] = { "./app", "-a" };
+        uint64_t value;
+        AppArgument arguments[] = {
+                ARGUMENT_NAMED_UINT64 ("-a", NULL, 123, true, &value, "test"),
+                ARGUMENT_END
+        };
+
+        TITLE ();
+        CATCH (!log_begin ());
+        CATCH (app_arguments (2, argv, arguments))
+        CATCH (error_count () < 2);
+        CATCH (error_at (1).error != ErrorAppArgumentMissingUInt64Value);
+        CATCH (!log_end ("The argument -a is missing an UInt64 value.\n"));
+        PASS ();
+}
+
+bool test_app_arguments_named_function_call_2 (Test *test)
+{
+        char *argv[] = { "./app", "-a", "abc" };
+        uint64_t value;
+        AppArgument arguments[] = {
+                ARGUMENT_NAMED_UINT64 ("-a", NULL, 123, true, &value, "test"),
+                ARGUMENT_END
+        };
+
+        TITLE ();
+        CATCH (!log_begin ());
+        CATCH (app_arguments (3, argv, arguments))
+        CATCH (error_count () < 2);
+        CATCH (error_at (1).error != ErrorFunctionCall);
+        CATCH (error_at (1).code != 2);
+        CATCH (!log_end ("The value 'abc' for -a could not be converted to an UInt64 value.\n"));
         PASS ();
 }
 
@@ -212,9 +248,11 @@ bool test_app_arguments_named_invalid_uint64_value (Test *test)
         };
 
         TITLE ();
+        CATCH (!log_begin ());
         CATCH (app_arguments (3, argv, arguments))
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentInvalidUInt64Value);
+        CATCH (!log_end ("The value '123abc' for -a could not be converted to an UInt64 value.\n"));
         PASS ();
 }
 
@@ -228,9 +266,11 @@ bool test_app_arguments_named_missing_string_value (Test *test)
         };
 
         TITLE ();
+        CATCH (!log_begin ());
         CATCH (app_arguments (2, argv, arguments))
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentMissingStringValue);
+        CATCH (!log_end ("The argument -a is missing a string value.\n"));
         PASS ();
 }
 
@@ -244,13 +284,15 @@ bool test_app_arguments_named_unknown_argument (Test *test)
         };
 
         TITLE ();
+        CATCH (!log_begin ());
         CATCH (app_arguments (2, argv, arguments))
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentUnknownNamedArgument);
+        CATCH (!log_end ("Unrecognized argument '-b'.\n"));
         PASS ();
 }
 
-bool test_app_arguments_ordinal_function_call (Test *test)
+bool test_app_arguments_ordinal_function_call_1 (Test *test)
 {
         char *argv[] = { "./app", "abc" };
         int value;
@@ -260,9 +302,11 @@ bool test_app_arguments_ordinal_function_call (Test *test)
         };
 
         TITLE ();
+        CATCH (!log_begin ());
         CATCH (app_arguments (2, argv, arguments))
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorFunctionCall);
+        CATCH (!log_end ("The value 'abc' could not be converted to an integer value.\n"));
         PASS (); 
 }
 
@@ -276,10 +320,30 @@ bool test_app_arguments_ordinal_invalid_integer_value (Test *test)
         };
 
         TITLE ();
-        CATCH (app_arguments (2, argv, arguments))
+        CATCH (!log_begin ());
+        CATCH (app_arguments (2, argv, arguments));
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentInvalidIntegerValue);
+        CATCH (!log_end ("The value '123abc' could not be converted to an integer value.\n"));
         PASS ();
+}
+
+bool test_app_arguments_ordinal_function_call_2 (Test *test)
+{
+        char *argv[] = { "./app", "abc" };
+        uint64_t value;
+        AppArgument arguments[] = {
+                ARGUMENT_ORDINAL_UINT64 (123, true, &value, "test"),
+                ARGUMENT_END
+        };
+
+        TITLE ();
+        CATCH (!log_begin ());
+        CATCH (app_arguments (2, argv, arguments));
+        CATCH (error_count () < 2);
+        CATCH (error_at (1).error != ErrorFunctionCall);
+        CATCH (!log_end ("The value 'abc' could not be converted to an UInt64 value.\n"));
+        PASS (); 
 }
 
 bool test_app_arguments_ordinal_invalid_uint64_value (Test *test)
@@ -292,9 +356,11 @@ bool test_app_arguments_ordinal_invalid_uint64_value (Test *test)
         };
 
         TITLE ();
-        CATCH (app_arguments (2, argv, arguments))
+        CATCH (!log_begin ());
+        CATCH (app_arguments (2, argv, arguments));
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentInvalidUInt64Value);
+        CATCH (!log_end ("The value '123abc' could not be converted to an UInt64 value.\n"));
         PASS ();
 }
 
@@ -308,13 +374,15 @@ bool test_app_arguments_ordinal_unknown_argument (Test *test)
         };
 
         TITLE ();
+        CATCH (!log_begin ());
         CATCH (app_arguments (3, argv, arguments))
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentUnknownOrdinalArgument);
+        CATCH (!log_end ("Unrecognized argument 'unknown'.\n"));
         PASS ();
 }
 
-bool test_app_arguments_missing_required_argument (Test *test)
+bool test_app_arguments_missing_required_argument_1 (Test *test)
 {
         char *argv[] = { "./app", "123" };
         int value;
@@ -325,9 +393,31 @@ bool test_app_arguments_missing_required_argument (Test *test)
         };
 
         TITLE ();
+        CATCH (!log_begin ());
         CATCH (app_arguments (2, argv, arguments))
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentMissingRequiredArgument);
+        CATCH (error_at (1).code != 1);
+        CATCH (!log_end ("A required argument is missing.\n"));
+        PASS ();
+}
+
+bool test_app_arguments_missing_required_argument_2 (Test *test)
+{
+        char *argv[] = { "./app" };
+        int value;
+        AppArgument arguments[] = {
+                ARGUMENT_NAMED_INTEGER ("-b", NULL, 123, true, &value, "test"),
+                ARGUMENT_END
+        };
+
+        TITLE ();
+        CATCH (!log_begin ());
+        CATCH (app_arguments (1, argv, arguments))
+        CATCH (error_count () < 2);
+        CATCH (error_at (1).error != ErrorAppArgumentMissingRequiredArgument);
+        CATCH (error_at (1).code != 2);
+        CATCH (!log_end ("The required argument -b is missing.\n"));
         PASS ();
 }
 
@@ -372,4 +462,56 @@ bool test_app_arguments (Test *test)
         CATCH (named_uint64 != 2);
         CATCH (!string_equals (named_string, "test"));
         PASS ();
+}
+
+static bool log_begin (void)
+{
+        char *path;
+
+        if (!(path = directory_current_path ())) {
+                return false;
+        }
+        if (!string_append (&path, "/stage/log")) {
+                string_destroy (path);
+                return false;
+        }
+        if (file_exists (path)) {
+                if (!file_remove (path)) {
+                        string_destroy (path);
+                        return false;
+                }
+        }
+        if (!print_log_begin (path)) {
+                string_destroy (path);
+                return false;
+        }
+        string_destroy (path);
+        return true;
+}
+
+static bool log_end (const char *equals)
+{
+        FileReader *reader;
+        char *path;
+
+        (void)print_log_end ();
+        if (!(path = directory_current_path ())) {
+                return false;
+        }
+        if (!string_append (&path, "/stage/log")) {
+                string_destroy (path);
+                return false;
+        }
+        if (!(reader = file_reader_create (path))) {
+                string_destroy (path);
+                return false;
+        }
+        if (!string_equals ((const char *)reader->map, equals)) {
+                string_destroy (path);
+                file_reader_destroy (reader);
+                return false;
+        }
+        string_destroy (path);
+        file_reader_destroy (reader);
+        return true;
 }

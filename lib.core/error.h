@@ -11,6 +11,7 @@ typedef enum {
 #include <lib.core/error-enums.h>
 #include <lib.core/error-enums-pattern.h>
 #include <lib.core/error-enums-app.h>
+#include <lib.core/error-enums-graphics.h>
 	ErrorNull
 #undef ERROR
 } Error;

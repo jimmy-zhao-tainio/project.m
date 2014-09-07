@@ -1,0 +1,46 @@
+
+Usage: ./app [3 required arguments]
+             (3 optional arguments)
+             [4 required named arguments]
+             (4 optional named arguments)
+
+Required arguments:
+
+	<Integer>
+	    1
+	<UInt64>
+	    2
+	<String>
+	    3
+
+Optional arguments:
+
+	<Integer>
+	    4
+	<UInt64>
+	    5
+	<String>
+	    6
+
+Required named arguments:
+
+	-b | --boolean 
+	    7
+	-i | --integer <Integer>
+	    8
+	-u | --uint64 <UInt64>
+	    9
+	-s | --string <String>
+	    10
+
+Optional named arguments:
+
+	-B | --Boolean 
+	    7
+	-I | --Integer <Integer>
+	    8
+	-U | --Uint64 <UInt64>
+	    9
+	-S | --String <String>
+	    10
+

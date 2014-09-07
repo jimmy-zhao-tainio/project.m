@@ -101,7 +101,7 @@ static bool argument_named (int argc, char **argv, int *argi, AppArgument *argum
                                 print ("The value '%s' for ", argv[*argi + 1]);
                                 app_arguments_print_named_form (arguments[i]);
                                 print (" could not be converted to an integer value.\n");
-                                error_code (FunctionCall, 2);
+                                error_code (FunctionCall, 1);
                                 return false;
                         }
                         if (digits != string_length (argv[*argi + 1])) {
@@ -128,7 +128,7 @@ static bool argument_named (int argc, char **argv, int *argi, AppArgument *argum
                                 print ("The value '%s' for ", argv[*argi + 1]);
                                 app_arguments_print_named_form (arguments[i]);
                                 print (" could not be converted to an UInt64 value.\n");
-                                error_code (FunctionCall, 3);
+                                error_code (FunctionCall, 2);
                                 return false;
                         }
                         if (digits != string_length (argv[*argi + 1])) {
@@ -179,7 +179,7 @@ static bool argument_ordinal (int argc, char **argv, int *argi, AppArgument *arg
                 case AppArgumentInteger:
                         if (!convert_string_to_int (argv[*argi], arguments[i].value.integer, &digits)) {
                                 print ("The value '%s' could not be converted to an integer value.\n", argv[*argi]);
-                                error (FunctionCall);
+                                error_code (FunctionCall, 1);
                                 return false;
                         }
                         if (digits != string_length (argv[*argi])) {
@@ -196,7 +196,7 @@ static bool argument_ordinal (int argc, char **argv, int *argi, AppArgument *arg
                                                                    (unsigned long long *)arguments[i].value.uint64, 
                                                                    &digits)) {
                                 print ("The value '%s' could not be converted to an UInt64 value.\n", argv[*argi]);
-                                error (FunctionCall);
+                                error_code (FunctionCall, 2);
                                 return false;
                         }
                         if (digits != string_length (argv[*argi])) {
@@ -232,13 +232,14 @@ static bool check_required (AppArgument *arguments)
                 if (!arguments[i].have_value) {
                         if (arguments[i].type == AppArgumentTypeOrdinal) {
                                 print ("A required argument is missing.\n");
+                                error_code (AppArgumentMissingRequiredArgument, 1);
                         }
                         else {
                                 print ("The required argument ");
                                 app_arguments_print_named_form (arguments[i]);
                                 print (" is missing.\n");
+                                error_code (AppArgumentMissingRequiredArgument, 2);
                         }
-                        error (AppArgumentMissingRequiredArgument);
                         return false;
                 }
         }
