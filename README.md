@@ -1,7 +1,7 @@
 project.m
 =========
 
-My recreational programming project. Just over 20.000 lines of C code, 
+My recreational programming project.
 
 lib.core
 
