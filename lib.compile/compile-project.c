@@ -9,7 +9,8 @@
 #include <lib.compile/compile.h>
 
 static bool recursively_flatten_libraries       (CompileProject *project, Compile *compile);
-static bool recursively_flatten_libraries_inner (CompileProject *project, Compile *compile, Directory *library, Tree *append);
+static bool recursively_flatten_libraries_inner (CompileProject *project, Compile *compile, Directory *library, 
+                                                 Tree *append);
 static bool sort_libraries                      (CompileProject *project, Compile *compile);
 static bool included_libraries_are_up_to_date   (CompileProject *project, Compile *compile);
 
@@ -80,7 +81,8 @@ bool compile_project_prepare (CompileProject *project)
 			return false;
 		}
 		if (!string_begins_with (sub_directory->name, "lib.") &&
-		    !string_begins_with (sub_directory->name, "app.")) {
+		    !string_begins_with (sub_directory->name, "app.") &&
+                    !string_begins_with (sub_directory->name, "plugin.")) {
 			continue;
 		}
 		if (!(compile = compile_create (project->directory, sub_directory))) {
@@ -107,7 +109,8 @@ bool compile_project_prepare (CompileProject *project)
 			return false;
 		}
                 if (!string_begins_with (sub_directory->name, "lib.") &&
-		    !string_begins_with (sub_directory->name, "app.")) {
+		    !string_begins_with (sub_directory->name, "app.") &&
+                    !string_begins_with (sub_directory->name, "plugin.")) {
 			continue;
 		}
 		if (!(compile = tree_search (project->directory_to_compile, (Object *)sub_directory))) {

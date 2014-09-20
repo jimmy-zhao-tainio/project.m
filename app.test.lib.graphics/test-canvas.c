@@ -26,10 +26,31 @@ bool test_canvas_create_invalid_argument_2 (Test *test)
         PASS ();
 }
 
-bool test_canvas_create_function_call_1 (Test *test)
+bool test_canvas_create_overflow_1 (Test *test)
 {
         TITLE ();
         CATCH (canvas_create (size_value (2, (size_t)-1)));
+        CATCH (error_count () == 0);
+        CATCH (error_at (0).error != ErrorOverflow);
+        CATCH (error_at (0).code != 1);
+        PASS ();
+}
+
+bool test_canvas_create_overflow_2 (Test *test)
+{
+        TITLE ();
+        CATCH (canvas_create (size_value (2, ((size_t)-1) / 2)));
+        CATCH (error_count () == 0);
+        CATCH (error_at (0).error != ErrorOverflow);
+        CATCH (error_at (0).code != 2);
+        PASS ();
+}
+
+bool test_canvas_create_function_call_1 (Test *test)
+{
+        TITLE ();
+        memory_commit_limit (sizeof (size_t) + sizeof (Canvas) - 1);
+        CATCH (canvas_create (size_value (1, 1)));
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorFunctionCall);
         CATCH (error_at (0).code != 1);
@@ -39,33 +60,12 @@ bool test_canvas_create_function_call_1 (Test *test)
 bool test_canvas_create_function_call_2 (Test *test)
 {
         TITLE ();
-        CATCH (canvas_create (size_value (2, ((size_t)-1) / 2)));
-        CATCH (error_count () == 0);
-        CATCH (error_at (0).error != ErrorFunctionCall);
-        CATCH (error_at (0).code != 2);
-        PASS ();
-}
-
-bool test_canvas_create_function_call_3 (Test *test)
-{
-        TITLE ();
-        memory_commit_limit (sizeof (size_t) + sizeof (Canvas) - 1);
-        CATCH (canvas_create (size_value (1, 1)));
-        CATCH (error_count () == 0);
-        CATCH (error_at (0).error != ErrorFunctionCall);
-        CATCH (error_at (0).code != 3);
-        PASS ();
-}
-
-bool test_canvas_create_function_call_4 (Test *test)
-{
-        TITLE ();
         memory_commit_limit (sizeof (size_t) + sizeof (Canvas) + 
                              sizeof (size_t) + sizeof (Color) - 1);
         CATCH (canvas_create (size_value (1, 1)));
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorFunctionCall);
-        CATCH (error_at (0).code != 4);
+        CATCH (error_at (0).code != 2);
         PASS ();
 }
 
@@ -160,7 +160,7 @@ bool test_canvas_draw_image_invalid_argument (Test *test)
         PASS ();
 }
 
-bool test_canvas_draw_image_function_call_1 (Test *test)
+bool test_canvas_draw_image_overflow_1 (Test *test)
 {
         Canvas *canvas;
         Image image = { 
@@ -177,13 +177,13 @@ bool test_canvas_draw_image_function_call_1 (Test *test)
         CATCH (!(canvas = canvas_create (size_value (3, 3))));
         canvas_draw_image (canvas, position_value ((size_t)-1, 0), image);
         CATCH (error_count () == 0);
-        CATCH (error_at (0).error != ErrorFunctionCall);
+        CATCH (error_at (0).error != ErrorOverflow);
         CATCH (error_at (0).code != 1);
         canvas_destroy (canvas);
         PASS ();
 }
 
-bool test_canvas_draw_image_function_call_2 (Test *test)
+bool test_canvas_draw_image_overflow_2 (Test *test)
 {
         Canvas *canvas;
         Image image = { 
@@ -200,7 +200,7 @@ bool test_canvas_draw_image_function_call_2 (Test *test)
         CATCH (!(canvas = canvas_create (size_value (3, 3))));
         canvas_draw_image (canvas, position_value (0, (size_t)-1), image);
         CATCH (error_count () == 0);
-        CATCH (error_at (0).error != ErrorFunctionCall);
+        CATCH (error_at (0).error != ErrorOverflow);
         CATCH (error_at (0).code != 2);
         canvas_destroy (canvas);
         PASS ();
@@ -620,7 +620,7 @@ bool test_canvas_fill_rectangle_with_color_invalid_argument (Test *test)
         PASS ();
 }
 
-bool test_canvas_fill_rectangle_with_color_function_call_1 (Test *test)
+bool test_canvas_fill_rectangle_with_color_overflow_1 (Test *test)
 {
         Canvas canvas;
         Rectangle rectangle = { .x = 2, .width = 2, .y = 1, .height = 1 };
@@ -629,12 +629,12 @@ bool test_canvas_fill_rectangle_with_color_function_call_1 (Test *test)
         size_t_private_max (3);
         canvas_fill_rectangle_with_color (&canvas, rectangle, Red);
         CATCH (error_count () == 0);
-        CATCH (error_at (0).error != ErrorFunctionCall);
+        CATCH (error_at (0).error != ErrorOverflow);
         CATCH (error_at (0).code != 1);
         PASS ();
 }
 
-bool test_canvas_fill_rectangle_with_color_function_call_2 (Test *test)
+bool test_canvas_fill_rectangle_with_color_overflow_2 (Test *test)
 {
         Canvas canvas;
         Rectangle rectangle = { .x = 1, .width = 1, .y = 2, .height = 2 };
@@ -643,7 +643,7 @@ bool test_canvas_fill_rectangle_with_color_function_call_2 (Test *test)
         size_t_private_max (3);
         canvas_fill_rectangle_with_color (&canvas, rectangle, Red);
         CATCH (error_count () == 0);
-        CATCH (error_at (0).error != ErrorFunctionCall);
+        CATCH (error_at (0).error != ErrorOverflow);
         CATCH (error_at (0).code != 2);
         PASS ();
 }
@@ -797,7 +797,7 @@ bool test_canvas_fill_rectangle_with_image_invalid_argument (Test *test)
         PASS ();
 }
 
-bool test_canvas_fill_rectangle_with_image_function_call_1 (Test *test)
+bool test_canvas_fill_rectangle_with_image_overflow_1 (Test *test)
 {
         Canvas canvas;
         Rectangle rectangle = { .x = 2, .width = 2, .y = 1, .height = 1 };
@@ -807,12 +807,12 @@ bool test_canvas_fill_rectangle_with_image_function_call_1 (Test *test)
         size_t_private_max (3);
         canvas_fill_rectangle_with_image (&canvas, rectangle, image);
         CATCH (error_count () == 0);
-        CATCH (error_at (0).error != ErrorFunctionCall);
+        CATCH (error_at (0).error != ErrorOverflow);
         CATCH (error_at (0).code != 1);
         PASS ();
 }
 
-bool test_canvas_fill_rectangle_with_image_function_call_2 (Test *test)
+bool test_canvas_fill_rectangle_with_image_overflow_2 (Test *test)
 {
         Canvas canvas;
         Rectangle rectangle = { .x = 1, .width = 1, .y = 2, .height = 2 };
@@ -822,7 +822,7 @@ bool test_canvas_fill_rectangle_with_image_function_call_2 (Test *test)
         size_t_private_max (3);
         canvas_fill_rectangle_with_image (&canvas, rectangle, image);
         CATCH (error_count () == 0);
-        CATCH (error_at (0).error != ErrorFunctionCall);
+        CATCH (error_at (0).error != ErrorOverflow);
         CATCH (error_at (0).code != 2);
         PASS ();
 }

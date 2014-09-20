@@ -9,7 +9,13 @@
 #include <lib.compile/compile.h>
 #include <lib.app/arguments.h>
 
-static bool try (int argc, char **argv, CompileProject **project, char **path, char **name, char **sub_path, char **sub_name);
+static bool try (int argc, 
+                 char **argv, 
+                 CompileProject **project, 
+                 char **path, 
+                 char **name, 
+                 char **sub_path, 
+                 char **sub_name);
 
 int main (int argc, char **argv)
 {
@@ -39,11 +45,19 @@ int main (int argc, char **argv)
 	return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-static bool try (int argc, char **argv, CompileProject **project, char **path, char **name, char **sub_path, char **sub_name)
+static bool try (int argc, 
+                 char **argv, 
+                 CompileProject **project, 
+                 char **path, 
+                 char **name, 
+                 char **sub_path, 
+                 char **sub_name)
 {
         bool bootstrap;
         AppArgument arguments[] = {
-                ARGUMENT_NAMED_BOOLEAN ("-b", "--bootstrap", false, false, &bootstrap, "Only print commands, don't execute them."),
+                ARGUMENT_NAMED_BOOLEAN ("-b", "--bootstrap", 
+                                        false, false, &bootstrap, 
+                                        "Only print commands, don't execute them."),
                 ARGUMENT_DEFAULT,
                 ARGUMENT_END
         };
@@ -71,7 +85,8 @@ static bool try (int argc, char **argv, CompileProject **project, char **path, c
 		}
 	}
 	else if (string_begins_with (*name, "lib.") ||
-	         string_begins_with (*name, "app.")) {
+	         string_begins_with (*name, "app.") ||
+                 string_begins_with (*name, "plugin.")) {
 		if (!(*sub_path = directory_sub_path (*path))) {
 			return false;
 		}
@@ -91,7 +106,7 @@ static bool try (int argc, char **argv, CompileProject **project, char **path, c
 		}
 	}
 	else {
-		compile_print ("Directory name must begin with either 'project.', 'app.' or 'lib.'.\n");	
+		compile_print ("Directory name must begin with either 'project.', 'app.', 'lib.' or 'plugin'.\n");	
 	}
 	return false;
 }

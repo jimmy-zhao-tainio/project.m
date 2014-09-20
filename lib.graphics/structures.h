@@ -52,5 +52,6 @@ struct s_Canvas
 Position  position_value  (size_t x, size_t y);
 Size      size_value      (size_t width, size_t height);
 Rectangle rectangle_value (size_t x, size_t y, size_t width, size_t height);
+Color     color_value     (uint8_t red, uint8_t green, uint8_t blue);
 
 #endif

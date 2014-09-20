@@ -17,20 +17,20 @@ Canvas *canvas_create (Size size)
                 return NULL;
         }
         if (!size_t_mul (size.width, size.height, NULL)) {
-                error_code (FunctionCall, 1);
+                error_code (Overflow, 1);
                 return NULL;
         }
         if (!size_t_mul (size.width * size.height, sizeof (Color), NULL)) {
-                error_code (FunctionCall, 2);
+                error_code (Overflow, 2);
                 return NULL;
         }
         if (!(canvas = memory_create (sizeof (Canvas)))) {
-                error_code (FunctionCall, 3);
+                error_code (FunctionCall, 1);
                 return NULL;
         }
         if (!(canvas->image.map = memory_create (size.width * size.height * sizeof (Color)))) {
                 memory_destroy (canvas);
-                error_code (FunctionCall, 4);
+                error_code (FunctionCall, 2);
                 return NULL;
         }
         canvas->image.width = size.width;
@@ -78,11 +78,11 @@ void canvas_draw_image (Canvas *canvas, Position position, Image image)
                 return;
         }
         if (!size_t_add (position.x, image.width, &right)) {
-                error_code (FunctionCall, 1);
+                error_code (Overflow, 1);
                 return;
         }
         if (!size_t_add (position.y, image.height, &bottom)) {
-                error_code (FunctionCall, 2);
+                error_code (Overflow, 2);
                 return;
         }
         if (canvas->image.width < right) {
@@ -196,11 +196,11 @@ void canvas_fill_rectangle_with_color (Canvas *canvas, Rectangle rectangle, Colo
                 return;
         }
         if (!size_t_add (rectangle.x, rectangle.width, &right)) {
-                error_code (FunctionCall, 1);
+                error_code (Overflow, 1);
                 return;
         }
         if (!size_t_add (rectangle.y, rectangle.height, &bottom)) {
-                error_code (FunctionCall, 2);
+                error_code (Overflow, 2);
                 return;
         }
         if (canvas->image.width < right) {
@@ -249,11 +249,11 @@ void canvas_fill_rectangle_with_image (Canvas *canvas, Rectangle rectangle, Imag
                 return;
         }
         if (!size_t_add (rectangle.x, rectangle.width, &right)) {
-                error_code (FunctionCall, 1);
+                error_code (Overflow, 1);
                 return;
         }
         if (!size_t_add (rectangle.y, rectangle.height, &bottom)) {
-                error_code (FunctionCall, 2);
+                error_code (Overflow, 2);
                 return;
         }
         if (canvas->image.width < right) {

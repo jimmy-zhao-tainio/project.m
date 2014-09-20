@@ -4,6 +4,8 @@
 #include <lib.core/string.h>
 #include <lib.core/memory.h>
 #include <lib.compile/compile.h>
+#include <lib.compile/compile-link.h>
+#include <lib.compile/compile-action.h>
 #include <lib.compile/compile-print.h>
 
 static bool compile_set_vertices (Compile *compile);
@@ -14,13 +16,7 @@ static bool link_local_header (Compile *compile, File *file, char *header);
 static bool link_library_header (Compile *compile, File *file, char *header);
 static bool compile_o_file (Compile *compile, File *file, const char *project_path);
 static bool compile_o_file_try (Compile *compile, File *file, char **c_path, char **c_name, const char *project_path);
-static bool link_library (Compile *compile);
-static bool link_library_try (Compile *compile, char **lib_path, char **lib_filename);
-static bool link_application (Compile *compile);
 static int o_file_is_latest (Compile *compile, File *file);
-static int library_is_newer (Directory *directory, time_t modified);
-static CompileAction *compile_action_create (CompileActionType type);
-static void compile_action_destroy (CompileAction *action);
 
 Compile *compile_create (Directory *project, Directory *directory)
 {
@@ -36,7 +32,8 @@ Compile *compile_create (Directory *project, Directory *directory)
 		return NULL;
 	}
 	if (!string_begins_with (directory->name, "app.") &&
-	    !string_begins_with (directory->name, "lib.")) {
+	    !string_begins_with (directory->name, "lib.") &&
+            !string_begins_with (directory->name, "plugin.")) {
 		compile_debug_invalid_arguments ();
 		return NULL;
 	}
@@ -148,11 +145,14 @@ bool compile_actions (Compile *compile, const char *project_path)
 		return true;
 	}
 	if (string_begins_with (compile->directory->name, "lib.")) {
-		return link_library (compile);
+		return compile_link_library (compile);
 	}
-	else {
-		return link_application (compile);
+	else if (string_begins_with (compile->directory->name, "app.")) {
+		return compile_link_application (compile);
 	}
+        else {
+                return compile_link_plugin (compile);
+        }
 }
 
 bool compile_execute (Compile *compile, bool bootstrap)
@@ -609,10 +609,21 @@ static bool compile_o_file_try (Compile *compile, File *file, char **c_path, cha
 	}
 	(*c_path)[string_length (*c_path) - 1] = 'c';
 	(*c_name)[string_length (*c_name) - 1] = 'c';
-	if (!string_append (&action->command, "gcc") ||
-	    !string_append (&action->command, " -std=gnu99 -O0 -pedantic -g -Wall -Wextra -Wconversion -Wformat-security -Werror -I") ||
+	if (!string_append (&action->command, "gcc ") ||
+	    !string_append (&action->command, "-std=gnu99 ") ||
+            !string_append (&action->command, "-O0 ") ||
+            !string_append (&action->command, "-pedantic ") ||
+            !string_append (&action->command, "-g ") ||
+            !string_append (&action->command, "-Wall ") ||
+            !string_append (&action->command, "-Wextra ") ||
+            !string_append (&action->command, "-Wconversion ") ||
+            !string_append (&action->command, "-Wformat-security ") ||
+            !string_append (&action->command, "-Werror ") ||
+            !string_append (&action->command, "-fPIC ") ||
+            !string_append (&action->command, "-I") ||
 	    !string_append (&action->command, project_path) ||
-	    !string_append (&action->command, " -c ") ||
+            !string_append (&action->command, " ") ||
+	    !string_append (&action->command, "-c ") ||
 	    !string_append (&action->command, *c_path)) {
 		compile_debug_allocate_memory ();
 		return false;
@@ -691,283 +702,3 @@ static int o_file_is_latest (Compile *compile, File *file)
 	return 1;
 }
 
-static int library_is_newer (Directory *directory, time_t modified)
-{
-	File *file;
-	char *lib_filename;
-
-	if (modified == 0) {
-		return 0;
-	}
-	if (!(lib_filename = string_create (directory->name))) {
-		compile_debug_allocate_memory ();
-		return -1;
-	}
-	if (!string_append (&lib_filename, ".a")) {
-		string_destroy (lib_filename);
-		compile_debug_allocate_memory ();
-		return -1;
-	}
-	if (!(file = directory_find_file (directory, lib_filename))) {
-		string_destroy (lib_filename);
-		return 1;
-	}
-	string_destroy (lib_filename);
-	if (file->modified == 0) {
-		return 1;
-	}
-	if (file->modified > modified) {
-		return 1;
-	}
-	return 0;
-}
-
-static bool link_library (Compile *compile)
-{
-	char *lib_path = NULL;
-	char *lib_filename = NULL;
-
-	int result = link_library_try (compile, &lib_path, &lib_filename);
-	if (lib_path) {
-		string_destroy (lib_path);
-	}
-	if (lib_filename) {
-		string_destroy (lib_filename);
-	}
-	return result;
-}
-
-static bool link_library_try (Compile *compile, char **lib_path, char **lib_filename)
-{
-	CompileAction *arch;
-	CompileAction *index;
-	TreeIterator *iterator;
-	ListNode *node;
-	File *lib_file;
-	const char *linker = "ar";
-	const char *flag = " rsc ";
-	bool newer_library = false;
-	Directory *directory;
-	File *file;
-	
-	if (!(*lib_filename = string_create (compile->directory->name)) || 
-	    !string_append (lib_filename, ".a")) {
-		compile_debug_allocate_memory ();
-		return false;
-	}
-	if (!(*lib_path = string_create (compile->directory->path)) ||
-	    !string_append (lib_path, "/") ||
-	    !string_append (lib_path, *lib_filename)) {
-		compile_debug_allocate_memory ();
-		return false;
-	}
-	if ((lib_file = directory_find_file (compile->directory, *lib_filename))) {
-		if (!(iterator = tree_iterator_create (compile->libraries))) {
-			compile_debug_allocate_memory ();
-			return false;
-		}
-		while (!newer_library && tree_iterator_next (iterator)) {
-			switch (library_is_newer ((Directory *)iterator->key, lib_file->modified)) {
-			case -1:
-				tree_iterator_destroy (iterator);
-				return false;
-			case 0:
-				continue;
-			case 1:
-				newer_library = true;
-				break;
-			}
-		}
-		tree_iterator_destroy (iterator);
-	}
-	if (newer_library == false && 
-	    lib_file &&
-	    list_count (compile->actions) == 0) {
-		return true;
-	}
-	if (!(arch = compile_action_create (COMPILE_ACTION_ARCH))) {
-		compile_debug_allocate_memory ();
-		return false;
-	}
-	if (!list_append (compile->actions, arch)) {
-		compile_action_destroy (arch);
-		compile_debug_operation_failed ();
-		return false;
-	}
-	if (!(arch->command = string_create (linker)) || 
-	    !string_append (&arch->command, flag) || 
-	    !string_append (&arch->command, *lib_path) || 
-	    !string_append (&arch->command, " ")) {
-		compile_debug_allocate_memory ();
-		return false;
-	}
-	if (!(index = compile_action_create (COMPILE_ACTION_INDEX))) {
-		compile_debug_allocate_memory ();
-		return false;
-	}
-	if (!list_append (compile->actions, index)) {
-		compile_action_destroy (index);
-		compile_debug_operation_failed ();
-		return false;
-	}
-	for (node = list_first (compile->o_files); node; node = node->next) {
-		file = node->data;
-		if (!string_append (&arch->command, file->path) || 
-	    	    !string_append (&arch->command, " ")) {
-			compile_debug_allocate_memory ();
-			return false;
-		}
-	}
-	for (node = list_last (compile->libraries_sorted); node; node = node->previous) {
-		directory = node->data;
-		if (!string_append (&arch->command, directory->path) || 
-	    	    !string_append (&arch->command, "/") || 
-	    	    !string_append (&arch->command, directory->name) ||
-	    	    !string_append (&arch->command, ".a") ||
-	    	    !string_append (&arch->command, " ")) {
-			compile_debug_allocate_memory ();
-			return false;
-		}
-	}
-	if (!(arch->print = string_create ("[ARCH] ")) ||
-	    !string_append (&arch->print, *lib_filename) ||
-	    !string_append (&arch->print, "\n")) {
-		compile_debug_allocate_memory ();
-		return false;
-	}
-	if (!(index->command = string_create ("ranlib ")) || 
-	    !string_append (&index->command, *lib_path)) {
-		compile_debug_allocate_memory ();
-		return false;
-	}
-	if (!(index->print = string_create ("[INDEX] ")) ||
-	    !string_append (&index->print, *lib_filename) ||
-	    !string_append (&index->print, "\n")) {
-		compile_debug_allocate_memory ();
-		return false;
-	}
-	if (lib_file) {
-		lib_file->modified = 0;
-	}
-	return true;
-}
-
-static bool link_application (Compile *compile)
-{
-	CompileAction *action;
-	const char *linker = "gcc -lrt -lm ";
-	const char *flag = "-O0 -o ";
-	bool newer_library = 0;
-	File *app_file;
-	File *file;
-	ListNode *node;
-	TreeIterator *iterator;
-	Directory *directory;
-
-	if ((app_file = directory_find_file (compile->directory, compile->directory->name))) {
-		if (!(iterator = tree_iterator_create (compile->libraries))) {
-			compile_debug_allocate_memory ();
-			return false;
-		}
-		while (!newer_library && tree_iterator_next (iterator)) {
-			switch (library_is_newer ((Directory *)iterator->key, app_file->modified)) {
-			case -1:
-				tree_iterator_destroy (iterator);
-				return false;
-			case 0:
-				continue;
-			case 1:
-				newer_library = true;
-				break;
-			}
-		}
-		tree_iterator_destroy (iterator);
-	}
-	if (newer_library == false && 
-	    app_file && 
-	    list_count (compile->actions) == 0) {
-		return true;
-	}
-	if (!(action = compile_action_create (COMPILE_ACTION_BUILD))) {
-		compile_debug_allocate_memory ();
-		return false;
-	}
-	if (!list_append (compile->actions, action)) {
-		compile_action_destroy (action);
-		compile_debug_operation_failed ();
-		return false;
-	}
-	if (!(action->command = string_create (linker))) {
-		compile_debug_allocate_memory ();
-		return false;
-	}
-	for (node = list_first (compile->o_files); node; node = node->next) {
-		file = node->data;
-		if (!string_append (&action->command, file->path) || 
-	    	    !string_append (&action->command, " ")) {
-			compile_debug_allocate_memory ();
-			return false;
-		}
-	}
-	for (node = list_last (compile->libraries_sorted); node; node = node->previous) {
-		directory = node->data;
-		if (!string_append (&action->command, directory->path) || 
-	    	    !string_append (&action->command, "/") || 
-	    	    !string_append (&action->command, directory->name) ||
-	    	    !string_append (&action->command, ".a") ||
-	    	    !string_append (&action->command, " ")) {
-			compile_debug_allocate_memory ();
-			return false;
-		}
-	}
-	if (!string_append (&action->command, flag) || 
-	    !string_append (&action->command, compile->directory->path) ||
-	    !string_append (&action->command, "/") ||
-	    !string_append (&action->command, compile->directory->name) ||
-	    !string_append (&action->command, " 1>/dev/null")) {
-		compile_debug_allocate_memory ();
-		return false;
-	}
-	if (!(action->print = string_create ("[BUILD] ")) ||
-	    !string_append (&action->print, compile->directory->name) ||
-	    !string_append (&action->print, "\n")) {
-		compile_debug_allocate_memory ();
-		return false;
-	}
-	return true;	
-}
-
-static CompileAction *compile_action_create (CompileActionType type)
-{
-	CompileAction *action;
-
-	if (type != COMPILE_ACTION_CC &&
-	    type != COMPILE_ACTION_ARCH &&
-	    type != COMPILE_ACTION_INDEX &&
-	    type != COMPILE_ACTION_BUILD) {
-		compile_debug_invalid_arguments ();
-		return NULL;
-	}
-	if (!(action = memory_create (sizeof (CompileAction)))) {
-		compile_debug_allocate_memory ();
-		return NULL;
-	}
-	action->type = type;
-	action->print = NULL;
-	action->command = NULL;
-	return action;
-}
-
-static void compile_action_destroy (CompileAction *action)
-{
-	if (!action) {
-		return;
-	}
-	if (action->print) {
-		string_destroy (action->print);
-	}
-	if (action->command) {
-		string_destroy (action->command);
-	}
-	memory_destroy (action);
-}
