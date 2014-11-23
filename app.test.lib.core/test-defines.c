@@ -2,6 +2,7 @@
 #include <lib.core/defines-private.h>
 #include <lib.core/error.h>
 #include <lib.core/combinations.h>
+#include <lib.core/memory.h>
 
 #include "test-defines.h"
 
@@ -52,7 +53,6 @@ bool test_size_t_mul (Test *test)
 	size_t result;
 
 	TITLE ();
-	size_t_private_max (SIZE_MAX);
 	CATCH (!size_t_mul (0, 0, NULL));
 	CATCH (error_count () != 0);
 	CATCH (!size_t_mul (1, 0, NULL));
@@ -76,6 +76,58 @@ bool test_size_t_mul (Test *test)
 	CATCH (size_t_mul (2, SIZE_MAX, &result));
 	CATCH (result != 6);
 	PASS ();
+}
+
+bool test_size_t_pow_invalid_argument (Test *test)
+{
+        TITLE ();
+        CATCH (size_t_pow (0, 0, NULL));
+        CATCH (error_at (0).error != ErrorInvalidArgument);
+        PASS ();
+}
+
+bool test_size_t_pow_function_call_1 (Test *test)
+{
+        size_t value;
+
+        TITLE ();
+        memory_commit_limit (0);
+        CATCH (size_t_pow (1, 1, &value));
+        CATCH (error_at (0).error != ErrorFunctionCall);
+        CATCH (error_at (0).code != 1);
+        PASS ();
+}
+
+bool test_size_t_pow_function_call_2 (Test *test)
+{
+        size_t value;
+
+        TITLE ();
+        memory_total_create_limit (150);
+        CATCH (size_t_pow (1, 1, &value));
+        CATCH (error_at (0).error != ErrorFunctionCall);
+        CATCH (error_at (0).code != 2);
+        PASS ();
+}
+
+bool test_size_t_pow (Test *test)
+{
+        size_t value;
+
+        TITLE ();
+
+        CATCH (!size_t_pow (0, 0, &value));
+        CATCH (value != 1);
+        CATCH (!size_t_pow (0, 1, &value));
+        CATCH (value != 0);
+        CATCH (!size_t_pow (1, SIZE_MAX, &value));
+        CATCH (value != 1);
+        CATCH (!size_t_pow (0, SIZE_MAX, &value));
+        CATCH (value != 0);
+        CATCH (size_t_pow (2, 64, &value));
+        CATCH (!size_t_pow (2, 32, &value));
+        CATCH (value != 4294967296);
+        PASS ();
 }
 
 bool test_size_t_private_max (Test *test)

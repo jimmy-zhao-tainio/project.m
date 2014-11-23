@@ -43,15 +43,15 @@ static bool try (uint64_t width, uint64_t height, Canvas **canvas, DisplayPlugin
         unsigned char rgb[3];
         uint64_t count;
 
-        if (!(*canvas = canvas_create (size_value (width, height)))) {
+        if (!random_open ()) {
                 error_code (FunctionCall, 1);
                 return false;
         }
-        if (!(*display_plugin = display_plugin_create ("/home/user/project.m/plugin.display.x11/plugin.display.x11.so"))) {
+        if (!(*canvas = canvas_create (size_value (width, height)))) {
                 error_code (FunctionCall, 2);
                 return false;
         }
-        if (!random_open ()) {
+        if (!(*display_plugin = display_plugin_create ("/home/user/project.m/plugin.display.x11/plugin.display.x11.so"))) {
                 error_code (FunctionCall, 3);
                 return false;
         }

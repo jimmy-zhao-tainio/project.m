@@ -4,6 +4,11 @@
 #include <stdio.h>
 #include <string.h>
 
+/*
+static void lock_write_enter (Canvas *canvas, Rectangle rectangle);
+static void lock_write_leave (Canvas *canvas);
+*/
+
 Canvas *canvas_create (Size size)
 {
         Canvas *canvas;
@@ -293,3 +298,16 @@ void canvas_fill_rectangle_with_image (Canvas *canvas, Rectangle rectangle, Imag
                          rectangle.width * sizeof (Color));
         }
 }
+
+/*
+static void lock_write_enter (Canvas *canvas, Rectangle rectangle)
+{
+        // Lock the region by rectangle.
+        (void)canvas;
+        (void)rectangle;
+}
+
+static void lock_write_leave (Canvas *canvas)
+{
+        (void)canvas;
+}*/
