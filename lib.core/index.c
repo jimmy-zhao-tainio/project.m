@@ -62,7 +62,14 @@ Index *index_create (size_t bits)
                         return NULL;
                 }
                 index->power_bits[power - 1] = power_bits;
-                index->power_offset[power - 1] = bits_total / 8;
+                if (power == 1) {
+                        index->power_offset[power - 1] = 0;
+                }
+                else {
+                        index->power_offset[power - 1] =
+                                index->power_offset[power - 2] +
+                                (index->power_bits[power - 2] / 8);
+                }
                 if (power_bits > bits) {
                         power_bits = bits;
                 }
@@ -105,7 +112,8 @@ void index_set (Index *index, size_t position, bool to_value)
         power = index->power;
         while (power --> 0) {
                 bit_index = (position - offset) / index->power_bits[power - 1];
-                if (unsigned_char_bit_get (index->map[index->power_offset[power - 1]], (unsigned int)bit_index)) {
+                if (unsigned_char_bit_get (index->map[index->power_offset[power - 1]], 
+                                           (unsigned int)bit_index)) {
                         continue;
                 }
                 index->map[index->power_offset[power - 1]] = 

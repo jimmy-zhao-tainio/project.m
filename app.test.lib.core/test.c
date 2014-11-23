@@ -26,7 +26,7 @@
 
 bool (*tests[]) (Test *test) =
 {
-        &test_defines,
+        /*&test_defines,
         &test_size_t_add,
         &test_size_t_mul,
         &test_size_t_pow_invalid_argument,
@@ -397,15 +397,17 @@ bool (*tests[]) (Test *test) =
         &test_topological_get_edges_function_call_2,
         &test_topological_get_edges,
         &test_topological_count_vertices_invalid_argument,
-        &test_topological_count_vertices,
+        &test_topological_count_vertices,*/
         &test_index_create_invalid_argument,
         &test_index_create_overflow_1,
         &test_index_create_function_call_1,
         &test_index_create_function_call_2,
         &test_index_create_function_call_3,
         &test_index_create_function_call_4,
-        &test_index_create,
-        &test_big_int_create_function_call_1,
+        &test_index_create_1,
+        &test_index_create_2,
+        &test_index_create_3,
+        /*&test_big_int_create_function_call_1,
         &test_big_int_create_function_call_2,
         &test_big_int_create_1,
         &test_big_int_create_2,
@@ -445,7 +447,7 @@ bool (*tests[]) (Test *test) =
         &test_big_int_equals_string,
         &test_big_int_to_value_invalid_argument_1,
         &test_big_int_to_value_invalid_argument_2,
-        &test_big_int_to_value,
+        &test_big_int_to_value,*/
         NULL
 };
 

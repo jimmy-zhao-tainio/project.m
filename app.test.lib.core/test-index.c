@@ -1,6 +1,7 @@
 #include <lib.core/index.h>
 #include <lib.core/error.h>
 #include <lib.core/memory.h>
+#include <stdio.h>
 
 #include "test-index.h"
 
@@ -66,13 +67,56 @@ bool test_index_create_function_call_4 (Test *test)
         PASS ();
 }
 
-bool test_index_create (Test *test)
+bool test_index_create_1 (Test *test)
 {
         Index *index;
 
         TITLE ();
         CATCH (!(index = index_create (1)));
+        CATCH (index->bits != 1);
+        CATCH (index->power != 1);
+        CATCH (memory_size (index->power_bits) != sizeof (size_t));
+        CATCH (index->power_bits[0] != 8);
+        CATCH (memory_size (index->power_offset) != sizeof (size_t));
+        CATCH (index->power_offset[0] != 0);
+        index_destroy (index);
+        PASS ();
+}
 
+bool test_index_create_2 (Test *test)
+{
+        Index *index;
+
+        TITLE ();
+        CATCH (!(index = index_create (16)));
+        CATCH (index->bits != 16);
+        CATCH (index->power != 2);
+        CATCH (memory_size (index->power_bits) != 2 * sizeof (size_t));
+        CATCH (index->power_bits[0] != 8);
+        CATCH (index->power_bits[1] != 64);
+        CATCH (memory_size (index->power_offset) != 2 * sizeof (size_t));
+        CATCH (index->power_offset[0] != 0);
+        CATCH (index->power_offset[1] != 1);
+        index_destroy (index);
+        PASS ();
+}
+
+bool test_index_create_3 (Test *test)
+{
+        Index *index;
+
+        TITLE ();
+        CATCH (!(index = index_create (512)));
+        CATCH (index->bits != 512);
+        CATCH (index->power != 3);
+        CATCH (memory_size (index->power_bits) != 3 * sizeof (size_t));
+        CATCH (index->power_bits[0] != 8);
+        CATCH (index->power_bits[1] != 64);
+        CATCH (index->power_bits[2] != 512);
+        CATCH (memory_size (index->power_offset) != 3 * sizeof (size_t));
+        CATCH (index->power_offset[0] != 0);
+        CATCH (index->power_offset[1] != 1);
+        CATCH (index->power_offset[2] != 9);
         index_destroy (index);
         PASS ();
 }

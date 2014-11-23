@@ -5,14 +5,6 @@
 
 typedef struct s_Index Index;
 
-/*
- * Index uses an octal bitmap tree with each depth D having 8^D bits
- *
- * Depth 1 :     |         |         |         |         |         |         |         |
- * Depth 2 : |||| |||| |||| |||| |||| |||| |||| |||| |||| |||| |||| |||| |||| |||| |||| ||||
- *
- */
-
 struct s_Index
 {
         size_t bits;
