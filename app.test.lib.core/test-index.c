@@ -75,15 +75,52 @@ bool test_index_create_1 (Test *test)
         CATCH (!(index = index_create (1)));
         CATCH (index->bits != 1);
         CATCH (index->power != 1);
-        CATCH (memory_size (index->power_bits) != sizeof (size_t));
+        CATCH (memory_size (index->power_bits) != 1 * sizeof (size_t));
         CATCH (index->power_bits[0] != 8);
-        CATCH (memory_size (index->power_offset) != sizeof (size_t));
+        CATCH (memory_size (index->power_offset) != 1 * sizeof (size_t));
         CATCH (index->power_offset[0] != 0);
+        CATCH (memory_size (index->map) != 1);
         index_destroy (index);
         PASS ();
 }
 
 bool test_index_create_2 (Test *test)
+{
+        Index *index;
+
+        TITLE ();
+        CATCH (!(index = index_create (8)));
+        CATCH (index->bits != 8);
+        CATCH (index->power != 1);
+        CATCH (memory_size (index->power_bits) != 1 * sizeof (size_t));
+        CATCH (index->power_bits[0] != 8);
+        CATCH (memory_size (index->power_offset) != 1 * sizeof (size_t));
+        CATCH (index->power_offset[0] != 0);
+        CATCH (memory_size (index->map) != 1);
+        index_destroy (index);
+        PASS ();
+}
+
+bool test_index_create_3 (Test *test)
+{
+        Index *index;
+
+        TITLE ();
+        CATCH (!(index = index_create (9)));
+        CATCH (index->bits != 9);
+        CATCH (index->power != 2);
+        CATCH (memory_size (index->power_bits) != 2 * sizeof (size_t));
+        CATCH (index->power_bits[0] != 8);
+        CATCH (index->power_bits[1] != 64);
+        CATCH (memory_size (index->power_offset) != 2 * sizeof (size_t));
+        CATCH (index->power_offset[0] != 0);
+        CATCH (index->power_offset[1] != 1);
+        CATCH (memory_size (index->map) != 1 + 1 + 1);
+        index_destroy (index);
+        PASS ();
+}
+
+bool test_index_create_4 (Test *test)
 {
         Index *index;
 
@@ -97,11 +134,31 @@ bool test_index_create_2 (Test *test)
         CATCH (memory_size (index->power_offset) != 2 * sizeof (size_t));
         CATCH (index->power_offset[0] != 0);
         CATCH (index->power_offset[1] != 1);
+        CATCH (memory_size (index->map) != 1 + 2);
         index_destroy (index);
         PASS ();
 }
 
-bool test_index_create_3 (Test *test)
+bool test_index_create_5 (Test *test)
+{
+        Index *index;
+
+        TITLE ();
+        CATCH (!(index = index_create (64)));
+        CATCH (index->bits != 64);
+        CATCH (index->power != 2);
+        CATCH (memory_size (index->power_bits) != 2 * sizeof (size_t));
+        CATCH (index->power_bits[0] != 8);
+        CATCH (index->power_bits[1] != 64);
+        CATCH (memory_size (index->power_offset) != 2 * sizeof (size_t));
+        CATCH (index->power_offset[0] != 0);
+        CATCH (index->power_offset[1] != 1);
+        CATCH (memory_size (index->map) != 1 + 8);
+        index_destroy (index);
+        PASS ();
+}
+
+bool test_index_create_6 (Test *test)
 {
         Index *index;
 
@@ -117,6 +174,7 @@ bool test_index_create_3 (Test *test)
         CATCH (index->power_offset[0] != 0);
         CATCH (index->power_offset[1] != 1);
         CATCH (index->power_offset[2] != 9);
+        CATCH (memory_size (index->map) != 1 + 8 + 64);
         index_destroy (index);
         PASS ();
 }

@@ -12,5 +12,8 @@ bool test_index_create_function_call_4 (Test *test);
 bool test_index_create_1 (Test *test);
 bool test_index_create_2 (Test *test);
 bool test_index_create_3 (Test *test);
+bool test_index_create_4 (Test *test);
+bool test_index_create_5 (Test *test);
+bool test_index_create_6 (Test *test);
 
 #endif

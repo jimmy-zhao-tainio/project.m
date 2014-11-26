@@ -58,6 +58,7 @@ Index *index_create (size_t bits)
         power = 1;
         while (true) {
                 if (!size_t_pow (8, power, &power_bits)) {
+                        index_destroy (index);
                         error_code (Overflow, 3);
                         return NULL;
                 }
@@ -74,6 +75,7 @@ Index *index_create (size_t bits)
                         power_bits = bits;
                 }
                 if (!size_t_add (bits_total, power_bits, &bits_total)) {
+                        index_destroy (index);
                         error_code (Overflow, 4);
                         return NULL;
                 }
