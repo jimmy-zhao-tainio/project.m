@@ -99,35 +99,93 @@ void index_destroy (Index *index)
         memory_destroy (index);
 }
 
+static void get_map_index (Index *index, 
+                           size_t power, 
+                           size_t position, 
+                           size_t *byte_index, 
+                           unsigned int *bit_index);
+
 void index_set (Index *index, size_t position, bool to_value)
 {
-        //     |         |         |         |         |         |         |         |
-        //     0         1         2         3         4         5         6         7
-        // |||| |||| |||| |||| |||| |||| |||| |||| |||| |||| |||| |||| |||| |||| |||| ||||
-        // 0123 4567 8911 1111 1111 2222 2222 2233 3333 3333 4444 4444 4455 5555 5555 6666
-        //             01 2345 6789 0123 4567 8901 2345 6789 0123 4567 8901 2345 6789 0123
-
         size_t power;
-        size_t bit_index;
-        size_t offset = 0;
+        size_t byte;
+        unsigned int bit;
+        unsigned char max = (unsigned char)-1;
 
-        power = index->power;
-        while (power --> 0) {
-                bit_index = (position - offset) / index->power_bits[power - 1];
-                if (unsigned_char_bit_get (index->map[index->power_offset[power - 1]], 
-                                           (unsigned int)bit_index)) {
-                        continue;
-                }
-                index->map[index->power_offset[power - 1]] = 
-                        unsigned_char_bit_set (index->map[index->power_offset[power - 1]], 
-                                               (unsigned int)bit_index, 
-                                               to_value);
+        if (!index) {
+                error (InvalidArgument);
+                return;
         }
+        if (position >= index->bits) {
+                error (InvalidOperation);
+                return;
+        }
+        if (to_value == true) {
+                for (power = 1; power <= index->power; power++) {
+                        get_map_index (index, power, position, &byte, &bit);
+                        if (unsigned_char_bit_get (index->map[byte], bit)) {
+                                return;
+                        }
+                        if (power == index->power) {
+                                index->map[byte] = unsigned_char_bit_set (index->map[byte], bit, true);
+                                if (index->map[byte] != max) {
+                                        return;
+                                }
+                                continue;
+                        }
+                }
+                while (power --> 1) {
+                        get_map_index (index, power, position, &byte, &bit);
+                        index->map[byte] = unsigned_char_bit_set (index->map[byte], bit, true);
+                        if (index->map[byte] != max) {
+                                return;
+                        }
+                }
+        }
+        else {
+                for (power = 1; power <= index->power; power++) {
+                        get_map_index (index, power, position, &byte, &bit);
+                        index->map[byte] = unsigned_char_bit_set (index->map[byte], bit, false);
+                }
+        }
+}
+
+static void get_map_index (Index *index, 
+                           size_t power, 
+                           size_t position, 
+                           size_t *byte_index, 
+                           unsigned int *bit_index)
+{
+        size_t bits_in_power;
+        size_t bits_in_largest_power;
+        size_t position_in_power;
+
+        bits_in_power = index->power_bits[power - 1];
+        bits_in_largest_power = index->power_bits[index->power - 1];
+        position_in_power = (position * bits_in_power) / bits_in_largest_power;
+        *byte_index = index->power_offset[power - 1] + (position_in_power / 8);
+        *bit_index = position_in_power % 8;
 }
 
 bool index_get (Index *index, size_t position)
 {
-        (void)index;
-        (void)position;
+        size_t power;
+        size_t byte;
+        unsigned int bit;
+
+        if (!index) {
+                error (InvalidArgument);
+                return false;
+        }
+        if (position >= index->bits) {
+                error (InvalidOperation);
+                return false;
+        }
+        for (power = 1; power <= index->power; power++) {
+                get_map_index (index, power, position, &byte, &bit);
+                if (unsigned_char_bit_get (index->map[byte], bit)) {
+                        return true;
+                }
+        }
         return false;
 }

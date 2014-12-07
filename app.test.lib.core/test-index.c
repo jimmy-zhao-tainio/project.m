@@ -1,6 +1,7 @@
 #include <lib.core/index.h>
 #include <lib.core/error.h>
 #include <lib.core/memory.h>
+#include <string.h>
 #include <stdio.h>
 
 #include "test-index.h"
@@ -175,6 +176,73 @@ bool test_index_create_6 (Test *test)
         CATCH (index->power_offset[1] != 1);
         CATCH (index->power_offset[2] != 9);
         CATCH (memory_size (index->map) != 1 + 8 + 64);
+        index_destroy (index);
+        PASS ();
+}
+
+bool test_index_destroy_invalid_argument (Test *test)
+{
+	TITLE ();
+	index_destroy (NULL);
+	CATCH (error_count () != 1);
+	CATCH (error_at (0).error != ErrorInvalidArgument);
+	PASS ();
+}
+
+bool test_index_set_invalid_argument (Test *test)
+{
+        TITLE ();
+        index_set (NULL, 0, false);
+        CATCH (error_at (0).error != ErrorInvalidArgument);
+        PASS ();
+}
+
+bool test_index_set_invalid_operation (Test *test)
+{
+        Index index;
+
+        TITLE ();
+        index.bits = 1;
+        index_set (&index, 1, false);
+        CATCH (error_at (0).error != ErrorInvalidOperation);
+        PASS ();
+}
+
+bool test_index_set_1 (Test *test)
+{
+        Index *index;
+        unsigned int i;
+
+        TITLE ();
+        CATCH (!(index = index_create (8)));
+        for (i = 0; i < 8; i++) {
+                CATCH (unsigned_char_bit_get (index->map[0], i) != false);
+                index_set (index, i, true);
+                CATCH (unsigned_char_bit_get (index->map[0], i) != true);
+                index_set (index, i, false);
+                CATCH (unsigned_char_bit_get (index->map[0], i) != false);
+                CATCH (index->map[0] != 0);
+        }
+        index_destroy (index);
+        PASS ();
+}
+
+bool test_index_set_2 (Test *test)
+{
+        Index *index;
+        unsigned int i;
+        unsigned int b;
+
+        TITLE ();
+        CATCH (!(index = index_create (16)));
+
+        for (b = 0; b < 2; b++) {
+                for (i = 0; i < 8; i++) {
+                        index_set (index, (b * 8) + i, true);
+                        CATCH (unsigned_char_bit_get (index->map[b + 1], i) != true);
+                }
+                CATCH (unsigned_char_bit_get (index->map[0], b) != true);
+        }
         index_destroy (index);
         PASS ();
 }

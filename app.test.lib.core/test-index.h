@@ -15,5 +15,10 @@ bool test_index_create_3 (Test *test);
 bool test_index_create_4 (Test *test);
 bool test_index_create_5 (Test *test);
 bool test_index_create_6 (Test *test);
+bool test_index_destroy_invalid_argument (Test *test);
+bool test_index_set_invalid_argument (Test *test);
+bool test_index_set_invalid_operation (Test *test);
+bool test_index_set_1 (Test *test);
+bool test_index_set_2 (Test *test);
 
 #endif
