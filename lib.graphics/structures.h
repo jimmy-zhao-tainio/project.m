@@ -2,6 +2,7 @@
 #define lib_graphics_structures_h
 
 #include <lib.core/defines.h>
+#include <lib.core/index.h>
 
 typedef struct s_Position  Position;
 typedef struct s_Size      Size;
@@ -47,6 +48,7 @@ struct s_Image
 struct s_Canvas
 {
         Image image;
+        Index *changes;
 };
 
 Position  position_value  (size_t x, size_t y);

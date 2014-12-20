@@ -4,11 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-/*
-static void lock_write_enter (Canvas *canvas, Rectangle rectangle);
-static void lock_write_leave (Canvas *canvas);
-*/
-
 Canvas *canvas_create (Size size)
 {
         Canvas *canvas;
@@ -38,6 +33,12 @@ Canvas *canvas_create (Size size)
                 error_code (FunctionCall, 2);
                 return NULL;
         }
+        if (!(canvas->changes = index_create (size.width * size.height))) {
+                memory_destroy (canvas->image.map);
+                memory_destroy (canvas);
+                error_code (FunctionCall, 3);
+                return NULL;
+        }
         canvas->image.width = size.width;
         canvas->image.height = size.height;
         return canvas;
@@ -51,6 +52,9 @@ void canvas_destroy (Canvas *canvas)
         }
         if (canvas->image.map) {
                 memory_destroy (canvas->image.map);
+        }
+        if (canvas->changes) {
+                index_destroy (canvas->changes);
         }
         memory_destroy (canvas);
 }

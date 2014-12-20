@@ -9,8 +9,7 @@
 #include <lib.compile/compile.h>
 
 static bool recursively_flatten_libraries       (CompileProject *project, Compile *compile);
-static bool recursively_flatten_libraries_inner (CompileProject *project, Compile *compile, Directory *library, 
-                                                 Tree *append);
+static bool recursively_flatten_libraries_inner (CompileProject *project, Compile *compile, Directory *library, Tree *append);
 static bool sort_libraries                      (CompileProject *project, Compile *compile);
 static bool included_libraries_are_up_to_date   (CompileProject *project, Compile *compile);
 

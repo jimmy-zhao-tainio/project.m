@@ -2,6 +2,7 @@
 #include <lib.core/file.h>
 #include <lib.core/memory.h>
 #include <lib.core/error.h>
+#include <stdio.h>
 #include <dlfcn.h>
 
 Plugin *plugin_create (const char *path)
@@ -22,6 +23,7 @@ Plugin *plugin_create (const char *path)
                 return NULL;
         }
         if (!(plugin->handle = dlopen (path, RTLD_NOW))) {
+                printf ("%s\n", dlerror ());
                 memory_destroy (plugin->name);
                 memory_destroy (plugin);
                 error_code (SystemCall, 1);
