@@ -16,7 +16,9 @@ struct s_Index
 
 Index *index_create (size_t bits);
 void index_destroy (Index *index);
-void index_set (Index *index, size_t position, bool to_value);
+void index_set (Index *index, size_t position);
+void index_set_range (Index *index, size_t from, size_t to);
 bool index_get (Index *index, size_t position);
+void index_clear (Index *index);
 
 #endif

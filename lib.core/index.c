@@ -1,7 +1,32 @@
 #include <lib.core/index.h>
 #include <lib.core/memory.h>
 #include <lib.core/error.h>
+#include <string.h>
 #include <stdio.h>
+
+static void get_map_index (Index *index, 
+                           size_t power, 
+                           size_t position, 
+                           size_t *byte_index, 
+                           unsigned int *bit_index);
+static void set_range (Index *index, 
+                       size_t from_byte, 
+                       unsigned int from_bit, 
+                       size_t to_byte, 
+                       unsigned int to_bit);
+static bool set_range_partial_from (Index *index, 
+                                    size_t *from_byte, 
+                                    unsigned int *from_bit, 
+                                    size_t to_byte, 
+                                    unsigned int to_bit);
+static bool set_range_partial_to (Index *index, 
+                                  size_t from_byte, 
+                                  unsigned int from_bit, 
+                                  size_t *to_byte, 
+                                  unsigned int *to_bit);
+static void set_range_middle (Index *index, 
+                              size_t from_byte, 
+                              size_t to_byte);
 
 Index *index_create (size_t bits)
 {
@@ -99,18 +124,11 @@ void index_destroy (Index *index)
         memory_destroy (index);
 }
 
-static void get_map_index (Index *index, 
-                           size_t power, 
-                           size_t position, 
-                           size_t *byte_index, 
-                           unsigned int *bit_index);
-
-void index_set (Index *index, size_t position, bool to_value)
+void index_set (Index *index, size_t position)
 {
         size_t power;
         size_t byte;
         unsigned int bit;
-        unsigned char max = (unsigned char)-1;
 
         if (!index) {
                 error (InvalidArgument);
@@ -120,34 +138,67 @@ void index_set (Index *index, size_t position, bool to_value)
                 error (InvalidOperation);
                 return;
         }
-        if (to_value == true) {
-                for (power = 1; power <= index->power; power++) {
-                        get_map_index (index, power, position, &byte, &bit);
-                        if (unsigned_char_bit_get (index->map[byte], bit)) {
-                                return;
-                        }
-                        if (power == index->power) {
-                                index->map[byte] = unsigned_char_bit_set (index->map[byte], bit, true);
-                                if (index->map[byte] != max) {
-                                        return;
-                                }
-                                continue;
-                        }
-                }
-                while (power --> 1) {
-                        get_map_index (index, power, position, &byte, &bit);
-                        index->map[byte] = unsigned_char_bit_set (index->map[byte], bit, true);
-                        if (index->map[byte] != max) {
-                                return;
-                        }
-                }
+        for (power = 1; power <= index->power; power++) {
+                get_map_index (index, power, position, &byte, &bit);
+                index->map[byte] = unsigned_char_bit_set (index->map[byte], bit, true);
         }
-        else {
-                for (power = 1; power <= index->power; power++) {
-                        get_map_index (index, power, position, &byte, &bit);
-                        index->map[byte] = unsigned_char_bit_set (index->map[byte], bit, false);
-                }
+}
+
+void index_set_range (Index *index, size_t from, size_t to)
+{
+        size_t from_byte;
+        size_t to_byte;
+        size_t power;
+        unsigned int from_bit;
+        unsigned int to_bit;
+
+        if (!index) {
+                error (InvalidArgument);
+                return;
         }
+        if (from >= index->bits) {
+                error_code (InvalidOperation, 1);
+                return;
+        }
+        if (to >= index->bits) {
+                error_code (InvalidOperation, 2);
+                return;
+        }
+        if (from > to) {
+                error_code (InvalidOperation, 3);
+                return;
+        }
+        for (power = 1; power <= index->power; power++) {
+                get_map_index (index, power, from, &from_byte, &from_bit);
+                get_map_index (index, power, to, &to_byte, &to_bit);
+                set_range (index, from_byte, from_bit, to_byte, to_bit);
+        }
+}
+
+bool index_get (Index *index, size_t position)
+{
+        size_t byte;
+        unsigned int bit;
+
+        if (!index) {
+                error (InvalidArgument);
+                return false;
+        }
+        if (position >= index->bits) {
+                error (InvalidOperation);
+                return false;
+        }
+        get_map_index (index, index->power, position, &byte, &bit);
+        return unsigned_char_bit_get (index->map[byte], bit);
+}
+
+void index_clear (Index *index)
+{
+        if (!index) {
+                error (InvalidArgument);
+                return;
+        }
+        bzero (index->map, memory_size (index->map));
 }
 
 static void get_map_index (Index *index, 
@@ -167,25 +218,75 @@ static void get_map_index (Index *index,
         *bit_index = position_in_power % 8;
 }
 
-bool index_get (Index *index, size_t position)
+static void set_range (Index *index, 
+                       size_t from_byte, 
+                       unsigned int from_bit, 
+                       size_t to_byte, 
+                       unsigned int to_bit)
 {
-        size_t power;
-        size_t byte;
+        if (set_range_partial_from (index, &from_byte, &from_bit, to_byte, to_bit)) {
+                return;
+        }
+        if (set_range_partial_to (index, from_byte, from_bit, &to_byte, &to_bit)) {
+                return;
+        }
+        set_range_middle (index, from_byte, to_byte);
+}
+
+static bool set_range_partial_from (Index *index, 
+                                    size_t *from_byte, 
+                                    unsigned int *from_bit, 
+                                    size_t to_byte, 
+                                    unsigned int to_bit)
+{
         unsigned int bit;
 
-        if (!index) {
-                error (InvalidArgument);
+        if (*from_bit == 0) {
                 return false;
         }
-        if (position >= index->bits) {
-                error (InvalidOperation);
-                return false;
-        }
-        for (power = 1; power <= index->power; power++) {
-                get_map_index (index, power, position, &byte, &bit);
-                if (unsigned_char_bit_get (index->map[byte], bit)) {
-                        return true;
+        if (*from_byte == to_byte) {
+                for (bit = *from_bit; bit <= to_bit; bit++) {
+                        index->map[*from_byte] = unsigned_char_bit_set (index->map[*from_byte], bit, true);
                 }
+                return true;
         }
+        for (bit = *from_bit; bit <= 7; bit++) {
+                index->map[*from_byte] = unsigned_char_bit_set (index->map[*from_byte], bit, true);
+        }
+        *from_byte += 1;
+        *from_bit = 0;
         return false;
+}
+
+static bool set_range_partial_to (Index *index, 
+                                  size_t from_byte, 
+                                  unsigned int from_bit, 
+                                  size_t *to_byte, 
+                                  unsigned int *to_bit)
+{
+        unsigned int bit;
+
+        if (*to_bit == 7) {
+                return false;
+        }
+        if (*to_byte == from_byte) {
+                for (bit = from_bit; bit <= *to_bit; bit++) {
+                        index->map[*to_byte] = unsigned_char_bit_set (index->map[*to_byte], bit, true);
+                }
+                return true;
+        }
+        // Since to_byte isn't from_byte, there is a bit at 0 and to_byte - 1 must be greater or equal to from_byte.
+        for (bit = 0; bit <= *to_bit; bit++) {
+                index->map[*to_byte] = unsigned_char_bit_set (index->map[*to_byte], bit, true);
+        }
+        *to_byte -= 1;
+        *to_bit = 7;
+        return false;
+}
+
+static void set_range_middle (Index *index,
+                              size_t from_byte,
+                              size_t to_byte)
+{
+        memset (&index->map[from_byte], 0xFF, (to_byte - from_byte) + 1);
 }
