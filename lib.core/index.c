@@ -275,7 +275,6 @@ static bool set_range_partial_to (Index *index,
                 }
                 return true;
         }
-        // Since to_byte isn't from_byte, there is a bit at 0 and to_byte - 1 must be greater or equal to from_byte.
         for (bit = 0; bit <= *to_bit; bit++) {
                 index->map[*to_byte] = unsigned_char_bit_set (index->map[*to_byte], bit, true);
         }
