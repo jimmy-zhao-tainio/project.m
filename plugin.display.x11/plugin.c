@@ -24,6 +24,9 @@ bool unload (void)
 
 bool display_canvas (Canvas *canvas)
 {
+        bool running = true;
+        Atom deleteMessage;
+
         if (!(global.display = XOpenDisplay (NULL))) {
                 error (SystemCall);
                 return false;
@@ -46,9 +49,12 @@ bool display_canvas (Canvas *canvas)
                       ExposureMask | KeyPressMask);
         XMapWindow (global.display,
                     global.window);
-        while (1) {
+        deleteMessage = XInternAtom (global.display, "WM_DELETE_WINDOW", false);
+        XSetWMProtocols (global.display, global.window, &deleteMessage, 1);
+        while (running) {
                 XNextEvent (global.display, &global.event);
-                if (global.event.type == Expose) {
+                switch (global.event.type) {
+                case Expose:
                         XFillRectangle (global.display,
                                         global.window,
                                         DefaultGC (global.display,
@@ -57,8 +63,14 @@ bool display_canvas (Canvas *canvas)
                                         0,
                                         (unsigned int)canvas->image.width,
                                         (unsigned int)canvas->image.height);
-                }
-                if (global.event.type == KeyPress) {
+                        break;
+                case KeyPress:
+                        running = false;
+                        break;
+                case ClientMessage:
+                        if (global.event.xclient.data.l[0] == (unsigned int)deleteMessage) {
+                                running = false;
+                        }
                         break;
                 }
         }
