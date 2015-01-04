@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <lib.core/error.h>
+#include <lib.core/threads-lock.h>
 
 static ErrorItem   items[ERROR_ITEMS_MAX];
 static size_t      literals_count = 0;
@@ -20,12 +21,26 @@ static const char *literals[] = {
 static uint64_t count = 0;
 static bool silent = true;
 static void print_item (ErrorItem item, uint64_t item_count);
+static ThreadLock lock = THREAD_LOCK_INITIALIZER;
+
+#define LOCK() \
+        if (!thread_lock (&lock)) { \
+                fprintf (stderr, "%s: Failure to lock!\n", __func__); \
+                fflush (stderr); \
+        }
+#define UNLOCK() \
+        if (!thread_unlock (&lock)) { \
+                fprintf (stderr, "%s: Failure to unlock!\n", __func__); \
+                fflush (stderr); \
+        }
+
 
 void error_add (const char *file, const char *function, int line, int code, Error error)
 {
 	size_t i = ERROR_ITEMS_MAX;
 	int invalid_error;
 
+        LOCK ();
 	if (literals_count == 0) {
 		while (literals[literals_count++]);
 	}
@@ -56,12 +71,14 @@ void error_add (const char *file, const char *function, int line, int code, Erro
 	items[0].literal = literals[(size_t)error];
 	items[0].invalid_error = invalid_error;
         print_item (items[0], ++count);
+        UNLOCK ();
 }
 
 void error_reset (void)
 {
 	size_t i = ERROR_ITEMS_MAX;
 
+        LOCK ();
 	while (i-- > 0) {
 		items[i].file = NULL;
 		items[i].function = NULL;
@@ -72,15 +89,18 @@ void error_reset (void)
 		items[i].invalid_error = 0;
 	}
         count = 0;
+        UNLOCK ();
 }
 
 size_t error_count (void)
 {
 	size_t i = 0;
 
+        LOCK ();
 	while (i < ERROR_ITEMS_MAX && items[i].error != ErrorReserved) {
 		i++;
 	}
+        UNLOCK ();
 	return i;
 }
 
@@ -91,6 +111,7 @@ ErrorItem error_at (size_t index)
 	if (index >= ERROR_ITEMS_MAX) {
 		return item;
 	}
+        LOCK ();
 	item.file = items[index].file;
 	item.function = items[index].function;
 	item.line = items[index].line;
@@ -98,12 +119,15 @@ ErrorItem error_at (size_t index)
 	item.error = items[index].error;
 	item.literal = items[index].literal;
 	item.invalid_error = items[index].invalid_error;
+        UNLOCK ();
 	return item;
 }
 
 void error_silent (bool state)
 {
+        LOCK ();
         silent = state;
+        UNLOCK ();
 }
 
 static void print_item (ErrorItem item, uint64_t item_count)

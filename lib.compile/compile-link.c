@@ -139,7 +139,7 @@ static bool link_library_try (Compile *compile, char **lib_path, char **lib_file
 bool compile_link_application (Compile *compile)
 {
 	CompileAction *action;
-	const char *linker = "gcc -lrt -lm -rdynamic ";
+	const char *linker = "gcc -pthread -lrt -lm -rdynamic ";
 	const char *flag = "-O0 -o ";
 	bool newer_library = 0;
 	File *app_file;

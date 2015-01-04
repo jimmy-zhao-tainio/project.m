@@ -1,6 +1,8 @@
 #include <lib.core/error.h>
 #include <lib.core/random.h>
+#include <lib.core/threads.h>
 #include <lib.app/arguments.h>
+#include <lib.app/events.h>
 #include <lib.graphics/graphics.h>
 #include <lib.display.plugin/display-plugin.h>
 
@@ -37,11 +39,12 @@ int main (int argc, char **argv)
 	return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+static void worker (Thread *worker);
+
 static bool try (uint64_t width, uint64_t height, Canvas **canvas, DisplayPlugin **display_plugin)
 {
-        uint64_t x, y;
-        unsigned char rgb[3];
-        uint64_t count;
+        Thread *thread;
+        bool success;
 
         if (!random_open ()) {
                 error_code (FunctionCall, 1);
@@ -59,16 +62,42 @@ static bool try (uint64_t width, uint64_t height, Canvas **canvas, DisplayPlugin
                 error_code (FunctionCall, 4);
                 return false;
         }
-        for (count = 0; count < 10000; count++) {
-                if (!random_value (0, width - 1, (unsigned long long *)&x) ||
-                    !random_value (0, height - 1, (unsigned long long *)&y) ||
-                    !random_bytes (rgb, 3)) {
-                        error_code (FunctionCall, 5);
-                        return false;
-                }
-                canvas_draw_color (*canvas, 
-                                   position_value (x, y), 
-                                   color_value ((uint8_t)rgb[0], (uint8_t)rgb[1], (uint8_t)rgb[2]));
+        if (!(thread = thread_create (&worker, canvas))) {
+                error_code (FunctionCall, 5);
+                return false;
         }
-	return true;
+        success = app_events ();
+        if (!thread_set_exit (thread)) {
+                error_code (FunctionCall, 6);
+                return false;
+        }
+        if (!thread_wait (thread)) {
+                error_code (FunctionCall, 7);
+                return false;
+        }
+        thread_destroy (thread);
+        return success;
+}
+
+static void worker (Thread *thread)
+{
+        Canvas *canvas = thread->argument;
+        uint64_t x, y;
+        unsigned char rgb[3];
+        uint64_t count;
+
+        while (!thread_get_exit (thread)) {
+                for (count = 0; count < 10000; count++) {
+                        if (!random_value (0, canvas->image.width - 1, (unsigned long long *)&x) ||
+                            !random_value (0, canvas->image.height - 1, (unsigned long long *)&y) ||
+                            !random_bytes (rgb, 3)) {
+                                error_code (FunctionCall, 5);
+                                thread_exit (thread);
+                        }
+                        canvas_draw_color (canvas, 
+                                           position_value (x, y), 
+                                           color_value ((uint8_t)rgb[0], (uint8_t)rgb[1], (uint8_t)rgb[2]));
+                }
+        }
+        thread_exit (thread);
 }
