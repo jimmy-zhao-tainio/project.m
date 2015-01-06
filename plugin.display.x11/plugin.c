@@ -2,6 +2,7 @@
 #include <lib.core/error.h>
 #include <X11/Xlib.h>
 
+/*
 typedef struct
 {
         Display *display;
@@ -10,7 +11,7 @@ typedef struct
         int screen;
 } Global;
 
-static Global global;
+static Global global;*/
 
 bool load (void)
 {
@@ -24,6 +25,9 @@ bool unload (void)
 
 bool display_canvas (Canvas *canvas)
 {
+        (void)canvas;
+        return true;
+        /*
         bool running = true;
         Atom deleteMessage;
 
@@ -75,5 +79,5 @@ bool display_canvas (Canvas *canvas)
                 }
         }
         XCloseDisplay (global.display);
-        return true;
+        return true;*/
 }

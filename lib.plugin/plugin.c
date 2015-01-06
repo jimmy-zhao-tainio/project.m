@@ -2,12 +2,20 @@
 #include <lib.core/file.h>
 #include <lib.core/memory.h>
 #include <lib.core/error.h>
+#include <lib.core/threads.h>
+#include <lib.core/string.h>
 #include <stdio.h>
 #include <dlfcn.h>
+
+/* Workaround for memory leaks in glibc (_dlerror_run) */
+static void dlopen_workaround (Thread *thread); 
+static void dlclose_workaround (Thread *thread);
+static void dlsym_workaround (Thread *thread);
 
 Plugin *plugin_create (const char *path)
 {
         Plugin *plugin;
+        Thread *thread;
 
         if (!path) {
                 error (InvalidArgument);
@@ -17,41 +25,55 @@ Plugin *plugin_create (const char *path)
                 error_code (FunctionCall, 1);
                 return NULL;
         }
-        if (!(plugin->name = file_name_from_path (path))) {
-                memory_destroy (plugin);
+        if (!(plugin->path = string_create (path))) {
+                plugin_destroy (plugin);
                 error_code (FunctionCall, 2);
                 return NULL;
         }
-        if (!(plugin->handle = dlopen (path, RTLD_NOW))) {
-                printf ("%s\n", dlerror ());
-                memory_destroy (plugin->name);
-                memory_destroy (plugin);
-                error_code (SystemCall, 1);
-                return NULL;
-        }
-        if (!plugin_set_function (plugin, (void **)&plugin->load, "load")) {
-                if (dlclose (plugin->handle) != 0) {
-                        error_code (SystemCall, 2);
-                }
-                memory_destroy (plugin->name);
-                memory_destroy (plugin);
+        if (!(plugin->name = file_name_from_path (path))) {
+                plugin_destroy (plugin);
                 error_code (FunctionCall, 3);
                 return NULL;
         }
-        if (!plugin_set_function (plugin, (void **)&plugin->unload, "unload")) {
-                if (dlclose (plugin->handle) != 0) {
-                        error_code (SystemCall, 3);
-                }
-                memory_destroy (plugin->name);
-                memory_destroy (plugin);
+        if (!(thread = thread_create (dlopen_workaround, plugin))) {
+                plugin_destroy (plugin);
                 error_code (FunctionCall, 4);
                 return NULL;
         }
+        if (!thread_wait (thread)) {
+                plugin_destroy (plugin);
+                error_code (FunctionCall, 5);
+                return NULL;
+        }
+        thread_destroy (thread);
+        if (!plugin_set_function (plugin, (void **)&plugin->load, "load")) {
+                error_code (FunctionCall, 1);
+                thread_exit (thread);
+        }
+        if (!plugin_set_function (plugin, (void **)&plugin->unload, "unload")) {
+                error_code (FunctionCall, 2);
+                thread_exit (thread);
+        }
+        if (!plugin->handle || !plugin->load || !plugin->unload) {
+                plugin_destroy (plugin);
+                error_code (FunctionCall, 6);
+                return NULL;
+        }
+        
         return plugin;
 }
 
+typedef struct {
+        Plugin *plugin;
+        void **function;
+        char *function_name;
+} DLSymWorkaround;
+
 bool plugin_set_function (Plugin *plugin, void **function, char *function_name)
 {
+        DLSymWorkaround workaround;
+        Thread *thread;
+
         if (!plugin) {
                 error_code (InvalidArgument, 1);
                 return false;
@@ -68,8 +90,20 @@ bool plugin_set_function (Plugin *plugin, void **function, char *function_name)
                 error (InvalidOperation);
                 return false;
         }
-        if (!(*function = dlsym (plugin->handle, function_name))) {
-                error (SystemCall);
+        workaround.plugin = plugin;
+        workaround.function = function;
+        workaround.function_name = function_name;
+        if (!(thread = thread_create (dlsym_workaround, &workaround))) {
+                error_code (FunctionCall, 1);
+                return false;
+        }
+        if (!thread_wait (thread)) {
+                error_code (FunctionCall, 2);
+                return false;
+        }
+        thread_destroy (thread);
+        if (!*function) {
+                error_code (FunctionCall, 3);
                 return false;
         }
         return true;
@@ -77,13 +111,61 @@ bool plugin_set_function (Plugin *plugin, void **function, char *function_name)
 
 void plugin_destroy (Plugin *plugin)
 {
+        Thread *thread;
+
         if (!plugin) {
                 error (InvalidArgument);
                 return;
         }
-        if (dlclose (plugin->handle) != 0) {
+        if (!(thread = thread_create (dlclose_workaround, plugin))) {
+                error_code (FunctionCall, 1);
+                return;
+        }
+        if (!thread_wait (thread)) {
+                error_code (FunctionCall, 2);
+                return;
+        }
+        thread_destroy (thread);
+        if (plugin->path) {
+                memory_destroy (plugin->path);
+        }
+        if (plugin->name) {
+                memory_destroy (plugin->name);
+        }
+        memory_destroy (plugin);
+}
+
+static void dlopen_workaround (Thread *thread)
+{
+        Plugin *plugin;
+
+        plugin = thread->argument;
+        if (!(plugin->handle = dlopen (plugin->path, RTLD_NOW))) {
                 error (SystemCall);
         }
-        memory_destroy (plugin->name);
-        memory_destroy (plugin);
+        thread_exit (thread);
+}
+
+static void dlclose_workaround (Thread *thread)
+{
+        Plugin *plugin;
+
+        plugin = thread->argument;
+        if (plugin->handle) {
+                if (dlclose (plugin->handle) != 0) {
+                        error (SystemCall);
+                }
+        }
+        thread_exit (thread);
+}
+
+static void dlsym_workaround (Thread *thread)
+{
+        DLSymWorkaround *workaround;
+
+        workaround = thread->argument;
+        if (!(*workaround->function = dlsym (workaround->plugin->handle, workaround->function_name))) {
+                error (SystemCall);
+        }
+        thread_exit (thread);
 }

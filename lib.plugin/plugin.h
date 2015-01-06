@@ -7,6 +7,7 @@ typedef struct s_Plugin Plugin;
 
 struct s_Plugin
 {
+        char *path;
         char *name;
         void *handle;
         bool (*load)(void);
