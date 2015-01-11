@@ -5,7 +5,7 @@
 #include <lib.app/events.h>
 #include <lib.graphics/graphics.h>
 #include <lib.display.plugin/display-plugin.h>
-#include <stdio.h>
+#include <unistd.h>
 
 static bool try (uint64_t width, uint64_t height, Canvas **canvas, DisplayPlugin **display_plugin);
 
@@ -63,7 +63,7 @@ static bool try (uint64_t width, uint64_t height, Canvas **canvas, DisplayPlugin
                 error_code (FunctionCall, 4);
                 return false;
         }
-        if (!(thread = thread_create (&worker, canvas))) {
+        if (!(thread = thread_create (&worker, *canvas))) {
                 error_code (FunctionCall, 5);
                 return false;
         }
@@ -88,7 +88,7 @@ static void worker (Thread *thread)
         uint64_t count;
 
         while (!thread_get_exit (thread)) {
-                for (count = 0; count < 10000; count++) {
+                for (count = 0; count < canvas->image.width * canvas->image.height; count++) {
                         if (!random_value (0, canvas->image.width - 1, (unsigned long long *)&x) ||
                             !random_value (0, canvas->image.height - 1, (unsigned long long *)&y) ||
                             !random_bytes (rgb, 3)) {
@@ -99,6 +99,7 @@ static void worker (Thread *thread)
                                            position_value (x, y), 
                                            color_value ((uint8_t)rgb[0], (uint8_t)rgb[1], (uint8_t)rgb[2]));
                 }
+                usleep (1000);
         }
         thread_exit (thread);
 }

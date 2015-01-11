@@ -1,7 +1,6 @@
 #include <lib.graphics/canvas.h>
 #include <lib.core/memory.h>
 #include <lib.core/error.h>
-#include <stdio.h>
 #include <string.h>
 
 Canvas *canvas_create (Size size)
