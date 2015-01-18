@@ -8,7 +8,7 @@ typedef struct _ThreadLock ThreadLock;
 
 struct _ThreadLock
 {
-        pthread_mutex_t lock;
+        pthread_mutex_t mutex;
 };
 
 bool thread_lock_create  (ThreadLock *lock);
@@ -16,6 +16,6 @@ bool thread_lock_destroy (ThreadLock *lock);
 bool thread_lock         (ThreadLock *lock);
 bool thread_unlock       (ThreadLock *lock);
 
-#define THREAD_LOCK_INITIALIZER { .lock = PTHREAD_MUTEX_INITIALIZER }
+#define THREAD_LOCK_INITIALIZER { .mutex = PTHREAD_MUTEX_INITIALIZER }
 
 #endif

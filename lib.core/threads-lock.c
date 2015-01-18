@@ -8,7 +8,7 @@ bool thread_lock_create (ThreadLock *lock)
                 error (InvalidArgument);
                 return false;
         }
-        if (pthread_mutex_init (&lock->lock, NULL) != 0) {
+        if (pthread_mutex_init (&lock->mutex, NULL) != 0) {
                 error (SystemCall);
                 return false;
         }
@@ -21,7 +21,7 @@ bool thread_lock_destroy (ThreadLock *lock)
                 error (InvalidArgument);
                 return false;
         }
-        if (pthread_mutex_destroy (&lock->lock) != 0) {
+        if (pthread_mutex_destroy (&lock->mutex) != 0) {
                 error (SystemCall);
                 return false;
         }
@@ -34,7 +34,7 @@ bool thread_lock (ThreadLock *lock)
                 error (InvalidArgument);
                 return false;
         }
-        if (pthread_mutex_lock (&lock->lock) != 0) {
+        if (pthread_mutex_lock (&lock->mutex) != 0) {
                 error (SystemCall);
                 return false;
         }
@@ -47,7 +47,7 @@ bool thread_unlock (ThreadLock *lock)
                 error (InvalidArgument);
                 return false;
         }
-        if (pthread_mutex_unlock (&lock->lock) != 0) {
+        if (pthread_mutex_unlock (&lock->mutex) != 0) {
                 error (SystemCall);
                 return false;
         }

@@ -10,7 +10,8 @@ typedef struct _ThreadSignal ThreadSignal;
 
 struct _ThreadSignal
 {
-        pthread_cond_t signal;
+        ThreadLock lock;
+        pthread_cond_t cond;
 };
 
 struct _Thread
@@ -32,5 +33,6 @@ bool    thread_get_exit  (Thread *thread);
 bool thread_signal_create  (ThreadSignal *signal);
 bool thread_signal_destroy (ThreadSignal *signal);
 bool thread_signal         (ThreadSignal *signal);
+bool thread_signal_wait    (ThreadSignal *signal);
 
 #endif

@@ -84,7 +84,7 @@ Index *index_create (size_t bits)
         while (true) {
                 if (!size_t_pow (8, power, &power_bits)) {
                         index_destroy (index);
-                        error_code (Overflow, 3);
+                        error_code (FunctionCall, 5);
                         return NULL;
                 }
                 index->power_bits[power - 1] = power_bits;
@@ -101,7 +101,7 @@ Index *index_create (size_t bits)
                 }
                 if (!size_t_add (bits_total, power_bits, &bits_total)) {
                         index_destroy (index);
-                        error_code (Overflow, 4);
+                        error_code (Overflow, 3);
                         return NULL;
                 }
                 if (power_bits >= bits) {

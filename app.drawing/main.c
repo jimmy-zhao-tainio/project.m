@@ -6,6 +6,7 @@
 #include <lib.graphics/graphics.h>
 #include <lib.display.plugin/display-plugin.h>
 #include <unistd.h>
+#include <stdio.h>
 
 static bool try (uint64_t width, uint64_t height, Canvas **canvas, DisplayPlugin **display_plugin);
 
