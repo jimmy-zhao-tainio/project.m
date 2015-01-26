@@ -1,7 +1,9 @@
 #include <plugin.display.x11/plugin.h>
 #include <lib.core/error.h>
 #include <lib.core/threads.h>
+#include <lib.app/events.h>
 #include <X11/Xlib.h>
+#include <unistd.h>
 
 typedef struct
 {
@@ -12,16 +14,24 @@ typedef struct
         Thread *thread;
         ThreadSignal signal;
         bool initialized;
+        Thread *timer;
 } Global;
 
-static Global global;
+static Global global = {
+        .display = NULL,
+        .thread = NULL,
+        .signal = THREAD_SIGNAL_INITIALIZER,
+        .initialized = false,
+        .timer = NULL
+};
 
 static void worker (Thread *thread);
+static void timer (Thread *thread);
 
 bool load (void)
 {
         global.thread = NULL;
-        
+        global.timer = NULL;
         return true;
 }
 
@@ -30,30 +40,19 @@ bool unload (void)
         if (global.thread) {
                 thread_destroy (global.thread);
         }
+        if (global.timer) {
+                thread_destroy (global.timer);
+        }
         return true;
 }
 
 bool display_canvas (Canvas *canvas)
 {
-        if (!thread_signal_create (&global.signal)) {
-                error (FunctionCall);
-                return false;
-        }
         if (!(global.thread = thread_create (&worker, canvas))) {
-                if (!thread_signal_destroy (&global.signal)) {
-                        error (FunctionCall);
-                }
                 error (FunctionCall);
                 return false;
         }
         if (!thread_signal_wait (&global.signal)) {
-                if (!thread_signal_destroy (&global.signal)) {
-                        error (FunctionCall);
-                }
-                error (FunctionCall);
-                return false;
-        }
-        if (!thread_signal_destroy (&global.signal)) {
                 error (FunctionCall);
                 return false;
         }
@@ -67,7 +66,6 @@ static void worker (Thread *thread)
         Atom deleteMessage;
 
         if (!(global.display = XOpenDisplay (NULL))) {
-                global.initialized = false;
                 if (!thread_signal (&global.signal)) {
                         error (FunctionCall);
                 }
@@ -94,8 +92,14 @@ static void worker (Thread *thread)
                     global.window);
         deleteMessage = XInternAtom (global.display, "WM_DELETE_WINDOW", false);
         XSetWMProtocols (global.display, global.window, &deleteMessage, 1);
+        if (!(global.timer = thread_create (&timer, canvas))) {
+                XCloseDisplay (global.display);
+                error (FunctionCall);
+                return;
+        }
         global.initialized = true;
         if (!thread_signal (&global.signal)) {
+                XCloseDisplay (global.display);
                 global.initialized = false;
                 error (FunctionCall);
                 return;
@@ -124,5 +128,29 @@ static void worker (Thread *thread)
                 }
         }
         XCloseDisplay (global.display);
-        return;
+        app_event_exit ();
+}
+
+static void timer (Thread *thread)
+{
+        Canvas *canvas = thread->argument;
+
+        while (true) {
+                if (thread_get_exit (thread)) {
+                        thread_exit (thread);
+                }
+                usleep (16667);
+                if (thread_get_exit (thread)) {
+                        return;
+                }
+                if (!thread_lock (&canvas->lock)) {
+                        error (FunctionCall);
+                        return;
+                }
+                /* check canvas->index for changes */
+                if (!thread_unlock (&canvas->lock)) {
+                        error (FunctionCall);
+                        return;
+                }
+        }
 }

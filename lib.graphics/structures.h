@@ -3,6 +3,7 @@
 
 #include <lib.core/defines.h>
 #include <lib.core/index.h>
+#include <lib.core/threads-lock.h>
 
 typedef struct s_Position  Position;
 typedef struct s_Size      Size;
@@ -49,6 +50,7 @@ struct s_Canvas
 {
         Image image;
         Index *changes;
+        ThreadLock lock;
 };
 
 Position  position_value  (size_t x, size_t y);

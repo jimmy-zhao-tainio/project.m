@@ -27,15 +27,22 @@ Canvas *canvas_create (Size size)
                 error_code (FunctionCall, 1);
                 return NULL;
         }
-        if (!(canvas->image.map = memory_create (size.width * size.height * sizeof (Color)))) {
+        if (!thread_lock_create (&canvas->lock)) {
                 memory_destroy (canvas);
                 error_code (FunctionCall, 2);
                 return NULL;
         }
-        if (!(canvas->changes = index_create (size.width * size.height))) {
-                memory_destroy (canvas->image.map);
+        if (!(canvas->image.map = memory_create (size.width * size.height * sizeof (Color)))) {
+                thread_lock_destroy (&canvas->lock);
                 memory_destroy (canvas);
                 error_code (FunctionCall, 3);
+                return NULL;
+        }
+        if (!(canvas->changes = index_create (size.width * size.height))) {
+                thread_lock_destroy (&canvas->lock);
+                memory_destroy (canvas->image.map);
+                memory_destroy (canvas);
+                error_code (FunctionCall, 4);
                 return NULL;
         }
         canvas->image.width = size.width;
@@ -49,6 +56,7 @@ void canvas_destroy (Canvas *canvas)
                 error (InvalidArgument);
                 return;
         }
+        thread_lock_destroy (&canvas->lock);
         if (canvas->image.map) {
                 memory_destroy (canvas->image.map);
         }
@@ -72,7 +80,15 @@ void canvas_draw_color (Canvas *canvas, Position position, Color color)
                 error_code (GraphicsOutOfRange, 2);
                 return;
         }
+        if (!thread_lock (&canvas->lock)) {
+                error_code (FunctionCall, 1);
+                return;
+        }
         canvas->image.map[(position.y * canvas->image.width) + position.x] = color;
+        if (!thread_unlock (&canvas->lock)) {
+                error_code (FunctionCall, 2);
+                return;
+        }
 }
 
 void canvas_draw_image (Canvas *canvas, Position position, Image image)
@@ -101,11 +117,19 @@ void canvas_draw_image (Canvas *canvas, Position position, Image image)
                 error_code (GraphicsOutOfRange, 2);
                 return;
         }
+        if (!thread_lock (&canvas->lock)) {
+                error_code (FunctionCall, 1);
+                return;
+        }
         for (row = 0; row < image.height; row++) {
                 memcpy (&canvas->image.map[(position.y * canvas->image.width) + position.x + 
                                            (row * canvas->image.width)],
                         &image.map[row * image.width],
                         image.width * sizeof (Color));
+        }
+        if (!thread_unlock (&canvas->lock)) {
+                error_code (FunctionCall, 2);
+                return;
         }
 }
 
@@ -122,6 +146,10 @@ void canvas_fill_with_color (Canvas *canvas, Color color)
                 return;
         }
         size = canvas->image.width * canvas->image.height;
+        if (!thread_lock (&canvas->lock)) {
+                error_code (FunctionCall, 1);
+                return;
+        }
         /* Manually copy 32 pixels horizontally. */
         for (i = 0; i < size && i < amount; i++) {
                 canvas->image.map[i] = color;
@@ -137,6 +165,10 @@ void canvas_fill_with_color (Canvas *canvas, Color color)
                 memmove (&canvas->image.map[i], 
                          &canvas->image.map[0], 
                          amount * sizeof (Color));
+        }
+        if (!thread_unlock (&canvas->lock)) {
+                error_code (FunctionCall, 2);
+                return;
         }
 }
 
@@ -154,6 +186,10 @@ void canvas_fill_with_image (Canvas *canvas, Image image)
         }
         width = canvas->image.width < image.width ? canvas->image.width : image.width;
         height = canvas->image.height < image.height ? canvas->image.height : image.height;
+        if (!thread_lock (&canvas->lock)) {
+                error_code (FunctionCall, 1);
+                return;
+        }
         // Copy image to canvas top corner.
         for (y = 0; y < height; y++) {
                 memcpy (&canvas->image.map[y * canvas->image.width], 
@@ -189,6 +225,10 @@ void canvas_fill_with_image (Canvas *canvas, Image image)
                          &canvas->image.map[0],
                          amount * sizeof (Color));
         }
+        if (!thread_unlock (&canvas->lock)) {
+                error_code (FunctionCall, 2);
+                return;
+        }
 }
 
 void canvas_fill_rectangle_with_color (Canvas *canvas, Rectangle rectangle, Color color)
@@ -219,6 +259,10 @@ void canvas_fill_rectangle_with_color (Canvas *canvas, Rectangle rectangle, Colo
                 error_code (GraphicsOutOfRange, 2);
                 return;
         }
+        if (!thread_lock (&canvas->lock)) {
+                error_code (FunctionCall, 1);
+                return;
+        }
         /* Manually copy 32 pixels horizontally */
         for (i = 0; i < rectangle.width && i < amount; i++) {
                 canvas->image.map[(rectangle.y * canvas->image.width) + rectangle.x + i] = color;
@@ -240,6 +284,10 @@ void canvas_fill_rectangle_with_color (Canvas *canvas, Rectangle rectangle, Colo
                 memmove (&canvas->image.map[(rectangle.y * canvas->image.width) + rectangle.x + (i * canvas->image.width)],
                          &canvas->image.map[(rectangle.y * canvas->image.width) + rectangle.x],
                          rectangle.width * sizeof (Color));
+        }
+        if (!thread_unlock (&canvas->lock)) {
+                error_code (FunctionCall, 1);
+                return;
         }
 }
 
@@ -274,6 +322,10 @@ void canvas_fill_rectangle_with_image (Canvas *canvas, Rectangle rectangle, Imag
         }
         width = rectangle.width < image.width ? rectangle.width : image.width;
         height = rectangle.height < image.height ? rectangle.height : image.height;
+        if (!thread_lock (&canvas->lock)) {
+                error_code (FunctionCall, 1);
+                return;
+        }
         // Copy image to rectangle top corner.
         for (y = 0; y < height; y++) {
                 memcpy (&canvas->image.map[((y + rectangle.y) * canvas->image.width) + rectangle.x],
@@ -300,17 +352,8 @@ void canvas_fill_rectangle_with_image (Canvas *canvas, Rectangle rectangle, Imag
                          &canvas->image.map[(y * canvas->image.width) + rectangle.x],
                          rectangle.width * sizeof (Color));
         }
+        if (!thread_unlock (&canvas->lock)) {
+                error_code (FunctionCall, 1);
+                return;
+        }
 }
-
-/*
-static void lock_write_enter (Canvas *canvas, Rectangle rectangle)
-{
-        // Lock the region by rectangle.
-        (void)canvas;
-        (void)rectangle;
-}
-
-static void lock_write_leave (Canvas *canvas)
-{
-        (void)canvas;
-}*/
