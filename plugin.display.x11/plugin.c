@@ -41,6 +41,8 @@ bool unload (void)
                 thread_destroy (global.thread);
         }
         if (global.timer) {
+                thread_set_exit (global.timer);
+                thread_wait (global.timer);
                 thread_destroy (global.timer);
         }
         return true;
