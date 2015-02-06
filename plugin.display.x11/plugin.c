@@ -38,6 +38,8 @@ bool load (void)
 bool unload (void)
 {
         if (global.thread) {
+                thread_set_exit (global.thread);
+                thread_wait (global.thread);
                 thread_destroy (global.thread);
         }
         if (global.timer) {
