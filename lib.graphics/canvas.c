@@ -3,6 +3,8 @@
 #include <lib.core/error.h>
 #include <string.h>
 
+static void set_changed (Canvas *canvas, Position from, Position to);
+
 Canvas *canvas_create (Size size)
 {
         Canvas *canvas;
@@ -38,15 +40,9 @@ Canvas *canvas_create (Size size)
                 error_code (FunctionCall, 3);
                 return NULL;
         }
-        if (!(canvas->changes = index_create (size.width * size.height))) {
-                thread_lock_destroy (&canvas->lock);
-                memory_destroy (canvas->image.map);
-                memory_destroy (canvas);
-                error_code (FunctionCall, 4);
-                return NULL;
-        }
         canvas->image.width = size.width;
         canvas->image.height = size.height;
+        canvas->changed = false;
         return canvas;
 }
 
@@ -59,9 +55,6 @@ void canvas_destroy (Canvas *canvas)
         thread_lock_destroy (&canvas->lock);
         if (canvas->image.map) {
                 memory_destroy (canvas->image.map);
-        }
-        if (canvas->changes) {
-                index_destroy (canvas->changes);
         }
         memory_destroy (canvas);
 }
@@ -85,6 +78,7 @@ void canvas_draw_color (Canvas *canvas, Position position, Color color)
                 return;
         }
         canvas->image.map[(position.y * canvas->image.width) + position.x] = color;
+        set_changed (canvas, position, position);
         if (!thread_unlock (&canvas->lock)) {
                 error_code (FunctionCall, 2);
                 return;
@@ -122,11 +116,13 @@ void canvas_draw_image (Canvas *canvas, Position position, Image image)
                 return;
         }
         for (row = 0; row < image.height; row++) {
-                memcpy (&canvas->image.map[(position.y * canvas->image.width) + position.x + 
-                                           (row * canvas->image.width)],
+                memcpy (&canvas->image.map[(position.y * canvas->image.width) + position.x + (row * canvas->image.width)],
                         &image.map[row * image.width],
                         image.width * sizeof (Color));
         }
+        set_changed (canvas, 
+                     position, 
+                     position_value (position.x + image.width - 1, position.y + image.height - 1));
         if (!thread_unlock (&canvas->lock)) {
                 error_code (FunctionCall, 2);
                 return;
@@ -150,11 +146,9 @@ void canvas_fill_with_color (Canvas *canvas, Color color)
                 error_code (FunctionCall, 1);
                 return;
         }
-        /* Manually copy 32 pixels horizontally. */
         for (i = 0; i < size && i < amount; i++) {
                 canvas->image.map[i] = color;
         }
-        /* Copy previous pixels. */
         for (; i < size; i += amount) {
                 if (size_t_add (i, i, &doubled)) {
                         amount = doubled < size ? i : size - i;
@@ -166,6 +160,9 @@ void canvas_fill_with_color (Canvas *canvas, Color color)
                          &canvas->image.map[0], 
                          amount * sizeof (Color));
         }
+        set_changed (canvas, 
+                     position_value (0, 0), 
+                     position_value (canvas->image.width - 1, canvas->image.height - 1));
         if (!thread_unlock (&canvas->lock)) {
                 error_code (FunctionCall, 2);
                 return;
@@ -190,13 +187,11 @@ void canvas_fill_with_image (Canvas *canvas, Image image)
                 error_code (FunctionCall, 1);
                 return;
         }
-        // Copy image to canvas top corner.
         for (y = 0; y < height; y++) {
                 memcpy (&canvas->image.map[y * canvas->image.width], 
                         &image.map[y * image.width], 
                         width * sizeof (Color));
         }
-        // Tile horizontally.
         for (x = width; x < canvas->image.width; x += amount) {
                 if (size_t_add (x, x, &doubled)) {
                         amount = doubled < canvas->image.width ? x : canvas->image.width - x;
@@ -210,7 +205,6 @@ void canvas_fill_with_image (Canvas *canvas, Image image)
                                  amount * sizeof (Color));
                 }
         }
-        // Tile vertically.
         size = canvas->image.width * canvas->image.height;
         for (i = canvas->image.width * height; 
              i < canvas->image.width * canvas->image.height; 
@@ -225,6 +219,9 @@ void canvas_fill_with_image (Canvas *canvas, Image image)
                          &canvas->image.map[0],
                          amount * sizeof (Color));
         }
+        set_changed (canvas, 
+                     position_value (0, 0), 
+                     position_value (canvas->image.width - 1, canvas->image.height - 1));
         if (!thread_unlock (&canvas->lock)) {
                 error_code (FunctionCall, 2);
                 return;
@@ -285,6 +282,9 @@ void canvas_fill_rectangle_with_color (Canvas *canvas, Rectangle rectangle, Colo
                          &canvas->image.map[(rectangle.y * canvas->image.width) + rectangle.x],
                          rectangle.width * sizeof (Color));
         }
+        set_changed (canvas, 
+                     position_value (rectangle.x, rectangle.y), 
+                     position_value (rectangle.x + rectangle.width - 1, rectangle.y + rectangle.height - 1));
         if (!thread_unlock (&canvas->lock)) {
                 error_code (FunctionCall, 1);
                 return;
@@ -326,13 +326,13 @@ void canvas_fill_rectangle_with_image (Canvas *canvas, Rectangle rectangle, Imag
                 error_code (FunctionCall, 1);
                 return;
         }
-        // Copy image to rectangle top corner.
+        /* Copy image to rectangle top corner. */
         for (y = 0; y < height; y++) {
                 memcpy (&canvas->image.map[((y + rectangle.y) * canvas->image.width) + rectangle.x],
                         &image.map[y * image.width],
                         width * sizeof (Color));
         }
-        // Tile horizontally.
+        /* Tile horizontally. */
         for (x = width; x < rectangle.width; x += amount) {
                 if (size_t_add (x, x, &doubled)) {
                         amount = doubled < rectangle.width ? x : rectangle.width - x;
@@ -346,14 +346,42 @@ void canvas_fill_rectangle_with_image (Canvas *canvas, Rectangle rectangle, Imag
                                  amount * sizeof (Color));
                 }
         }
-        // Tile vertically.
+        /* Tile vertically. */
         for (y = rectangle.y; y + height < rectangle.y + rectangle.height; y++) {
                 memmove (&canvas->image.map[((y + height) * canvas->image.width) + rectangle.x],
                          &canvas->image.map[(y * canvas->image.width) + rectangle.x],
                          rectangle.width * sizeof (Color));
         }
+        set_changed (canvas, 
+                     position_value (rectangle.x, rectangle.y), 
+                     position_value (rectangle.x + rectangle.width - 1, rectangle.y + rectangle.height - 1));
         if (!thread_unlock (&canvas->lock)) {
                 error_code (FunctionCall, 1);
                 return;
+        }
+}
+
+static void set_changed (Canvas *canvas, Position from, Position to)
+{
+        if (!canvas->changed) {
+                canvas->changed = true;
+                canvas->changed_from.x = from.x;
+                canvas->changed_from.y = from.y;
+                canvas->changed_to.x = to.x;
+                canvas->changed_to.y = to.y;
+        }
+        else {
+                if (canvas->changed_from.x > from.x) {
+                        canvas->changed_from.x = from.x;
+                }
+                if (canvas->changed_from.y > from.y) {
+                        canvas->changed_from.y = from.y;
+                }
+                if (canvas->changed_to.x < to.x) {
+                        canvas->changed_to.x = to.x;
+                }
+                if (canvas->changed_to.y < to.y) {
+                        canvas->changed_to.y = to.y;
+                }
         }
 }

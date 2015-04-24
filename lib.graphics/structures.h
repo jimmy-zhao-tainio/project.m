@@ -37,6 +37,7 @@ struct s_Color
         uint8_t red;
         uint8_t green;
         uint8_t blue;
+        uint8_t alpha;
 };
 
 struct s_Image
@@ -49,7 +50,9 @@ struct s_Image
 struct s_Canvas
 {
         Image image;
-        Index *changes;
+        bool changed;
+        Position changed_from;
+        Position changed_to;
         ThreadLock lock;
 };
 

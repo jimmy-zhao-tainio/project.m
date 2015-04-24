@@ -11,6 +11,8 @@ struct s_Index
         size_t power;
         size_t *power_bits;
         size_t *power_offset;
+        size_t change_power;
+        size_t change_position;
         unsigned char *map;
 };
 

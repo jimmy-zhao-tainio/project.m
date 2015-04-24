@@ -20,6 +20,6 @@ Rectangle rectangle_value (size_t x, size_t y, size_t width, size_t height)
 
 Color color_value (uint8_t red, uint8_t green, uint8_t blue)
 {
-        Color color = { red, green, blue };
+        Color color = { red, green, blue, 0 };
         return color;
 }

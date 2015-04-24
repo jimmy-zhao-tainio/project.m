@@ -307,7 +307,7 @@ bool compile_link_plugin (Compile *compile)
 	    !string_append (&action->command, compile->directory->path) ||
 	    !string_append (&action->command, "/") ||
 	    !string_append (&action->command, compile->directory->name) ||
-	    !string_append (&action->command, ".so -lX11") ||
+	    !string_append (&action->command, ".so -lSDL2 -lX11") ||
 	    !string_append (&action->command, " 1>/dev/null")) {
 		compile_debug_allocate_memory ();
 		return false;
