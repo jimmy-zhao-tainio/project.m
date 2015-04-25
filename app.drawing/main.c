@@ -83,40 +83,29 @@ static bool try (uint64_t width, uint64_t height, Canvas **canvas, DisplayPlugin
 
 static void worker (Thread *thread)
 {
+        unsigned int x, y;
+
         Canvas *canvas = thread->argument;
-        uint64_t x1, y1, x2, y2, swap;
-        unsigned char rgb[3];
-        uint64_t count;
         
+        canvas_fill_with_color (canvas, White);
+        x = 0;
+        y = 0;
         while (!thread_get_exit (thread)) {
-                for (count = 0; count < 1; count++) {
-                        if (!random_value (0, canvas->image.width - 1, (unsigned long long *)&x1) ||
-                            !random_value (0, canvas->image.height - 1, (unsigned long long *)&y1) ||
-                            !random_value (0, canvas->image.width - 1, (unsigned long long *)&x2) ||
-                            !random_value (0, canvas->image.height - 1, (unsigned long long *)&y2) ||
-                            !random_bytes (rgb, 3)) {
-                                error_code (FunctionCall, 5);
-                                thread_exit (thread);
-                        }
-                        if (x2 < x1) {
-                                swap = x1;
-                                x1 = x2;
-                                x2 = swap;
-                        }
-                        if (y2 < y1) {
-                                swap = y1;
-                                y1 = y2;
-                                y2 = swap;
-                        }
-                        canvas_fill_rectangle_with_color (canvas,
-                                                          rectangle_value (x1, y1,
-                                                                           x2 - x1 + 1,
-                                                                           y2 - y1 + 1),
-                                                          color_value ((uint8_t)rgb[0], 
-                                                                       (uint8_t)rgb[1], 
-                                                                       (uint8_t)rgb[2]));
+                canvas_draw_color (canvas, position_value (x, y), 
+                                   color_value ((uint8_t)((x) * (y + y)), 
+                                                (uint8_t)((y) * (x - y)), 
+                                                (uint8_t)((x) * (x + y))
+                                                ));
+                x++;
+                if (x == canvas->image.width) {
+                        x = 0;
+                        y++;
                 }
-                usleep (1000000 / 60);
+                if (y == canvas->image.height) {
+                        x = 0;
+                        y = 0;
+                        break;
+                }
         }
         thread_exit (thread);
 }

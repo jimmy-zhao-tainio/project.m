@@ -21,7 +21,6 @@
 #include "test-file-writer.h"
 #include "test-print.h"
 #include "test-topological.h"
-#include "test-index.h"
 #include "test-big-int.h"
 
 bool (*tests[]) (Test *test) =
@@ -173,10 +172,6 @@ bool (*tests[]) (Test *test) =
         &test_string_ends_with_invalid_argument_1,
         &test_string_ends_with_invalid_argument_2,
         &test_string_ends_with,
-        &test_string_index_invalid_argument_1,
-        &test_string_index_invalid_argument_2,
-        &test_string_index_overflow,
-        &test_string_index,
         &test_string_split_invalid_argument,
         &test_string_split_overflow,
         &test_string_split_function_call_1,
@@ -439,43 +434,6 @@ bool (*tests[]) (Test *test) =
         &test_big_int_to_value_invalid_argument_1,
         &test_big_int_to_value_invalid_argument_2,
         &test_big_int_to_value,
-        &test_index_create_invalid_argument,
-        &test_index_create_overflow_1,
-        &test_index_create_function_call_1,
-        &test_index_create_function_call_2,
-        &test_index_create_function_call_3,
-        &test_index_create_function_call_4,
-        &test_index_create_1,
-        &test_index_create_2,
-        &test_index_create_3,
-        &test_index_create_4,
-        &test_index_create_5,
-        &test_index_create_6,
-        &test_index_destroy_invalid_argument,
-        &test_index_set_invalid_argument,
-        &test_index_set_invalid_operation,
-        &test_index_set_1,
-        &test_index_set_2,
-        &test_index_set_range_invalid_argument,
-        &test_index_set_range_invalid_operation_1,
-        &test_index_set_range_invalid_operation_2,
-        &test_index_set_range_invalid_operation_3,
-        &test_index_set_range_1,
-        &test_index_set_range_2,
-        &test_index_set_range_3,
-        &test_index_set_range_4,
-        &test_index_set_range_5,
-        &test_index_set_range_6,
-        &test_index_set_range_7,
-        &test_index_set_range_8,
-        &test_index_set_range_9,
-        &test_index_set_range_10,
-        &test_index_set_range_11,
-        &test_index_get_invalid_argument,
-        &test_index_get_invalid_operation,
-        &test_index_get,
-        &test_index_clear_invalid_argument,
-        &test_index_clear,
         NULL
 };
 

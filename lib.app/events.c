@@ -15,6 +15,9 @@ static Global global = {
 
 bool app_events (void)
 {
+        if (global.exit == true) {
+                return true;
+        }
         do {
                 if (!thread_signal_wait (&global.signal)) {
                         error (FunctionCall);

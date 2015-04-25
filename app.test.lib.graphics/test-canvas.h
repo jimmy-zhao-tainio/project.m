@@ -8,7 +8,7 @@ bool test_canvas_create_invalid_argument_2 (Test *test);
 bool test_canvas_create_overflow_1 (Test *test);
 bool test_canvas_create_overflow_2 (Test *test);
 bool test_canvas_create_function_call_1 (Test *test);
-bool test_canvas_create_function_call_2 (Test *test);
+bool test_canvas_create_function_call_3 (Test *test);
 bool test_canvas_create (Test *test);
 bool test_canvas_destroy_invalid_argument (Test *test);
 bool test_canvas_draw_color_invalid_argument (Test *test);

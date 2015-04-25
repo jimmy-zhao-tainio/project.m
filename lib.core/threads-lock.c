@@ -4,12 +4,18 @@
 
 bool thread_lock_create (ThreadLock *lock)
 {
-        if (!lock) {
-                error (InvalidArgument);
+        pthread_mutexattr_t attr;
+        
+        if (pthread_mutexattr_init(&attr) != 0) {
+                error_code (SystemCall, 1);
                 return false;
         }
-        if (pthread_mutex_init (&lock->mutex, NULL) != 0) {
-                error (SystemCall);
+        if (pthread_mutexattr_settype (&attr, PTHREAD_MUTEX_RECURSIVE_NP) != 0) {
+                error_code (SystemCall, 2);
+                return false;
+        }
+        if (pthread_mutex_init (&lock->mutex, &attr) != 0) {
+                error_code (SystemCall, 3);
                 return false;
         }
         return true;

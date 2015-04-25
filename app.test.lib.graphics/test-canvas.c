@@ -57,7 +57,7 @@ bool test_canvas_create_function_call_1 (Test *test)
         PASS ();
 }
 
-bool test_canvas_create_function_call_2 (Test *test)
+bool test_canvas_create_function_call_3 (Test *test)
 {
         TITLE ();
         memory_commit_limit (sizeof (size_t) + sizeof (Canvas) + 
@@ -65,7 +65,7 @@ bool test_canvas_create_function_call_2 (Test *test)
         CATCH (canvas_create (size_value (1, 1)));
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorFunctionCall);
-        CATCH (error_at (0).code != 2);
+        CATCH (error_at (0).code != 3);
         PASS ();
 }
 
@@ -167,9 +167,9 @@ bool test_canvas_draw_image_overflow_1 (Test *test)
                 .width = 3,
                 .height = 3,
                 .map = (Color[]) {
-                        { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 },
-                        { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 },
-                        { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }
+                        { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+                        { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+                        { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }
                 }
         };
 
@@ -190,9 +190,9 @@ bool test_canvas_draw_image_overflow_2 (Test *test)
                 .width = 3,
                 .height = 3,
                 .map = (Color[]) {
-                        { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 },
-                        { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 },
-                        { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }
+                        { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+                        { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+                        { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }
                 }
         };
 
@@ -213,9 +213,9 @@ bool test_canvas_draw_image_out_of_range_1 (Test *test)
                 .width = 3,
                 .height = 3,
                 .map = (Color[]) {
-                        { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 },
-                        { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 },
-                        { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }
+                        { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+                        { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+                        { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }
                 }
         };
 
@@ -236,9 +236,9 @@ bool test_canvas_draw_image_out_of_range_2 (Test *test)
                 .width = 3,
                 .height = 3,
                 .map = (Color[]) {
-                        { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 },
-                        { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 },
-                        { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }
+                        { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+                        { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+                        { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }
                 }
         };
 
@@ -259,9 +259,9 @@ bool test_canvas_draw_image_1 (Test *test)
                 .width = 3,
                 .height = 3,
                 .map = (Color[]) {
-                        {  1,  2,  3 }, {  4,  5,  6 }, {  7,  8,  9 },
-                        { 10, 11, 12 }, { 13, 14, 15 }, { 16, 17, 18 },
-                        { 19, 20, 21 }, { 22, 23, 24 }, { 25, 26, 27 }
+                        {  1,  2,  3, 0 }, {  4,  5,  6, 0 }, {  7,  8,  9, 0 },
+                        { 10, 11, 12, 0 }, { 13, 14, 15, 0 }, { 16, 17, 18, 0 },
+                        { 19, 20, 21, 0 }, { 22, 23, 24, 0 }, { 25, 26, 27, 0 }
                 }
         };
         size_t i;
@@ -274,6 +274,7 @@ bool test_canvas_draw_image_1 (Test *test)
                 CATCH (canvas->image.map[i].red   != (3 * i) + 1);
                 CATCH (canvas->image.map[i].green != (3 * i) + 2);
                 CATCH (canvas->image.map[i].blue  != (3 * i) + 3);
+                CATCH (canvas->image.map[i].alpha != 0);
         }
         canvas_destroy (canvas);
         PASS ();
@@ -296,6 +297,7 @@ bool test_canvas_draw_image_2 (Test *test)
                 image.map[i].red = (uint8_t)(i + 0);
                 image.map[i].green = (uint8_t)(i + 1);
                 image.map[i].blue = (uint8_t)(i + 2);
+                image.map[i].alpha = (uint8_t)(i + 3);
         }
         canvas_draw_image (canvas, position_value (0, 0), image);
         CATCH (error_count () != 0);
@@ -303,6 +305,7 @@ bool test_canvas_draw_image_2 (Test *test)
                 CATCH (canvas->image.map[i].red != (uint8_t)(i + 0));
                 CATCH (canvas->image.map[i].green != (uint8_t)(i + 1));
                 CATCH (canvas->image.map[i].blue != (uint8_t)(i + 2));
+                CATCH (canvas->image.map[i].alpha != (uint8_t)(i + 3));
         }
         canvas_destroy (canvas);
         memory_destroy (image.map);
@@ -426,8 +429,8 @@ bool test_canvas_fill_with_image_handled_overflow_1 (Test *test)
                 .width = 2,
                 .height = 2,
                 .map = (Color[]) {
-                        {  1,  2,  3 }, {  4,  5,  6 }, 
-                        {  7,  8,  9 }, { 10, 11, 12 },
+                        {  1,  2,  3, 0 }, {  4,  5,  6, 0 }, 
+                        {  7,  8,  9, 0 }, { 10, 11, 12, 0 },
                 }
         };
 
@@ -452,8 +455,8 @@ bool test_canvas_fill_with_image_handled_overflow_2 (Test *test)
                 .width = 2,
                 .height = 2,
                 .map = (Color[]) {
-                        {  1,  2,  3 }, {  4,  5,  6 }, 
-                        {  7,  8,  9 }, { 10, 11, 12 },
+                        {  1,  2,  3, 0 }, {  4,  5,  6, 0 }, 
+                        {  7,  8,  9, 0 }, { 10, 11, 12, 0 },
                 }
         };
 
@@ -478,9 +481,9 @@ bool test_canvas_fill_with_image_1 (Test *test)
                 .width = 3,
                 .height = 3,
                 .map = (Color[]) {
-                        {  1,  2,  3 }, {  4,  5,  6 }, {  7,  8,  9 },
-                        { 10, 11, 12 }, { 13, 14, 15 }, { 16, 17, 18 },
-                        { 19, 20, 21 }, { 22, 23, 24 }, { 25, 26, 27 }
+                        {  1,  2,  3, 0 }, {  4,  5,  6, 0 }, {  7,  8,  9, 0 },
+                        { 10, 11, 12, 0 }, { 13, 14, 15, 0 }, { 16, 17, 18, 0 },
+                        { 19, 20, 21, 0 }, { 22, 23, 24, 0 }, { 25, 26, 27, 0 }
                 }
         };
 
@@ -502,9 +505,9 @@ bool test_canvas_fill_with_image_2 (Test *test)
                 .width = 3,
                 .height = 3,
                 .map = (Color[]) {
-                        {  1,  2,  3 }, {  4,  5,  6 }, {  7,  8,  9 },
-                        { 10, 11, 12 }, { 13, 14, 15 }, { 16, 17, 18 },
-                        { 19, 20, 21 }, { 22, 23, 24 }, { 25, 26, 27 }
+                        {  1,  2,  3, 0 }, {  4,  5,  6, 0 }, {  7,  8,  9, 0 },
+                        { 10, 11, 12, 0 }, { 13, 14, 15, 0 }, { 16, 17, 18, 0 },
+                        { 19, 20, 21, 0 }, { 22, 23, 24, 0 }, { 25, 26, 27, 0 }
                 }
         };
         size_t i;
@@ -526,9 +529,9 @@ bool test_canvas_fill_with_image_3 (Test *test)
                 .width = 3,
                 .height = 3,
                 .map = (Color[]) {
-                        {  1,  2,  3 }, {  4,  5,  6 }, {  7,  8,  9 },
-                        { 10, 11, 12 }, { 13, 14, 15 }, { 16, 17, 18 },
-                        { 19, 20, 21 }, { 22, 23, 24 }, { 25, 26, 27 }
+                        {  1,  2,  3, 0 }, {  4,  5,  6, 0 }, {  7,  8,  9, 0 },
+                        { 10, 11, 12, 0 }, { 13, 14, 15, 0 }, { 16, 17, 18, 0 },
+                        { 19, 20, 21, 0 }, { 22, 23, 24, 0 }, { 25, 26, 27, 0 }
                 }
         };
 
@@ -562,9 +565,9 @@ bool test_canvas_fill_with_image_4 (Test *test)
                 .width = 3,
                 .height = 3,
                 .map = (Color[]) {
-                        {  1,  2,  3 }, {  4,  5,  6 }, {  7,  8,  9 },
-                        { 10, 11, 12 }, { 13, 14, 15 }, { 16, 17, 18 },
-                        { 19, 20, 21 }, { 22, 23, 24 }, { 25, 26, 27 }
+                        {  1,  2,  3, 0 }, {  4,  5,  6, 0 }, {  7,  8,  9, 0 },
+                        { 10, 11, 12, 0 }, { 13, 14, 15, 0 }, { 16, 17, 18, 0 },
+                        { 19, 20, 21, 0 }, { 22, 23, 24, 0 }, { 25, 26, 27, 0 }
                 }
         };
         size_t x, y;
@@ -589,9 +592,9 @@ bool test_canvas_fill_with_image_5 (Test *test)
                 .width = 3,
                 .height = 3,
                 .map = (Color[]) {
-                        {  1,  2,  3 }, {  4,  5,  6 }, {  7,  8,  9 },
-                        { 10, 11, 12 }, { 13, 14, 15 }, { 16, 17, 18 },
-                        { 19, 20, 21 }, { 22, 23, 24 }, { 25, 26, 27 }
+                        {  1,  2,  3, 0 }, {  4,  5,  6, 0 }, {  7,  8,  9, 0 },
+                        { 10, 11, 12, 0 }, { 13, 14, 15, 0 }, { 16, 17, 18, 0 },
+                        { 19, 20, 21, 0 }, { 22, 23, 24, 0 }, { 25, 26, 27, 0 }
                 }
         };
         size_t x, y;
@@ -865,9 +868,9 @@ bool test_canvas_fill_rectangle_with_image_1 (Test *test)
                 .width = 3,
                 .height = 3,
                 .map = (Color[]) {
-                        {  1,  2,  3 }, {  4,  5,  6 }, {  7,  8,  9 },
-                        { 10, 11, 12 }, { 13, 14, 15 }, { 16, 17, 18 },
-                        { 19, 20, 21 }, { 22, 23, 24 }, { 25, 26, 27 }
+                        {  1,  2,  3, 0 }, {  4,  5,  6, 0 }, {  7,  8,  9, 0 },
+                        { 10, 11, 12, 0 }, { 13, 14, 15, 0 }, { 16, 17, 18, 0 },
+                        { 19, 20, 21, 0 }, { 22, 23, 24, 0 }, { 25, 26, 27, 0 }
                 }
         };
         size_t x, y;
@@ -910,8 +913,8 @@ bool test_canvas_fill_rectangle_with_image_2 (Test *test)
                 .width = 3,
                 .height = 3,
                 .map = (Color[]) {
-                        {  1,  2,  3 }, {  4,  5,  6 }, 
-                        {  7,  8,  9 }, { 10, 11, 12 },
+                        {  1,  2,  3, 0 }, {  4,  5,  6, 0 }, 
+                        {  7,  8,  9, 0 }, { 10, 11, 12, 0 },
                 }
         };
 
@@ -934,9 +937,9 @@ bool test_canvas_fill_rectangle_with_image_3 (Test *test)
                 .width = 3,
                 .height = 3,
                 .map = (Color[]) {
-                        {  1,  2,  3 }, {  4,  5,  6 }, {  7,  8,  9 },
-                        { 10, 11, 12 }, { 13, 14, 15 }, { 16, 17, 18 },
-                        { 19, 20, 21 }, { 22, 23, 24 }, { 25, 26, 27 }
+                        {  1,  2,  3, 0 }, {  4,  5,  6, 0 }, {  7,  8,  9, 0 },
+                        { 10, 11, 12, 0 }, { 13, 14, 15, 0 }, { 16, 17, 18, 0 },
+                        { 19, 20, 21, 0 }, { 22, 23, 24, 0 }, { 25, 26, 27, 0 }
                 }
         };
         size_t x, y;

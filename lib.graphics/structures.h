@@ -2,7 +2,6 @@
 #define lib_graphics_structures_h
 
 #include <lib.core/defines.h>
-#include <lib.core/index.h>
 #include <lib.core/threads-lock.h>
 
 typedef struct s_Position  Position;

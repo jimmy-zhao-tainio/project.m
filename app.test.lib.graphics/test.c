@@ -11,7 +11,7 @@ bool (*tests[]) (Test *test) =
         &test_canvas_create_overflow_1,
         &test_canvas_create_overflow_2,
         &test_canvas_create_function_call_1,
-        &test_canvas_create_function_call_2,
+        &test_canvas_create_function_call_3,
         &test_canvas_create,
         &test_canvas_destroy_invalid_argument,
         &test_canvas_draw_color_invalid_argument,
