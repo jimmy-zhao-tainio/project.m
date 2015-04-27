@@ -85,34 +85,36 @@ static bool try (uint64_t width, uint64_t height, Canvas **canvas, DisplayPlugin
 static void worker (Thread *thread)
 {
         Canvas *canvas = thread->argument;
-        Image image;
-        unsigned int x = 0, y = 0;
-        uint8_t r = 0, g = 0, b = 0, s = 0;
-        uint8_t ri = 0, gi = 0, bi = 0;
+        Image image = { .width = ((uint8_t)-1) * 3 < canvas->image.width ? 
+                                 ((uint8_t)-1) * 3 : canvas->image.width,
+                        .height = 1,
+                        .map = canvas->image.map };
+        unsigned long long value;
+        unsigned int x;
+        uint8_t r, g, b, s;
+        uint8_t ri, gi, bi;
 
+        random_value (0, (uint8_t)-1, &value);
+        ri = (uint8_t)value;
+        random_value (0, (uint8_t)-1, &value);
+        gi = (uint8_t)value;
+        random_value (0, (uint8_t)-1, &value);
+        bi = (uint8_t)value;
         while (!thread_get_exit (thread)) {
                 canvas_lock (canvas);
-                x = 0, y = 0;
-                r = ri, g = gi, b = bi, s = 0;
-                ri = (uint8_t)(ri + 1);
-                gi = (uint8_t)(gi - 3);
+                r = ri, g = gi, b = bi;
+                ri = (uint8_t)(ri - 3);
+                gi = (uint8_t)(gi + 1);
                 bi = (uint8_t)(bi + 5);
-                for (x = 0; x < ((uint8_t)-1) * 3 && x < canvas->image.width; x++) {
-                        canvas_draw_pixel (canvas, 
-                                           position_value (x, y), 
-                                           color_value (r, g, b));
+                for (x = 0, s = 0; x < ((uint8_t)-1) * 3 && x < canvas->image.width; x++, s++) {
+                        canvas_draw_pixel (canvas, position_value (x, 0), color_value (r, g, b));
                         switch (s) {
                                 case 3: s = 0;
                                 case 0: r++; break;
                                 case 1: g++; break;
                                 case 2: b++; break;
                         }
-                        s++;
                 }
-                image.width = ((uint8_t)-1) * 3 < canvas->image.width ? 
-                              ((uint8_t)-1) * 3 : canvas->image.width;
-                image.height = 1;
-                image.map = canvas->image.map;
                 canvas_fill_with_image (canvas, image);
                 canvas_unlock (canvas);
                 usleep (1000000 / 40);
