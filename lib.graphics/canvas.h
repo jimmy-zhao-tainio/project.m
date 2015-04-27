@@ -5,7 +5,9 @@
 
 Canvas *canvas_create (Size size);
 void canvas_destroy (Canvas *canvas);
-void canvas_draw_color (Canvas *canvas, Position position, Color color);
+bool canvas_lock (Canvas *canvas);
+bool canvas_unlock (Canvas *canvas);
+void canvas_draw_pixel (Canvas *canvas, Position position, Color color);
 void canvas_draw_image (Canvas *canvas, Position position, Image image);
 void canvas_fill_with_color (Canvas *canvas, Color color);
 void canvas_fill_with_image (Canvas *canvas, Image image);

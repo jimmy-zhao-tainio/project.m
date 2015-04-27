@@ -139,7 +139,7 @@ static bool link_library_try (Compile *compile, char **lib_path, char **lib_file
 bool compile_link_application (Compile *compile)
 {
 	CompileAction *action;
-	const char *linker = "gcc -pthread -lrt -lm -rdynamic ";
+	const char *linker = "gcc -pthread -lrt -rdynamic ";
 	const char *flag = "-O0 -o ";
 	bool newer_library = 0;
 	File *app_file;
@@ -208,7 +208,7 @@ bool compile_link_application (Compile *compile)
 	    !string_append (&action->command, compile->directory->path) ||
 	    !string_append (&action->command, "/") ||
 	    !string_append (&action->command, compile->directory->name) ||
-            !string_append (&action->command, " -ldl") ||
+            !string_append (&action->command, " -lm -ldl") ||
 	    !string_append (&action->command, " 1>/dev/null")) {
 		compile_debug_allocate_memory ();
 		return false;
@@ -225,7 +225,7 @@ bool compile_link_application (Compile *compile)
 bool compile_link_plugin (Compile *compile)
 {
         CompileAction *action;
-	const char *linker = "gcc -lrt -lm -shared ";
+	const char *linker = "gcc -lrt -shared ";
 	const char *flag = "-O0 -o ";
 	bool newer_library = 0;
 	File *so_file;
@@ -307,7 +307,7 @@ bool compile_link_plugin (Compile *compile)
 	    !string_append (&action->command, compile->directory->path) ||
 	    !string_append (&action->command, "/") ||
 	    !string_append (&action->command, compile->directory->name) ||
-	    !string_append (&action->command, ".so -lSDL2 -lX11") ||
+	    !string_append (&action->command, ".so -lm -lSDL2 -lX11") ||
 	    !string_append (&action->command, " 1>/dev/null")) {
 		compile_debug_allocate_memory ();
 		return false;

@@ -59,7 +59,33 @@ void canvas_destroy (Canvas *canvas)
         memory_destroy (canvas);
 }
 
-void canvas_draw_color (Canvas *canvas, Position position, Color color)
+bool canvas_lock (Canvas *canvas)
+{
+        if (!canvas) {
+                error (InvalidArgument);
+                return false;
+        }
+        if (!thread_lock (&canvas->lock)) {
+                error (FunctionCall);
+                return false;
+        }
+        return true;
+}
+
+bool canvas_unlock (Canvas *canvas)
+{
+        if (!canvas) {
+                error (InvalidArgument);
+                return false;
+        }
+        if (!thread_unlock (&canvas->lock)) {
+                error (FunctionCall);
+                return false;
+        }
+        return true;
+}
+
+void canvas_draw_pixel (Canvas *canvas, Position position, Color color)
 {
         if (!canvas) {
                 error (InvalidArgument);
@@ -73,13 +99,13 @@ void canvas_draw_color (Canvas *canvas, Position position, Color color)
                 error_code (GraphicsOutOfRange, 2);
                 return;
         }
-        if (!thread_lock (&canvas->lock)) {
+        if (!canvas_lock (canvas)) {
                 error_code (FunctionCall, 1);
                 return;
         }
         canvas->image.map[(position.y * canvas->image.width) + position.x] = color;
         set_changed (canvas, position, position);
-        if (!thread_unlock (&canvas->lock)) {
+        if (!canvas_unlock (canvas)) {
                 error_code (FunctionCall, 2);
                 return;
         }
@@ -111,7 +137,7 @@ void canvas_draw_image (Canvas *canvas, Position position, Image image)
                 error_code (GraphicsOutOfRange, 2);
                 return;
         }
-        if (!thread_lock (&canvas->lock)) {
+        if (!canvas_lock (canvas)) {
                 error_code (FunctionCall, 1);
                 return;
         }
@@ -123,7 +149,7 @@ void canvas_draw_image (Canvas *canvas, Position position, Image image)
         set_changed (canvas, 
                      position, 
                      position_value (position.x + image.width - 1, position.y + image.height - 1));
-        if (!thread_unlock (&canvas->lock)) {
+        if (!canvas_unlock (canvas)) {
                 error_code (FunctionCall, 2);
                 return;
         }
@@ -142,7 +168,7 @@ void canvas_fill_with_color (Canvas *canvas, Color color)
                 return;
         }
         size = canvas->image.width * canvas->image.height;
-        if (!thread_lock (&canvas->lock)) {
+        if (!canvas_lock (canvas)) {
                 error_code (FunctionCall, 1);
                 return;
         }
@@ -163,7 +189,7 @@ void canvas_fill_with_color (Canvas *canvas, Color color)
         set_changed (canvas, 
                      position_value (0, 0), 
                      position_value (canvas->image.width - 1, canvas->image.height - 1));
-        if (!thread_unlock (&canvas->lock)) {
+        if (!canvas_unlock (canvas)) {
                 error_code (FunctionCall, 2);
                 return;
         }
@@ -183,7 +209,7 @@ void canvas_fill_with_image (Canvas *canvas, Image image)
         }
         width = canvas->image.width < image.width ? canvas->image.width : image.width;
         height = canvas->image.height < image.height ? canvas->image.height : image.height;
-        if (!thread_lock (&canvas->lock)) {
+        if (!canvas_lock (canvas)) {
                 error_code (FunctionCall, 1);
                 return;
         }
@@ -222,7 +248,7 @@ void canvas_fill_with_image (Canvas *canvas, Image image)
         set_changed (canvas, 
                      position_value (0, 0), 
                      position_value (canvas->image.width - 1, canvas->image.height - 1));
-        if (!thread_unlock (&canvas->lock)) {
+        if (!canvas_unlock (canvas)) {
                 error_code (FunctionCall, 2);
                 return;
         }
@@ -256,7 +282,7 @@ void canvas_fill_rectangle_with_color (Canvas *canvas, Rectangle rectangle, Colo
                 error_code (GraphicsOutOfRange, 2);
                 return;
         }
-        if (!thread_lock (&canvas->lock)) {
+        if (!canvas_lock (canvas)) {
                 error_code (FunctionCall, 1);
                 return;
         }
@@ -285,7 +311,7 @@ void canvas_fill_rectangle_with_color (Canvas *canvas, Rectangle rectangle, Colo
         set_changed (canvas, 
                      position_value (rectangle.x, rectangle.y), 
                      position_value (rectangle.x + rectangle.width - 1, rectangle.y + rectangle.height - 1));
-        if (!thread_unlock (&canvas->lock)) {
+        if (!canvas_unlock (canvas)) {
                 error_code (FunctionCall, 1);
                 return;
         }
@@ -322,7 +348,7 @@ void canvas_fill_rectangle_with_image (Canvas *canvas, Rectangle rectangle, Imag
         }
         width = rectangle.width < image.width ? rectangle.width : image.width;
         height = rectangle.height < image.height ? rectangle.height : image.height;
-        if (!thread_lock (&canvas->lock)) {
+        if (!canvas_lock (canvas)) {
                 error_code (FunctionCall, 1);
                 return;
         }
@@ -355,7 +381,7 @@ void canvas_fill_rectangle_with_image (Canvas *canvas, Rectangle rectangle, Imag
         set_changed (canvas, 
                      position_value (rectangle.x, rectangle.y), 
                      position_value (rectangle.x + rectangle.width - 1, rectangle.y + rectangle.height - 1));
-        if (!thread_unlock (&canvas->lock)) {
+        if (!canvas_unlock (canvas)) {
                 error_code (FunctionCall, 1);
                 return;
         }

@@ -7,6 +7,7 @@
 #include <lib.display.plugin/display-plugin.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 
 static bool try (uint64_t width, uint64_t height, Canvas **canvas, DisplayPlugin **display_plugin);
 
@@ -83,29 +84,39 @@ static bool try (uint64_t width, uint64_t height, Canvas **canvas, DisplayPlugin
 
 static void worker (Thread *thread)
 {
-        unsigned int x, y;
-
         Canvas *canvas = thread->argument;
-        
-        canvas_fill_with_color (canvas, White);
-        x = 0;
-        y = 0;
+        Image image;
+        unsigned int x = 0, y = 0;
+        uint8_t r = 0, g = 0, b = 0, s = 0;
+        uint8_t ri = 0, gi = 0, bi = 0;
+
         while (!thread_get_exit (thread)) {
-                canvas_draw_color (canvas, position_value (x, y), 
-                                   color_value ((uint8_t)((x) * (y + y)), 
-                                                (uint8_t)((y) * (x - y)), 
-                                                (uint8_t)((x) * (x + y))
-                                                ));
-                x++;
-                if (x == canvas->image.width) {
-                        x = 0;
-                        y++;
+                canvas_lock (canvas);
+                canvas_fill_with_color (canvas, Black);
+                x = 0, y = 0;
+                r = ri, g = gi, b = bi, s = 0;
+                ri = (uint8_t)(ri + 1);
+                gi = (uint8_t)(gi - 3);
+                bi = (uint8_t)(bi + 5);
+                for (x = 0; x < ((uint8_t)-1) * 3 && x < canvas->image.width; x++) {
+                        canvas_draw_pixel (canvas, 
+                                           position_value (x, y), 
+                                           color_value (r, g, b));
+                        switch (s) {
+                                case 3: s = 0;
+                                case 0: r++; break;
+                                case 1: g++; break;
+                                case 2: b++; break;
+                        }
+                        s++;
                 }
-                if (y == canvas->image.height) {
-                        x = 0;
-                        y = 0;
-                        break;
-                }
+                image.width = ((uint8_t)-1) * 3 < canvas->image.width ? 
+                              ((uint8_t)-1) * 3 : canvas->image.width;
+                image.height = 1;
+                image.map = canvas->image.map;
+                canvas_fill_with_image (canvas, image);
+                canvas_unlock (canvas);
+                usleep (1000000 / 40);
         }
         thread_exit (thread);
 }

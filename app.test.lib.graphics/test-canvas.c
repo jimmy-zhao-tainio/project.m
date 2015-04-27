@@ -88,22 +88,22 @@ bool test_canvas_destroy_invalid_argument (Test *test)
         PASS ();
 }
 
-bool test_canvas_draw_color_invalid_argument (Test *test)
+bool test_canvas_draw_pixel_invalid_argument (Test *test)
 {
         TITLE ();
-        canvas_draw_color (NULL, position_value (0, 0), Red);
+        canvas_draw_pixel (NULL, position_value (0, 0), Red);
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorInvalidArgument);
         PASS ();
 }
 
-bool test_canvas_draw_color_out_of_range_1 (Test *test)
+bool test_canvas_draw_pixel_out_of_range_1 (Test *test)
 {
         Canvas *canvas;
 
         TITLE ();
         CATCH (!(canvas = canvas_create (size_value (3, 3))));
-        canvas_draw_color (canvas, position_value (3, 2), Red);
+        canvas_draw_pixel (canvas, position_value (3, 2), Red);
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorGraphicsOutOfRange);
         CATCH (error_at (0).code != 1);
@@ -111,13 +111,13 @@ bool test_canvas_draw_color_out_of_range_1 (Test *test)
         PASS ();
 }
 
-bool test_canvas_draw_color_out_of_range_2 (Test *test)
+bool test_canvas_draw_pixel_out_of_range_2 (Test *test)
 {
         Canvas *canvas;
 
         TITLE ();
         CATCH (!(canvas = canvas_create (size_value (3, 3))));
-        canvas_draw_color (canvas, position_value (2, 3), Red);
+        canvas_draw_pixel (canvas, position_value (2, 3), Red);
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorGraphicsOutOfRange);
         CATCH (error_at (0).code != 2);
@@ -125,7 +125,7 @@ bool test_canvas_draw_color_out_of_range_2 (Test *test)
         PASS ();
 }
 
-bool test_canvas_draw_color (Test *test)
+bool test_canvas_draw_pixel (Test *test)
 {
         Canvas *canvas;
         Position position;
@@ -138,7 +138,7 @@ bool test_canvas_draw_color (Test *test)
         }
         for (position.x = 0; position.x < 3; position.x++) {
                 for (position.y = 0; position.y < 3; position.y++) {
-                        canvas_draw_color (canvas, position, Red);
+                        canvas_draw_pixel (canvas, position, Red);
                 }
         }
         for (i = 0; i < 3 * 3; i++) {

@@ -124,7 +124,7 @@ static void worker_inner (Thread *thread, SDL_Window **window, SDL_Renderer **re
                         running = false;
                         continue;
                 }
-                if (!thread_lock (&canvas->lock)) {
+                if (!canvas_lock (canvas)) {
                         error_code (FunctionCall, 2);
                         return;
                 }
@@ -142,7 +142,7 @@ static void worker_inner (Thread *thread, SDL_Window **window, SDL_Renderer **re
                         SDL_UnlockTexture (*texture);
                         canvas->changed = false;
                 }
-                if (!thread_unlock (&canvas->lock)) {
+                if (!canvas_unlock (canvas)) {
                         error_code (FunctionCall, 3);
                         return;
                 }
