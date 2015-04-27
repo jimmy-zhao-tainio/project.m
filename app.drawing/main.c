@@ -106,7 +106,7 @@ static void worker (Thread *thread)
                 ri = (uint8_t)(ri - 3);
                 gi = (uint8_t)(gi + 1);
                 bi = (uint8_t)(bi + 5);
-                for (x = 0, s = 0; x < ((uint8_t)-1) * 3 && x < canvas->image.width; x++, s++) {
+                for (x = 0, s = 0; x < image.width; x++, s++) {
                         canvas_draw_pixel (canvas, position_value (x, 0), color_value (r, g, b));
                         switch (s) {
                                 case 3: s = 0;
