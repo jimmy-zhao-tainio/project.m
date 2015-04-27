@@ -92,7 +92,6 @@ static void worker (Thread *thread)
 
         while (!thread_get_exit (thread)) {
                 canvas_lock (canvas);
-                canvas_fill_with_color (canvas, Black);
                 x = 0, y = 0;
                 r = ri, g = gi, b = bi, s = 0;
                 ri = (uint8_t)(ri + 1);
