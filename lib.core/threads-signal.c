@@ -30,6 +30,7 @@ bool thread_signal_destroy (ThreadSignal *signal)
         }
         if (!thread_lock_destroy (&signal->lock)) {
                 error (FunctionCall);
+                return false;
         }
         if (pthread_cond_destroy (&signal->cond) != 0) {
                 error (SystemCall);

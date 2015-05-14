@@ -31,7 +31,7 @@ Thread *thread_create (void (*function) (Thread *), void *argument)
                 (void)thread_signal_destroy (&thread->signal);
                 (void)thread_lock_destroy (&thread->lock);
                 memory_destroy (thread);
-                error_code (SystemCall, 3);
+                error (SystemCall);
                 return NULL;
         }
         return thread;
@@ -50,7 +50,10 @@ void thread_destroy (Thread *thread)
 
 void thread_exit (Thread *thread)
 {
-        (void)thread;
+        if (!thread) {
+                error (InvalidArgument);
+                return;
+        }
         pthread_exit (NULL);
 }
 
@@ -61,7 +64,7 @@ bool thread_wait (Thread *thread)
                 return false;
         }
         if (pthread_join (thread->handle, NULL) != 0) {
-                error_code (FunctionCall, 4);
+                error (FunctionCall);
                 return false;
         }
         return true;
@@ -79,11 +82,14 @@ bool thread_set_exit (Thread *thread)
         }
         thread->exit = true;
         if (!thread_signal (&thread->signal)) {
-                error_code (FunctionCall, 2);
+                if (!thread_unlock (&thread->lock)) {
+                        error_code (FunctionCall, 2);
+                }
+                error_code (FunctionCall, 3);
                 return false;
         }
         if (!thread_unlock (&thread->lock)) {
-                error_code (FunctionCall, 3);
+                error_code (FunctionCall, 4);
                 return false;
         }
         return true;

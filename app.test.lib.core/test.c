@@ -22,6 +22,7 @@
 #include "test-print.h"
 #include "test-topological.h"
 #include "test-big-int.h"
+#include "test-threads.h"
 
 bool (*tests[]) (Test *test) =
 {
@@ -434,6 +435,22 @@ bool (*tests[]) (Test *test) =
         &test_big_int_to_value_invalid_argument_1,
         &test_big_int_to_value_invalid_argument_2,
         &test_big_int_to_value,
+        &test_thread_create_invalid_argument,
+        &test_thread_create_function_call_1,
+        &test_thread_create_1000,
+        &test_thread_destroy_invalid_argument,
+        &test_thread_exit_invalid_argument,
+        &test_thread_wait_invalid_argument,
+        &test_thread_set_exit_invalid_argument,
+        &test_thread_get_exit_invalid_argument,
+        &test_thread_signal_create_invalid_argument,
+        &test_thread_signal_destroy_invalid_argument,
+        &test_thread_signal_invalid_argument,
+        &test_thread_signal_wait_invalid_argument,
+        &test_thread_lock_create_invalid_argument,
+        &test_thread_lock_destroy_invalid_argument,
+        &test_thread_lock_invalid_argument,
+        &test_thread_unlock_invalid_argument,
         NULL
 };
 

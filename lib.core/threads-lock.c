@@ -6,6 +6,10 @@ bool thread_lock_create (ThreadLock *lock)
 {
         pthread_mutexattr_t attr;
         
+        if (!lock) {
+                error (InvalidArgument);
+                return false;
+        }
         if (pthread_mutexattr_init(&attr) != 0) {
                 error_code (SystemCall, 1);
                 return false;
