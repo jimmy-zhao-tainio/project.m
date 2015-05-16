@@ -16,6 +16,12 @@ bool thread_lock_destroy (ThreadLock *lock);
 bool thread_lock         (ThreadLock *lock);
 bool thread_unlock       (ThreadLock *lock);
 
-#define THREAD_LOCK_INITIALIZER { .mutex = PTHREAD_MUTEX_INITIALIZER }
+/* CAUTION! THREAD_LOCK_INITIALIZER does not initialize a recursive mutex.
+ * Use thread_lock_create to get a recursive lock.
+ */
+#define THREAD_LOCK_INITIALIZER \
+        { \
+                .mutex = PTHREAD_MUTEX_INITIALIZER \
+        }
 
 #endif

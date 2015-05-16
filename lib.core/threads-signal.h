@@ -20,8 +20,8 @@ bool thread_signal_wait    (ThreadSignal *signal);
 
 #define THREAD_SIGNAL_INITIALIZER \
         { \
-                        .cond = PTHREAD_COND_INITIALIZER, \
-                        .lock = THREAD_LOCK_INITIALIZER \
+                .cond = PTHREAD_COND_INITIALIZER, \
+                .lock = THREAD_LOCK_INITIALIZER \
         }
 
 #endif

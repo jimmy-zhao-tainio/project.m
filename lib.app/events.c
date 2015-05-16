@@ -4,18 +4,29 @@
 
 typedef struct
 {
-                bool exit;
-                ThreadSignal signal;
+        bool exit;
+        ThreadLock lock;
+        ThreadSignal signal;
 } Global;
 
 static Global global = { 
         .exit = false,
+        .lock = THREAD_LOCK_INITIALIZER,
         .signal = THREAD_SIGNAL_INITIALIZER
 };
 
+static bool lock_exit_get (bool *exit);
+static bool lock_exit_set (bool exit);
+
 bool app_events (void)
 {
-        if (global.exit == true) {
+        bool exit;
+
+        if (!lock_exit_get (&exit)) {
+                error_code (FunctionCall, 1);
+                return false;
+        }
+        if (exit == true) {
                 return true;
         }
         do {
@@ -23,7 +34,11 @@ bool app_events (void)
                         error (FunctionCall);
                         return false;
                 }
-                if (global.exit == true) {
+                if (!lock_exit_get (&exit)) {
+                        error_code (FunctionCall, 1);
+                        return false;
+                }
+                if (exit == true) {
                         return true;
                 }
         } while (true);
@@ -31,8 +46,35 @@ bool app_events (void)
 
 void app_event_exit (void)
 {
-        global.exit = true;
+        if (!lock_exit_set (true)) {
+                error (FunctionCall);
+                return;
+        }
         if (!thread_signal (&global.signal)) {
                 error (FunctionCall);
         }
+}
+
+static bool lock_exit_get (bool *exit)
+{
+        if (!thread_lock (&global.lock)) {
+                return false;
+        }
+        *exit = global.exit;
+        if (!thread_unlock (&global.lock)) {
+                return false;
+        }
+        return true;
+}
+
+static bool lock_exit_set (bool exit)
+{
+        if (!thread_lock (&global.lock)) {
+                return false;
+        }
+        global.exit = exit;
+        if (!thread_unlock (&global.lock)) {
+                return false;
+        }
+        return true;
 }
