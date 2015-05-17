@@ -11,6 +11,7 @@ struct _ThreadSignal
 {
         pthread_cond_t cond;
         ThreadLock lock;
+        bool set;
 };
 
 bool thread_signal_create  (ThreadSignal *signal);
@@ -21,7 +22,8 @@ bool thread_signal_wait    (ThreadSignal *signal);
 #define THREAD_SIGNAL_INITIALIZER \
         { \
                 .cond = PTHREAD_COND_INITIALIZER, \
-                .lock = THREAD_LOCK_INITIALIZER \
+                .lock = THREAD_LOCK_INITIALIZER, \
+                .set = false \
         }
 
 #endif

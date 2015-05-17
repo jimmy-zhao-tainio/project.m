@@ -22,23 +22,16 @@ bool app_events (void)
 {
         bool exit;
 
-        if (!lock_exit_get (&exit)) {
-                error_code (FunctionCall, 1);
-                return false;
-        }
-        if (exit == true) {
-                return true;
-        }
         do {
                 if (!thread_signal_wait (&global.signal)) {
-                        error (FunctionCall);
-                        return false;
-                }
-                if (!lock_exit_get (&exit)) {
                         error_code (FunctionCall, 1);
                         return false;
                 }
-                if (exit == true) {
+                if (!lock_exit_get (&exit)) {
+                        error_code (FunctionCall, 2);
+                        return false;
+                }
+                if (exit) {
                         return true;
                 }
         } while (true);
@@ -47,21 +40,29 @@ bool app_events (void)
 void app_event_exit (void)
 {
         if (!lock_exit_set (true)) {
-                error (FunctionCall);
+                error_code (FunctionCall, 1);
                 return;
         }
         if (!thread_signal (&global.signal)) {
-                error (FunctionCall);
+                error_code (FunctionCall, 2);
         }
+}
+
+void app_events_reset (void)
+{
+        global.exit = false;
+        global.signal.set = false;
 }
 
 static bool lock_exit_get (bool *exit)
 {
         if (!thread_lock (&global.lock)) {
+                error_code (FunctionCall, 1);
                 return false;
         }
         *exit = global.exit;
         if (!thread_unlock (&global.lock)) {
+                error_code (FunctionCall, 2);
                 return false;
         }
         return true;
@@ -70,10 +71,12 @@ static bool lock_exit_get (bool *exit)
 static bool lock_exit_set (bool exit)
 {
         if (!thread_lock (&global.lock)) {
+                error_code (FunctionCall, 1);
                 return false;
         }
         global.exit = exit;
         if (!thread_unlock (&global.lock)) {
+                error_code (FunctionCall, 2);
                 return false;
         }
         return true;

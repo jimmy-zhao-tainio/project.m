@@ -5,6 +5,7 @@
 #include "test-arguments.h"
 #include "test-arguments-validate.h"
 #include "test-arguments-usage.h"
+#include "test-events.h"
 
 bool (*tests[]) (Test *test) =
 {
@@ -54,6 +55,8 @@ bool (*tests[]) (Test *test) =
         &test_app_arguments_usage_invalid_argument_3,
         &test_app_arguments_usage_function_call,
         &test_app_arguments_usage,
+        &test_app_events_1,
+        &test_app_events_2,
 	NULL
 };
 

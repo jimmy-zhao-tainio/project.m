@@ -19,6 +19,7 @@ bool thread_signal_create (ThreadSignal *signal)
                 error (SystemCall);
                 return false;
         }
+        signal->set = false;
         return true;
 }
 
@@ -49,9 +50,12 @@ bool thread_signal (ThreadSignal *signal)
                 error_code (FunctionCall, 1);
                 return false;
         }
-        if (pthread_cond_signal (&signal->cond) != 0) {
-                error (SystemCall);
-                return false;
+        if (signal->set == false) {
+                signal->set = true;
+                if (pthread_cond_signal (&signal->cond) != 0) {
+                        error (SystemCall);
+                        return false;
+                }
         }
         if (!thread_unlock (&signal->lock)) {
                 error_code (FunctionCall, 2);
@@ -70,10 +74,13 @@ bool thread_signal_wait (ThreadSignal *signal)
                 error_code (FunctionCall, 1);
                 return false;
         }
-        if (pthread_cond_wait (&signal->cond, &signal->lock.mutex) != 0) {
-                error (SystemCall);
-                return false;
+        while (signal->set == false) {
+                if (pthread_cond_wait (&signal->cond, &signal->lock.mutex) != 0) {
+                        error (SystemCall);
+                        return false;
+                }
         }
+        signal->set = false;
         if (!thread_unlock (&signal->lock)) {
                 error_code (FunctionCall, 2);
                 return false;

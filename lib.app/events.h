@@ -4,6 +4,7 @@
 #include <lib.core/defines.h>
 
 bool app_events (void);
+void app_events_reset (void);
 void app_event_exit (void);
 
 #endif

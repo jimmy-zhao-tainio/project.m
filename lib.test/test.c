@@ -12,6 +12,7 @@
 #include <lib.core/string.h>
 #include <lib.core/print.h>
 #include <lib.app/arguments.h>
+#include <lib.app/events.h>
 
 #include "test.h"
 
@@ -182,4 +183,5 @@ static void reset (void)
         tree_iterator_path_size (TREE_ITERATOR_PATH_SIZE);
         file_path_size (FILE_PATH_SIZE);
         print_silent (true);
+        app_events_reset ();
 }
