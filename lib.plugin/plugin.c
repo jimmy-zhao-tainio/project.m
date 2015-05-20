@@ -47,19 +47,20 @@ Plugin *plugin_create (const char *path)
         }
         thread_destroy (thread);
         if (!plugin_set_function (plugin, (void **)&plugin->load, "load")) {
-                error_code (FunctionCall, 1);
-                thread_exit (thread);
+                plugin_destroy (plugin);
+                error_code (FunctionCall, 6);
+                return NULL;
         }
         if (!plugin_set_function (plugin, (void **)&plugin->unload, "unload")) {
-                error_code (FunctionCall, 2);
-                thread_exit (thread);
+                plugin_destroy (plugin);
+                error_code (FunctionCall, 7);
+                return NULL;
         }
         if (!plugin->handle || !plugin->load || !plugin->unload) {
                 plugin_destroy (plugin);
                 error_code (FunctionCall, 6);
                 return NULL;
         }
-        
         return plugin;
 }
 
@@ -117,17 +118,19 @@ void plugin_destroy (Plugin *plugin)
                 error (InvalidArgument);
                 return;
         }
-        if (!(thread = thread_create (dlclose_workaround, plugin))) {
-                error_code (FunctionCall, 1);
-                return;
-        }
-        if (!thread_wait (thread)) {
-                error_code (FunctionCall, 2);
-                return;
-        }
-        thread_destroy (thread);
         if (plugin->path) {
                 memory_destroy (plugin->path);
+        }
+        if (plugin->handle) {
+                if (!(thread = thread_create (dlclose_workaround, plugin))) {
+                        error_code (FunctionCall, 1);
+                        return;
+                }
+                if (!thread_wait (thread)) {
+                        error_code (FunctionCall, 2);
+                        return;
+                }
+                thread_destroy (thread);
         }
         if (plugin->name) {
                 memory_destroy (plugin->name);
