@@ -10,6 +10,10 @@ bool (*tests[]) (Test *test) =
         &test_plugin_create_function_call_2,
         &test_plugin_create_function_call_3,
         &test_plugin_create_function_call_4,
+        &test_plugin_set_function_invalid_argument_1,
+        &test_plugin_set_function_invalid_argument_2,
+        &test_plugin_set_function_invalid_argument_3,
+        &test_plugin_set_function_invalid_operation,
 	NULL
 };
 

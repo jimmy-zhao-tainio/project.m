@@ -54,3 +54,45 @@ bool test_plugin_create_function_call_4 (Test *test)
         CATCH (error_at (0).code != 4);
         PASS ();
 }
+
+bool test_plugin_set_function_invalid_argument_1 (Test *test)
+{
+        TITLE ();
+        CATCH (plugin_set_function (NULL, NULL, NULL));
+        CATCH (error_at (0).error != ErrorInvalidArgument);
+        CATCH (error_at (0).code != 1);
+        PASS ();
+}
+
+bool test_plugin_set_function_invalid_argument_2 (Test *test)
+{
+        Plugin plugin;
+
+        TITLE ();
+        CATCH (plugin_set_function (&plugin, NULL, NULL));
+        CATCH (error_at (0).error != ErrorInvalidArgument);
+        CATCH (error_at (0).code != 2);
+        PASS ();
+}
+
+bool test_plugin_set_function_invalid_argument_3 (Test *test)
+{
+        Plugin plugin;
+
+        TITLE ();
+        CATCH (plugin_set_function (&plugin, (void **)1, NULL));
+        CATCH (error_at (0).error != ErrorInvalidArgument);
+        CATCH (error_at (0).code != 3);
+        PASS ();
+}
+
+bool test_plugin_set_function_invalid_operation (Test *test)
+{
+        Plugin plugin;
+
+        TITLE ();
+        plugin.handle = NULL;
+        CATCH (plugin_set_function (&plugin, (void **)1, "function"));
+        CATCH (error_at (0).error != ErrorInvalidOperation);
+        PASS ();
+}
