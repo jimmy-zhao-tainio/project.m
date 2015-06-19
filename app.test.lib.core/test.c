@@ -447,6 +447,7 @@ bool (*tests[]) (Test *test) =
         &test_thread_signal_destroy_invalid_argument,
         &test_thread_signal_invalid_argument,
         &test_thread_signal_wait_invalid_argument,
+        &test_thread_signal_wait_twice,
         &test_thread_lock_create_invalid_argument,
         &test_thread_lock_destroy_invalid_argument,
         &test_thread_lock_invalid_argument,

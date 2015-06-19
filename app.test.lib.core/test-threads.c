@@ -112,6 +112,51 @@ bool test_thread_signal_wait_invalid_argument (Test *test)
         PASS ();
 }
 
+static void wait_twice (Thread *thread);
+static ThreadSignal wait_1;
+static ThreadSignal wait_2;
+
+bool test_thread_signal_wait_twice (Test *test)
+{
+        Thread *thread;
+
+        TITLE ();
+        CATCH (!thread_signal_create (&wait_1));
+        CATCH (!thread_signal_create (&wait_2));
+        CATCH (!(thread = thread_create (&wait_twice, NULL)));
+        CATCH (!thread_signal (&wait_2));
+        CATCH (!thread_signal_wait (&wait_1));
+        CATCH (!thread_signal (&wait_2));
+        CATCH (!thread_signal_wait (&wait_1));
+        thread_signal_destroy (&wait_1);
+        thread_signal_destroy (&wait_2);
+        thread_wait (thread);
+        thread_destroy (thread);
+        CATCH (error_count () != 0);
+        PASS ();
+}
+
+static void wait_twice (Thread *thread)
+{
+        (void)thread;
+        if (!thread_signal_wait (&wait_2)) {
+                error_code (FunctionCall, 1);
+                return;
+        }
+        if (!thread_signal (&wait_1)) {
+                error_code (FunctionCall, 2);
+                return;
+        }
+        if (!thread_signal_wait (&wait_2)) {
+                error_code (FunctionCall, 3);
+                return;
+        }
+        if (!thread_signal (&wait_1)) {
+                error_code (FunctionCall, 4);
+                return;
+        }
+}
+
 bool test_thread_lock_create_invalid_argument (Test *test)
 {
         TITLE ();
