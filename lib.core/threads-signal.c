@@ -20,6 +20,7 @@ bool thread_signal_create (ThreadSignal *signal)
                 return false;
         }
         signal->set = false;
+        signal->initialized = true;
         return true;
 }
 

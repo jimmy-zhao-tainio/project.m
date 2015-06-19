@@ -451,6 +451,7 @@ bool (*tests[]) (Test *test) =
         &test_thread_lock_destroy_invalid_argument,
         &test_thread_lock_invalid_argument,
         &test_thread_unlock_invalid_argument,
+        &test_thread_lock_recursive,
         NULL
 };
 

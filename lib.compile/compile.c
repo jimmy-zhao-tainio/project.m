@@ -86,7 +86,7 @@ bool compile_prepare (Compile *compile)
 		compile_debug_invalid_arguments ();
 		return false;
 	}
-	for (node = list_first (compile->directory->files); node; node = node->next) {
+	for (node = list_first (compile->directory->files); node; node = list_next (node)) {
 		file = node->data;
 		if (string_begins_with (file->name, ".")) {
 			continue;
@@ -120,7 +120,7 @@ bool compile_actions (Compile *compile, const char *project_path)
 		compile_debug_invalid_arguments ();
 		return false;
 	}
-	for (node = list_last (compile->sorted); node; node = node->previous) {
+	for (node = list_last (compile->sorted); node; node = list_previous (node)) {
 		file = node->data;
 		if (!string_ends_with (file->name, ".o")) {
 			continue;
@@ -175,7 +175,7 @@ bool compile_execute (Compile *compile, bool bootstrap)
 	if (!bootstrap && list_count (compile->actions) == 0) {
 		compile_print ("\t[DONE]\n");
 	}
-	for (node = list_first (compile->actions); node; node = node->next) {
+	for (node = list_first (compile->actions); node; node = list_next (node)) {
 		action = node->data;
                 if (!bootstrap) {
                         compile_print ("\t");
@@ -216,7 +216,7 @@ void compile_destroy (Compile *compile)
 		list_destroy (compile->o_files);
 	}
 	if (compile->actions) {
-		for (node = list_first (compile->actions); node; node = node->next) {
+		for (node = list_first (compile->actions); node; node = list_next (node)) {
 			compile_action_destroy (node->data);
 		}
 		list_destroy (compile->actions);
@@ -248,7 +248,7 @@ static bool compile_set_vertices (Compile *compile)
 	 * OBS, vertices for included library .h files are added later when each
 	 * file is read in compile_prepare.
 	 */ 
-	for (node = list_first (compile->directory->files); node; node = node->next) {
+	for (node = list_first (compile->directory->files); node; node = list_next (node)) {
 		file = node->data;
 		if (string_begins_with (file->name, ".")) {
 			continue;
@@ -340,17 +340,17 @@ static bool compile_prepare_ch (Compile *compile, File *file)
 		return false;
 	}
 	if ((result = read_included_headers (file, headers_local, headers_library))) {
-		for (node = list_first (headers_local); result && node; node = node->next) {
+		for (node = list_first (headers_local); result && node; node = list_next (node)) {
 			result = link_local_header (compile, file, node->data);
 		}
-		for (node = list_first (headers_library); result && node; node = node->next) {
+		for (node = list_first (headers_library); result && node; node = list_next (node)) {
 			result = link_library_header (compile, file, node->data);
 		}
 	}
-	for (node = list_first (headers_local); node; node = node->next) {
+	for (node = list_first (headers_local); node; node = list_next (node)) {
 		string_destroy (node->data);
 	}
-	for (node = list_first (headers_library); node; node = node->next) {
+	for (node = list_first (headers_library); node; node = list_next (node)) {
 		string_destroy (node->data);
 	}
 	list_destroy (headers_local);
@@ -688,7 +688,7 @@ static int o_file_is_latest (Compile *compile, File *file)
 			compile_debug_operation_failed ();
 			return -1;
 		}
-		for (node = list_first (edges); node; node = node->next) {
+		for (node = list_first (edges); node; node = list_next (node)) {
 			if (!list_append (stack, node->data)) {
 				list_destroy (stack);
 				list_destroy (edges);

@@ -2,8 +2,8 @@
 #include <lib.core/memory.h>
 #include <lib.core/error.h>
 
-static void list_insert_at (List *list, ListNode *node, ListNode *next);
-static void list_remove_without_destroy (List *list, ListNode *node);
+static void list_item_insert_at (List *list, ListItem *item, ListItem *next);
+static void list_item_remove_without_destroy (List *list, ListItem *item);
 
 List *list_create (void)
 {
@@ -13,20 +13,23 @@ List *list_create (void)
 		error (FunctionCall);
 		return NULL;
 	}
+        list->first = NULL;
+        list->last = NULL;
+        list->count = 0;
 	return list;
 }
 
 void list_destroy (List *list)
 {
-	ListNode *node;
+	ListItem *item;
 
 	if (!list) {
 		error (InvalidArgument);
 		return;
 	}
-	for (node = list->first; node; node = list->first) {
-		list->first = node->next;
-		memory_destroy (node);
+	for (item = list->first; item; item = list->first) {
+		list->first = item->next;
+		memory_destroy (item);
 	}
 	memory_destroy (list);
 }
@@ -48,22 +51,27 @@ ListNode *list_insert (List *list, void *data)
 		return NULL;
 	}
 	node->data = data;
-	if (!list->first) {
-		list->first = node;
-		list->last = node;
+	return (ListNode *)list_item_insert (list, (ListItem *)node);
+}
+
+ListItem *list_item_insert (List *list, ListItem *item)
+{
+        if (!list->first) {
+		list->first = item;
+		list->last = item;
 	}
 	else if (list->first == list->last) {
-		node->next = list->first;
-		list->first->previous = node;
-		list->first = node;
+		item->next = list->first;
+		list->first->previous = item;
+		list->first = item;
 	}
 	else {
-		node->next = list->first;
-		list->first->previous = node;
-		list->first = node;
+		item->next = list->first;
+		list->first->previous = item;
+		list->first = item;
 	}
 	list->count++;
-	return node;
+	return item;
 }
 
 ListNode *list_append (List *list, void *data)
@@ -83,75 +91,80 @@ ListNode *list_append (List *list, void *data)
 		return NULL;
 	}
 	node->data = data;
-	if (!list->first) {
-		list->first = node;
-		list->last = node;
+        return (ListNode *)list_item_append (list, (ListItem *)node);
+}
+
+ListItem *list_item_append (List *list, ListItem *item)
+{
+        if (!list->first) {
+		list->first = item;
+		list->last = item;
 	}
 	else if (list->first == list->last) {
-		list->last = node;
+		list->last = item;
 		list->first->next = list->last;
 		list->last->previous = list->first;
 	}
 	else {
-		list->last->next = node;
-		node->previous = list->last;
-		list->last = node;
+		list->last->next = item;
+		item->previous = list->last;
+		list->last = item;
 	}
 	list->count++;
-	return node;
+	return item;
 }
 
 bool list_position (List *list, ListNode *node, ListNode *next)
 {
+        return list_item_position (list, (ListItem *)node, (ListItem *)next);
+}
+
+bool list_item_position (List *list, ListItem *item, ListItem *next)
+{
 	if (!list ||
-	    !node ||
+	    !item ||
 	    !next ||
-	    node == next) {
+	    item == next) {
 		error (InvalidArgument);
 		return false;
 	}
-	if (node->next == next) {
+	if (item->next == next) {
 		return true;
 	}
-	list_remove_without_destroy (list, next);
-	list_insert_at (list, node, next);
+	list_item_remove_without_destroy (list, next);
+	list_item_insert_at (list, item, next);
 	return true;
 }
 
 void list_remove (List *list, ListNode *node)
 {
-	if (!list ||
+        if (!list ||
 	    !node) {
 		error (InvalidArgument);
 		return;
 	}
-	list_remove_without_destroy (list, node);
-	memory_destroy (node);
+        list_item_remove (list, (ListItem *)node);
+        memory_destroy (node);
+}
+
+void list_item_remove (List *list, ListItem *item)
+{
+	if (!list ||
+	    !item) {
+		error (InvalidArgument);
+		return;
+	}
+	list_item_remove_without_destroy (list, item);
 }
 
 ListNode *list_first (const List *list)
 {
-	if (!list) {
-		return NULL;
-	}
-	return list->first;
+        return (ListNode *)list_item_first (list);
 }
 
 ListNode *list_last (const List *list)
 {
-	if (!list) {
-		return NULL;
-	}
-	return list->last;
-}
-
-size_t list_count (const List *list)
-{
-	if (!list) {
-		error (InvalidArgument);
-		return 0;
-	}
-	return list->count;
+        return (ListNode *)list_item_last (list);
 }
 
 ListNode *list_find (const List *list, const void *data)
@@ -162,7 +175,9 @@ ListNode *list_find (const List *list, const void *data)
 		error (InvalidArgument);
 		return NULL;
 	}
-	for (node = list->first; node; node = node->next) {
+	for (node = list_first (list); 
+             node; 
+             node = list_next (node)) {
 		if (node->data == data) {
 			return node;
 		}
@@ -170,13 +185,66 @@ ListNode *list_find (const List *list, const void *data)
 	return NULL;
 }
 
-static void list_remove_without_destroy (List *list, ListNode *node)
+ListNode *list_next (const ListNode *node)
+{
+        return (ListNode *)list_item_next ((ListItem *)node);
+}
+
+ListNode *list_previous (const ListNode *node)
+{
+        return (ListNode *)list_item_previous ((ListItem *)node);
+}
+
+ListItem *list_item_first (const List *list)
+{
+	if (!list) {
+		return NULL;
+	}
+	return list->first;
+}
+
+ListItem *list_item_last (const List *list)
+{
+	if (!list) {
+		return NULL;
+	}
+	return list->last;
+}
+
+ListItem *list_item_next (const ListItem *item)
+{
+        if (!item) {
+                error (InvalidArgument);
+                return NULL;
+        }
+        return item->next;
+}
+
+ListItem *list_item_previous (const ListItem *item)
+{
+        if (!item) {
+                error (InvalidArgument);
+                return NULL;
+        }
+        return item->previous;
+}
+
+size_t list_count (const List *list)
+{
+        if (!list) {
+                error (InvalidArgument);
+                return 0;
+        }
+        return list->count;
+}
+
+static void list_item_remove_without_destroy (List *list, ListItem *item)
 {
 	if (!list ||
-	    !node) {
+	    !item) {
 		return;
 	}
-	if (node == list->first) {
+	if (item == list->first) {
 		list->first = list->first->next;
 		if (!list->first) {
 			list->last = NULL;
@@ -188,24 +256,24 @@ static void list_remove_without_destroy (List *list, ListNode *node)
 			}
 		}
 	}
-	else if (node == list->last) {
-		list->last = node->previous;
+	else if (item == list->last) {
+		list->last = item->previous;
 		list->last->next = NULL;
 	}
 	else {
-		node->previous->next = node->next;
-		node->next->previous = node->previous;
+		item->previous->next = item->next;
+		item->next->previous = item->previous;
 	}
-	node->previous = NULL;
-	node->next = NULL;
+	item->previous = NULL;
+	item->next = NULL;
 	if (list->count != 0) {
 		list->count--;
 	}
 }
 
-static void list_insert_at (List *list, ListNode *node, ListNode *next)
+static void list_item_insert_at (List *list, ListItem *item, ListItem *next)
 {
-	if (node == list->first) {
+        if (item == list->first) {
 		if (!list->first->next) {
 			list->first->next = next;
 			next->previous = list->first;
@@ -218,16 +286,16 @@ static void list_insert_at (List *list, ListNode *node, ListNode *next)
 			list->first->next = next;
 		}
 	}
-	else if (node == list->last) {
+	else if (item == list->last) {
 		list->last->next = next;
 		next->previous = list->last;
 		list->last = next;
 	}
 	else {
-		node->next->previous = next;
-		next->next = node->next;
-		node->next = next;
-		next->previous = node;
+		item->next->previous = next;
+		next->next = item->next;
+		item->next = next;
+		next->previous = item;
 	}
 	list->count++;
 }

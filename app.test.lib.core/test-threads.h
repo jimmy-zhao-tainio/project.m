@@ -19,5 +19,6 @@ bool test_thread_lock_create_invalid_argument (Test *test);
 bool test_thread_lock_destroy_invalid_argument (Test *test);
 bool test_thread_lock_invalid_argument (Test *test);
 bool test_thread_unlock_invalid_argument (Test *test);
+bool test_thread_lock_recursive (Test *test);
 
 #endif

@@ -93,18 +93,18 @@ bool test_compile_project_prepare_lib (Test *test)
 	CATCH (!compile_project_prepare (project));
 	CATCH (topological_count_vertices (project->topological) != 1);
 	CATCH (project->sorted->count != 1);
-	lib = project->sorted->first->data;
+	lib = list_first (project->sorted)->data;
 	CATCH (!lib->actions);
 	CATCH (list_count (lib->actions) != 3);
 	CATCH (!(node = list_first (lib->actions)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_CC);
 	CATCH (!string_equals (action->print, "[CC] test.c\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_ARCH);
 	CATCH (!string_equals (action->print, "[ARCH] lib.test.a\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_INDEX);
 	CATCH (!string_equals (action->print, "[INDEX] lib.test.a\n"));
@@ -143,15 +143,15 @@ bool test_compile_project_prepare_lib_and_app (Test *test)
 	CATCH (list_count (edges) != 0);
 	list_destroy (edges);
 	CATCH (project->sorted->count != 2);
-	CATCH (project->sorted->first->data != app);
-	CATCH (project->sorted->last->data != lib);
+	CATCH (list_first (project->sorted)->data != app);
+	CATCH (list_last (project->sorted)->data != lib);
 	CATCH (!app->actions);
 	CATCH (list_count (app->actions) != 2);
 	CATCH (!(node = list_first (app->actions)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_CC);
 	CATCH (!string_equals (action->print, "[CC] main.c\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_BUILD);
 	CATCH (!string_equals (action->print, "[BUILD] app.test\n"));
@@ -161,11 +161,11 @@ bool test_compile_project_prepare_lib_and_app (Test *test)
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_CC);
 	CATCH (!string_equals (action->print, "[CC] test.c\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_ARCH);
 	CATCH (!string_equals (action->print, "[ARCH] lib.test.a\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_INDEX);
 	CATCH (!string_equals (action->print, "[INDEX] lib.test.a\n"));
@@ -220,17 +220,17 @@ bool test_compile_project_prepare_libs_and_app (Test *test)
 	CATCH (list_count (edges) != 0);
 	list_destroy (edges);
 	CATCH (project->sorted->count != 4);
-	CATCH (project->sorted->first->data != app);
-	CATCH (project->sorted->first->next->data != lib1);
-	CATCH (project->sorted->first->next->next->data != lib2);
-	CATCH (project->sorted->first->next->next->next->data != lib3);
+	CATCH (list_first (project->sorted)->data != app);
+	CATCH (list_next (list_first (project->sorted))->data != lib1);
+	CATCH (list_next (list_next (list_first (project->sorted)))->data != lib2);
+	CATCH (list_next (list_next (list_next (list_first (project->sorted))))->data != lib3);
 	CATCH (!app->actions);
 	CATCH (list_count (app->actions) != 2);
 	CATCH (!(node = list_first (app->actions)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_CC);
 	CATCH (!string_equals (action->print, "[CC] main.c\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_BUILD);
 	CATCH (!string_equals (action->print, "[BUILD] app.test\n"));
@@ -240,11 +240,11 @@ bool test_compile_project_prepare_libs_and_app (Test *test)
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_CC);
 	CATCH (!string_equals (action->print, "[CC] test.c\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_ARCH);
 	CATCH (!string_equals (action->print, "[ARCH] lib.test1.a\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_INDEX);
 	CATCH (!string_equals (action->print, "[INDEX] lib.test1.a\n"));
@@ -254,11 +254,11 @@ bool test_compile_project_prepare_libs_and_app (Test *test)
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_CC);
 	CATCH (!string_equals (action->print, "[CC] test.c\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_ARCH);
 	CATCH (!string_equals (action->print, "[ARCH] lib.test2.a\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_INDEX);
 	CATCH (!string_equals (action->print, "[INDEX] lib.test2.a\n"));
@@ -268,11 +268,11 @@ bool test_compile_project_prepare_libs_and_app (Test *test)
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_CC);
 	CATCH (!string_equals (action->print, "[CC] test.c\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_ARCH);
 	CATCH (!string_equals (action->print, "[ARCH] lib.test3.a\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_INDEX);
 	CATCH (!string_equals (action->print, "[INDEX] lib.test3.a\n"));
@@ -336,9 +336,9 @@ bool test_compile_project_prepare_app_indirect_lib (Test *test)
 	CATCH (list_count (edges) != 0);
 	list_destroy (edges);
 	CATCH (project->sorted->count != 3);
-	CATCH (project->sorted->first->data != app);
-	CATCH (project->sorted->first->next->data != lib1);
-	CATCH (project->sorted->first->next->next->data != lib2);
+	CATCH (list_first (project->sorted)->data != app);
+	CATCH (list_next (list_first (project->sorted))->data != lib1);
+	CATCH (list_next (list_next (list_first (project->sorted)))->data != lib2);
 	CATCH (tree_count (lib2->libraries) != 0);
 	CATCH (tree_count (lib1->libraries) != 1);
 	CATCH (tree_search (lib1->libraries, (Object *)lib2_directory) != lib2_directory);
@@ -351,7 +351,7 @@ bool test_compile_project_prepare_app_indirect_lib (Test *test)
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_CC);
 	CATCH (!string_equals (action->print, "[CC] main.c\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_BUILD);
 	CATCH (!string_equals (action->print, "[BUILD] app.test\n"));
@@ -361,11 +361,11 @@ bool test_compile_project_prepare_app_indirect_lib (Test *test)
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_CC);
 	CATCH (!string_equals (action->print, "[CC] test.c\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_ARCH);
 	CATCH (!string_equals (action->print, "[ARCH] lib.test1.a\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_INDEX);
 	CATCH (!string_equals (action->print, "[INDEX] lib.test1.a\n"));
@@ -375,11 +375,11 @@ bool test_compile_project_prepare_app_indirect_lib (Test *test)
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_CC);
 	CATCH (!string_equals (action->print, "[CC] test.c\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_ARCH);
 	CATCH (!string_equals (action->print, "[ARCH] lib.test2.a\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_INDEX);
 	CATCH (!string_equals (action->print, "[INDEX] lib.test2.a\n"));
@@ -482,14 +482,14 @@ bool test_compile_project_execute_app_twice (Test *test)
 	project = compile_project_create (path);
 	CATCH (!compile_project_prepare (project));
 	CATCH (list_count (project->nodes) != 1);
-	app = project->nodes->first->data;
+	app = list_first (project->nodes)->data;
 	CATCH (!app->actions);
 	CATCH (list_count (app->actions) != 2);
 	CATCH (!(node = list_first (app->actions)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_CC);
 	CATCH (!string_equals (action->print, "[CC] test1.c\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_BUILD);
 	CATCH (!string_equals (action->print, "[BUILD] app.test\n"));
@@ -500,7 +500,7 @@ bool test_compile_project_execute_app_twice (Test *test)
 	CATCH (!(project = compile_project_create (path)));
 	CATCH (!compile_project_prepare (project));
 	CATCH (list_count (project->nodes) != 1);
-	app = project->nodes->first->data;
+	app = list_first (project->nodes)->data;
 	CATCH (!app->actions);
 	CATCH (list_count (app->actions) != 0);
 	CATCH (!compile_project_execute (project, false));
@@ -539,18 +539,18 @@ bool test_compile_project_execute_lib_twice (Test *test)
 	project = compile_project_create (path);
 	CATCH (!compile_project_prepare (project));
 	CATCH (list_count (project->nodes) != 1);
-	lib = project->nodes->first->data;
+	lib = list_first (project->nodes)->data;
 	CATCH (!lib->actions);
 	CATCH (list_count (lib->actions) != 3);
 	CATCH (!(node = list_first (lib->actions)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_CC);
 	CATCH (!string_equals (action->print, "[CC] test1.c\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_ARCH);
 	CATCH (!string_equals (action->print, "[ARCH] lib.test.a\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_INDEX);
 	CATCH (!string_equals (action->print, "[INDEX] lib.test.a\n"));
@@ -561,7 +561,7 @@ bool test_compile_project_execute_lib_twice (Test *test)
 	project = compile_project_create (path);
 	CATCH (!compile_project_prepare (project));
 	CATCH (!compile_project_execute (project, false));
-	lib = project->nodes->first->data;
+	lib = list_first (project->nodes)->data;
 	CATCH (list_count (lib->actions) != 0);
 	compile_project_destroy (project);
 	compile_print_set_enabled (true);
@@ -610,13 +610,13 @@ bool test_compile_project_execute_lib_and_app_twice (Test *test)
 	compile_print_set_enabled (false);
 	project = compile_project_create (path);
 	CATCH (!compile_project_prepare (project));
-	if (string_equals (((Compile *)project->nodes->first->data)->directory->name, "lib.test1")) {
-		lib = project->nodes->first->data;
-		app = project->nodes->first->next->data;
+	if (string_equals (((Compile *)list_first (project->nodes)->data)->directory->name, "lib.test1")) {
+		lib = list_first (project->nodes)->data;
+		app = list_next (list_first (project->nodes))->data;
 	}
 	else {
-		lib = project->nodes->first->next->data;
-		app = project->nodes->first->data;
+		lib = list_next (list_first (project->nodes))->data;
+		app = list_first (project->nodes)->data;
 	}
 	CATCH (!app->actions);
 	CATCH (list_count (app->actions) != 2);
@@ -624,7 +624,7 @@ bool test_compile_project_execute_lib_and_app_twice (Test *test)
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_CC);
 	CATCH (!string_equals (action->print, "[CC] main.c\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_BUILD);
 	CATCH (!string_equals (action->print, "[BUILD] app.test1\n"));
@@ -634,11 +634,11 @@ bool test_compile_project_execute_lib_and_app_twice (Test *test)
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_CC);
 	CATCH (!string_equals (action->print, "[CC] test1.c\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_ARCH);
 	CATCH (!string_equals (action->print, "[ARCH] lib.test1.a\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_INDEX);
 	CATCH (!string_equals (action->print, "[INDEX] lib.test1.a\n"));
@@ -651,13 +651,13 @@ bool test_compile_project_execute_lib_and_app_twice (Test *test)
 	project = compile_project_create (path);
 	CATCH (!compile_project_prepare (project));
 	CATCH (!compile_project_execute (project, false));
-	if (string_equals (((Compile *)project->nodes->first->data)->directory->name, "lib.test1")) {
-		lib = project->nodes->first->data;
-		app = project->nodes->first->next->data;
+	if (string_equals (((Compile *)list_first (project->nodes)->data)->directory->name, "lib.test1")) {
+		lib = list_first (project->nodes)->data;
+		app = list_next (list_first (project->nodes))->data;
 	}
 	else {
-		lib = project->nodes->first->next->data;
-		app = project->nodes->first->data;
+		lib = list_next (list_first (project->nodes))->data;
+		app = list_first (project->nodes)->data;
 	}
 	CATCH (list_count (lib->actions) != 0);
 	CATCH (list_count (app->actions) != 0);
@@ -710,24 +710,24 @@ bool test_compile_project_execute_lib_and_lib_twice (Test *test)
 	compile_print_set_enabled (false);
 	project = compile_project_create (path);
 	CATCH (!compile_project_prepare (project));
-	if (string_equals (((Compile *)project->nodes->first->data)->directory->name, "lib.test1")) {
-		lib1 = project->nodes->first->data;
-		lib2 = project->nodes->first->next->data;
+	if (string_equals (((Compile *)list_first (project->nodes)->data)->directory->name, "lib.test1")) {
+		lib1 = list_first (project->nodes)->data;
+		lib2 = list_next (list_first (project->nodes))->data;
 	}
 	else {
-		lib1 = project->nodes->first->next->data;
-		lib2 = project->nodes->first->data;
+		lib1 = list_next (list_first (project->nodes))->data;
+		lib2 = list_first (project->nodes)->data;
 	}
 	CATCH (list_count (lib1->actions) != 3);
 	CATCH (!(node = list_first (lib1->actions)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_CC);
 	CATCH (!string_equals (action->print, "[CC] test1.c\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_ARCH);
 	CATCH (!string_equals (action->print, "[ARCH] lib.test1.a\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_INDEX);
 	CATCH (!string_equals (action->print, "[INDEX] lib.test1.a\n"));
@@ -736,11 +736,11 @@ bool test_compile_project_execute_lib_and_lib_twice (Test *test)
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_CC);
 	CATCH (!string_equals (action->print, "[CC] test2.c\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_ARCH);
 	CATCH (!string_equals (action->print, "[ARCH] lib.test2.a\n"));
-	CATCH (!(node = node->next));
+	CATCH (!(node = list_next (node)));
 	CATCH (!(action = node->data));
 	CATCH (action->type != COMPILE_ACTION_INDEX);
 	CATCH (!string_equals (action->print, "[INDEX] lib.test2.a\n"));
@@ -753,13 +753,13 @@ bool test_compile_project_execute_lib_and_lib_twice (Test *test)
 	project = compile_project_create (path);
 	CATCH (!compile_project_prepare (project));
 	CATCH (!compile_project_execute (project, false));
-	if (string_equals (((Compile *)project->nodes->first->data)->directory->name, "lib.test1")) {
-		lib1 = project->nodes->first->data;
-		lib2 = project->nodes->first->next->data;
+	if (string_equals (((Compile *)list_first (project->nodes)->data)->directory->name, "lib.test1")) {
+		lib1 = list_first (project->nodes)->data;
+		lib2 = list_next (list_first (project->nodes))->data;
 	}
 	else {
-		lib1 = project->nodes->first->next->data;
-		lib2 = project->nodes->first->data;
+		lib1 = list_next (list_first (project->nodes))->data;
+		lib2 = list_first (project->nodes)->data;
 	}
 	CATCH (list_count (lib1->actions) != 0);
 	CATCH (list_count (lib2->actions) != 0);

@@ -84,11 +84,11 @@ bool test_list_insert_1 (Test *test)
 	TITLE ();
 	CATCH (!(list = list_create ()));
 	CATCH (!(node = list_insert (list, NULL)));
-	CATCH (list->first != node);
-	CATCH (list->last != node);
+	CATCH (list_first (list) != node);
+	CATCH (list_last (list) != node);
 	CATCH (list->count != 1);
-	CATCH (list->first->previous);
-	CATCH (list->last->next);
+	CATCH (list_previous (list_first (list)));
+	CATCH (list_next (list_last (list)));
 	list_destroy (list);
 	PASS ();
 }
@@ -101,12 +101,12 @@ bool test_list_insert_2 (Test *test)
 	TITLE ();
 	CATCH (!(list = list_create ()));
 	CATCH (!(node = list_insert (list, "test")));
-	CATCH (list->first != node);
-	CATCH (list->last != node);
+	CATCH (list_first (list) != node);
+	CATCH (list_last (list) != node);
 	CATCH (list->count != 1);
-	CATCH (list->first->previous);
-	CATCH (list->last->next);
-	CATCH (!string_equals (list->first->data, "test"));
+	CATCH (list_previous (list_first (list)));
+	CATCH (list_next (list_last (list)));
+	CATCH (!string_equals (list_first (list)->data, "test"));
 	list_destroy (list);
 	PASS ();
 }
@@ -124,16 +124,16 @@ bool test_list_insert_3 (Test *test)
 	for (i = 0; i < 10; i++) {
 		CATCH (!(nodes[i] = list_insert (list, strings[i])));
 	}
-	CATCH (list->first != nodes[9]);
-	CATCH (list->last != nodes[0]);
+	CATCH (list_first (list) != nodes[9]);
+	CATCH (list_last (list) != nodes[0]);
 	CATCH (list->count != 10);
-	CATCH (list->first->previous);
-	CATCH (list->last->next);
-	for (node = list->last, i = 0; i < 10; node = node->previous, i++) {
+	CATCH (list_previous (list_first (list)));
+	CATCH (list_next (list_last (list)));
+	for (node = list_last (list), i = 0; i < 10; node = list_previous (node), i++) {
 		CATCH (node != nodes[i]);
 		CATCH (node->data != strings[i]);
 	}
-	for (node = list->first, i = 10; i-- > 0; node = node->next) {
+	for (node = list_first (list), i = 10; i-- > 0; node = list_next (node)) {
 		CATCH (node != nodes[i]);
 		CATCH (node->data != strings[i]);
 	}
@@ -185,11 +185,11 @@ bool test_list_append_1 (Test *test)
 	TITLE ();
 	CATCH (!(list = list_create ()));
 	CATCH (!(node = list_append (list, NULL)));
-	CATCH (list->first != node);
-	CATCH (list->last != node);
+	CATCH (list_first (list) != node);
+	CATCH (list_last (list) != node);
 	CATCH (list->count != 1);
-	CATCH (list->first->previous);
-	CATCH (list->last->next);
+	CATCH (list_previous (list_first (list)));
+	CATCH (list_next (list_last (list)));
 	list_destroy (list);
 	PASS ();
 }
@@ -202,12 +202,12 @@ bool test_list_append_2 (Test *test)
 	TITLE ();
 	CATCH (!(list = list_create ()));
 	CATCH (!(node = list_append (list, "test")));
-	CATCH (list->first != node);
-	CATCH (list->last != node);
+	CATCH (list_first (list) != node);
+	CATCH (list_last (list) != node);
 	CATCH (list->count != 1);
-	CATCH (list->first->previous);
-	CATCH (list->last->next);
-	CATCH (!string_equals (list->first->data, "test"));
+	CATCH (list_previous (list_first (list)));
+	CATCH (list_next (list_last (list)));
+	CATCH (!string_equals (list_first (list)->data, "test"));
 	list_destroy (list);
 	PASS ();
 }
@@ -225,16 +225,16 @@ bool test_list_append_3 (Test *test)
 	for (i = 0; i < 10; i++) {
 		CATCH (!(nodes[i] = list_append (list, strings[i])));
 	}
-	CATCH (list->first != nodes[0]);
-	CATCH (list->last != nodes[9]);
+	CATCH (list_first (list) != nodes[0]);
+	CATCH (list_last (list) != nodes[9]);
 	CATCH (list->count != 10);
-	CATCH (list->first->previous);
-	CATCH (list->last->next);
-	for (node = list->last, i = 10; i-- > 0; node = node->previous) {
+	CATCH (list_previous (list_first (list)));
+	CATCH (list_next (list_last (list)));
+	for (node = list_last (list), i = 10; i-- > 0; node = list_previous (node)) {
 		CATCH (node != nodes[i]);
 		CATCH (node->data != strings[i]);
 	}
-	for (node = list->first, i = 0; i < 10; node = node->next, i++) {
+	for (node = list_first (list), i = 0; i < 10; node = list_next (node), i++) {
 		CATCH (node != nodes[i]);
 		CATCH (node->data != strings[i]);
 	}
@@ -292,17 +292,17 @@ bool test_list_position_1 (Test *test)
 	CATCH (!(list = list_create ()));
 	CATCH (!(one = list_insert (list, "one")));
 	CATCH (!(two = list_append (list, "two")));
-	CATCH (list->first != one);
-	CATCH (list->last != two);
+	CATCH (list_first (list) != one);
+	CATCH (list_last (list) != two);
 	CATCH (!list_position (list, one, two));
-	CATCH (list->first != one);
-	CATCH (list->last != two);
+	CATCH (list_first (list) != one);
+	CATCH (list_last (list) != two);
 	CATCH (!list_position (list, two, one));
-	CATCH (list->first != two);
-	CATCH (list->last != one);
+	CATCH (list_first (list) != two);
+	CATCH (list_last (list) != one);
 	CATCH (!list_position (list, one, two));
-	CATCH (list->first != one);
-	CATCH (list->last != two);
+	CATCH (list_first (list) != one);
+	CATCH (list_last (list) != two);
 	list_destroy (list);
 	PASS ();
 }
@@ -333,9 +333,9 @@ bool test_list_position_2 (Test *test)
 	 * 0123456789
 	 */
 	for (i = 0; i < 10; i++) {
-		CATCH (!list_position (list, list->last, list->first));
+		CATCH (!list_position (list, list_last (list), list_first (list)));
 	}
-	for (node = list->first, i = 0; i < 10; node = node->next, i++) {
+	for (node = list_first (list), i = 0; i < 10; node = list_next (node), i++) {
 		CATCH (node != nodes[i]);
 		CATCH (node->data != strings[i]);
 	}
@@ -351,9 +351,9 @@ bool test_list_position_2 (Test *test)
 	 * 9876543210
 	 */
 	for (i = 9; i-- > 0;) {
-		CATCH (!list_position (list, list->last, nodes[i]));
+		CATCH (!list_position (list, list_last (list), nodes[i]));
 	}
-	for (node = list->last, i = 0; i < 10; node = node->previous, i++) {
+	for (node = list_last (list), i = 0; i < 10; node = list_previous (node), i++) {
 		CATCH (node != nodes[i]);
 		CATCH (node->data != strings[i]);
 	}
@@ -397,30 +397,30 @@ bool test_list_remove (Test *test)
 	}
 	/* Remove 0 */
 	list_remove (list, nodes[0]);
-	CATCH (list->first != nodes[1]);
-	CATCH (list->first->next != nodes[2]);
-	CATCH (list->first->next->next != nodes[3]);
-	CATCH (list->first->next->next->next != nodes[4]);
-	CATCH (list->last != nodes[4]);
+	CATCH (list_first (list) != nodes[1]);
+	CATCH (list_next (list_first (list)) != nodes[2]);
+	CATCH (list_next (list_next (list_first (list))) != nodes[3]);
+	CATCH (list_next (list_next (list_next (list_first (list)))) != nodes[4]);
+	CATCH (list_last (list) != nodes[4]);
 	CATCH (list_count (list) != 4);
 	/* Remove 2 */
 	list_remove (list, nodes[2]);
-	CATCH (list->first != nodes[1]);
-	CATCH (list->first->next != nodes[3]);
-	CATCH (list->first->next->next != nodes[4]);
-	CATCH (list->last != nodes[4]);
+	CATCH (list_first (list) != nodes[1]);
+	CATCH (list_next (list_first (list)) != nodes[3]);
+	CATCH (list_next (list_next (list_first (list))) != nodes[4]);
+	CATCH (list_last (list) != nodes[4]);
 	CATCH (list_count (list) != 3);
 	/* Remove 4 */
 	list_remove (list, nodes[4]);
-	CATCH (list->first != nodes[1]);
-	CATCH (list->first->next != nodes[3]);
-	CATCH (list->last != nodes[3]);
+	CATCH (list_first (list) != nodes[1]);
+	CATCH (list_next (list_first (list)) != nodes[3]);
+	CATCH (list_last (list) != nodes[3]);
 	CATCH (list_count (list) != 2);
 	/* Remove 1,3 */
 	list_remove (list, nodes[1]);
 	list_remove (list, nodes[3]);
-	CATCH (list->first != NULL);
-	CATCH (list->last != NULL);
+	CATCH (list_first (list) != NULL);
+	CATCH (list_last (list) != NULL);
 	CATCH (list_count (list) != 0);
 	list_destroy (list);
 	PASS ();	

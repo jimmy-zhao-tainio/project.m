@@ -94,7 +94,7 @@ static bool link_library_try (Compile *compile, char **lib_path, char **lib_file
 		compile_debug_operation_failed ();
 		return false;
 	}
-	for (node = list_first (compile->o_files); node; node = node->next) {
+	for (node = list_first (compile->o_files); node; node = list_next (node)) {
 		file = node->data;
 		if (!string_append (&arch->command, file->path) || 
 	    	    !string_append (&arch->command, " ")) {
@@ -102,7 +102,7 @@ static bool link_library_try (Compile *compile, char **lib_path, char **lib_file
 			return false;
 		}
 	}
-	for (node = list_last (compile->libraries_sorted); node; node = node->previous) {
+	for (node = list_last (compile->libraries_sorted); node; node = list_previous (node)) {
 		directory = node->data;
 		if (!string_append (&arch->command, directory->path) || 
 	    	    !string_append (&arch->command, "/") || 
@@ -185,7 +185,7 @@ bool compile_link_application (Compile *compile)
 		compile_debug_allocate_memory ();
 		return false;
 	}
-	for (node = list_first (compile->o_files); node; node = node->next) {
+	for (node = list_first (compile->o_files); node; node = list_next (node)) {
 		file = node->data;
 		if (!string_append (&action->command, file->path) || 
 	    	    !string_append (&action->command, " ")) {
@@ -193,7 +193,7 @@ bool compile_link_application (Compile *compile)
 			return false;
 		}
 	}
-	for (node = list_last (compile->libraries_sorted); node; node = node->previous) {
+	for (node = list_last (compile->libraries_sorted); node; node = list_previous (node)) {
 		directory = node->data;
 		if (!string_append (&action->command, directory->path) || 
 	    	    !string_append (&action->command, "/") || 
@@ -284,7 +284,7 @@ bool compile_link_plugin (Compile *compile)
 		compile_debug_allocate_memory ();
 		return false;
 	}
-	for (node = list_first (compile->o_files); node; node = node->next) {
+	for (node = list_first (compile->o_files); node; node = list_next (node)) {
 		file = node->data;
 		if (!string_append (&action->command, file->path) || 
 	    	    !string_append (&action->command, " ")) {
@@ -292,7 +292,7 @@ bool compile_link_plugin (Compile *compile)
 			return false;
 		}
 	}
-	for (node = list_last (compile->libraries_sorted); node; node = node->previous) {
+	for (node = list_last (compile->libraries_sorted); node; node = list_previous (node)) {
 		directory = node->data;
 		if (!string_append (&action->command, directory->path) || 
 	    	    !string_append (&action->command, "/") || 

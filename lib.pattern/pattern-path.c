@@ -55,7 +55,7 @@ static PatternPath *path_create_branch (PatternBranch *branch, PatternPath *last
         PatternPath *path = NULL;
         ListNode *node;
 
-        for (node = list_last (branch->parts); node; node = node->previous) {
+        for (node = list_last (branch->parts); node; node = list_previous (node)) {
                 if (!(path = path_create_part (node->data, last, tracker))) {
                         error (FunctionCall);
                         return NULL;

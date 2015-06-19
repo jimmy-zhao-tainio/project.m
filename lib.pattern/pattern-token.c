@@ -55,7 +55,7 @@ void pattern_tokens_destroy (List *tokens)
 	PatternTokenSet *set;
 	ListNode *node;
 
-	for (node = list_first (tokens); node; node = node->next) {
+	for (node = list_first (tokens); node; node = list_next (node)) {
 		token = node->data;
 		if (token->type == PatternTokenTypeSet) {
 			set = (PatternTokenSet *)token;

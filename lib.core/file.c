@@ -208,10 +208,10 @@ void directory_close (Directory *directory)
 		error (InvalidArgument);
         	return;
 	}
-	for (node = list_first (directory->directories); node; node = node->next) {
+	for (node = list_first (directory->directories); node; node = list_next (node)) {
 		directory_close (node->data);
 	}
-	for (node = list_first (directory->files); node; node = node->next) {
+	for (node = list_first (directory->files); node; node = list_next (node)) {
 		file_destroy (node->data);
 	}
 	if (directory->path) {
@@ -253,12 +253,12 @@ bool directory_read (Directory *directory)
 		if (file_next) {
 			file_destroy (file_next);
 		}
-		for (node = list_first (directory->directories); node; node = node->next) {
+		for (node = list_first (directory->directories); node; node = list_next (node)) {
 			directory_close (node->data);
 		}
 		list_destroy (directory->directories);
 		directory->directories = NULL;
-		for (node = list_first (directory->files); node; node = node->next) {
+		for (node = list_first (directory->files); node; node = list_next (node)) {
 			file_destroy (node->data);
 		}
 		list_destroy (directory->files);
@@ -295,7 +295,7 @@ File *directory_find_file (Directory *directory, const char *name)
 		error (InvalidArgument);
 		return NULL;
 	}
-	for (node = list_first (directory->files); node; node = node->next) {
+	for (node = list_first (directory->files); node; node = list_next (node)) {
 		found = node->data;
 		if (string_equals (found->name, name)) {
 			return found;
@@ -313,7 +313,7 @@ Directory *directory_find_directory (Directory *directory, const char *name)
 		error (InvalidArgument);
 		return NULL;
 	}
-	for (node = list_first (directory->directories); node; node = node->next) {
+	for (node = list_first (directory->directories); node; node = list_next (node)) {
 		found = node->data;
 		if (string_equals (found->name, name)) {
 			return found;
@@ -582,7 +582,7 @@ static bool directory_read_recursive_try (Directory *directory)
 		error (FunctionCall);
 		return false;
 	}
-	for (node = list_first (directory->directories); node; node = node->next) {
+	for (node = list_first (directory->directories); node; node = list_next (node)) {
 		if (!directory_read_recursive (node->data)) {
 			error (FunctionCall);
 			return false;

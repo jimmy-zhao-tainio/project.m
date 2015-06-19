@@ -12,6 +12,7 @@ struct _ThreadSignal
         pthread_cond_t cond;
         ThreadLock lock;
         bool set;
+        bool initialized;
 };
 
 bool thread_signal_create  (ThreadSignal *signal);

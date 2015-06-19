@@ -144,6 +144,36 @@ bool test_thread_unlock_invalid_argument (Test *test)
         PASS ();
 }
 
+static bool recursive (ThreadLock *lock, int i);
+
+bool test_thread_lock_recursive (Test *test)
+{
+        ThreadLock lock;
+
+        TITLE ();
+        CATCH (!thread_lock_create (&lock));
+        CATCH (!recursive (&lock, 1000));
+        CATCH (!thread_lock_destroy (&lock));
+        PASS ();
+}
+
+static bool recursive (ThreadLock *lock, int i)
+{
+        if (i == 0) {
+                return true;
+        }
+        if (!thread_lock (lock)) {
+                return false;
+        }
+        if (!recursive (lock, i - 1)) {
+                return false;
+        }
+        if (!thread_unlock (lock)) {
+                return false;
+        }
+        return true;
+}
+
 static void worker (Thread *thread)
 {
         (void)thread;

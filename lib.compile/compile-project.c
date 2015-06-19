@@ -74,7 +74,7 @@ bool compile_project_prepare (CompileProject *project)
                 error_code (FunctionCall, 1);
 		return false;
 	}
-	for (node = list_first (project->directory->directories); node; node = node->next) {
+	for (node = list_first (project->directory->directories); node; node = list_next (node)) {
 		if (!(sub_directory = node->data)) {
                         error_code (InvalidOperation, 1);
 			return false;
@@ -102,7 +102,7 @@ bool compile_project_prepare (CompileProject *project)
 			return false;
 		}
 	}
-	for (node = list_first (project->directory->directories); node; node = node->next) {
+	for (node = list_first (project->directory->directories); node; node = list_next (node)) {
 		if (!(sub_directory = node->data)) {
                         error_code (InvalidOperation, 3);
 			return false;
@@ -146,7 +146,7 @@ bool compile_project_prepare (CompileProject *project)
                 error_code (InvalidOperation, 7);        
 		return false;
 	}
-	for (node = list_first (project->sorted); node; node = node->next) {
+	for (node = list_first (project->sorted); node; node = list_next (node)) {
 		if (!recursively_flatten_libraries (project, node->data)) {
 			return false;
 		}
@@ -154,7 +154,7 @@ bool compile_project_prepare (CompileProject *project)
 			return false;
 		}
 	}
-	for (node = list_last (project->sorted); node; node = node->previous) {
+	for (node = list_last (project->sorted); node; node = list_previous (node)) {
 		if (!compile_actions (node->data, project->directory->path)) {
                         error_code (FunctionCall, 9);
 			return false;
@@ -182,7 +182,7 @@ void compile_project_destroy (CompileProject *project)
 	if (project->sorted) {
 		list_destroy (project->sorted);
 	}
-	for (node = list_first (project->nodes); node; node = node->next) {
+	for (node = list_first (project->nodes); node; node = list_next (node)) {
 		compile_destroy (node->data);
 	}
 	if (project->nodes) {
@@ -199,7 +199,7 @@ bool compile_project_execute (CompileProject *project, bool bootstrap)
 		compile_debug_invalid_arguments ();
 		return false;
 	}
-	for (node = list_last (project->sorted); node; node = node->previous) {
+	for (node = list_last (project->sorted); node; node = list_previous (node)) {
 		if (!compile_execute (node->data, bootstrap)) {
 			return false;
 		}
@@ -220,7 +220,7 @@ bool compile_project_execute_with_directory_name (CompileProject *project, const
 		compile_debug_invalid_arguments ();
 		return false;
 	}
-	for (node = list_last (project->sorted); !compile && node; node = node->previous) {
+	for (node = list_last (project->sorted); !compile && node; node = list_previous (node)) {
 		if (string_equals (((Compile *)node->data)->directory->name, directory_name)) {
 			compile = node->data;
 		}
@@ -311,7 +311,7 @@ static bool sort_libraries (CompileProject *project, Compile *compile)
 	Compile *library;
 	ListNode *node;
 
-	for (node = list_last (project->sorted); node; node = node->previous) {
+	for (node = list_last (project->sorted); node; node = list_previous (node)) {
 		library = node->data;
 		if (!tree_search (compile->libraries, (Object *)library->directory)) {
 			continue;

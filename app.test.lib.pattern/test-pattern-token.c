@@ -252,7 +252,7 @@ bool test_pattern_tokens_or (Test *test)
 	TITLE ();
 	CATCH (!(list = pattern_tokens_create ("0|1")));
 	CATCH (list_count (list) != 3);
-	token = list_first (list)->next->data;
+	token = list_next (list_first (list))->data;
 	CATCH (token->type != PatternTokenTypeOr);
 	pattern_tokens_destroy (list);
 	PASS ();
@@ -293,7 +293,7 @@ bool test_pattern_tokens_repeat_implicit_from (Test *test)
 	TITLE ();
 	CATCH (!(list = pattern_tokens_create ("a{-12}")));
 	CATCH (list_count (list) != 2);
-	repeat = list_first (list)->next->data;
+	repeat = list_next (list_first (list))->data;
 	CATCH (repeat->token.type != PatternTokenTypeRepeat);
 	CATCH (repeat->from != 0);
 	CATCH (repeat->to != 12);
@@ -359,7 +359,7 @@ bool test_pattern_tokens_repeat_implicit_to (Test *test)
 	TITLE ();
 	CATCH (!(list = pattern_tokens_create ("a{12-}")));
 	CATCH (list_count (list) != 2);
-	repeat = list_first (list)->next->data;
+	repeat = list_next (list_first (list))->data;
 	CATCH (repeat->token.type != PatternTokenTypeRepeat);
 	CATCH (repeat->from != 12);
 	CATCH (repeat->to != ULLONG_MAX);
@@ -416,7 +416,7 @@ bool test_pattern_tokens_repeat_1 (Test *test)
 	TITLE ();
 	CATCH (!(list = pattern_tokens_create ("a{12}")));
 	CATCH (list_count (list) != 2);
-	repeat = list_first (list)->next->data;
+	repeat = list_next (list_first (list))->data;
 	CATCH (repeat->token.type != PatternTokenTypeRepeat);
 	CATCH (repeat->from != 12);
 	CATCH (repeat->to != 12);
@@ -432,7 +432,7 @@ bool test_pattern_tokens_repeat_2 (Test *test)
 	TITLE ();
 	CATCH (!(list = pattern_tokens_create ("a{12-3456789}")));
 	CATCH (list_count (list) != 2);
-	repeat = list_first (list)->next->data;
+	repeat = list_next (list_first (list))->data;
 	CATCH (repeat->token.type != PatternTokenTypeRepeat);
 	CATCH (repeat->from != 12);
 	CATCH (repeat->to != 3456789);
@@ -448,7 +448,7 @@ bool test_pattern_tokens_repeat_3 (Test *test)
 	TITLE ();
 	CATCH (!(list = pattern_tokens_create ("a{-123}")));
 	CATCH (list_count (list) != 2);
-	repeat = list_first (list)->next->data;
+	repeat = list_next (list_first (list))->data;
 	CATCH (repeat->token.type != PatternTokenTypeRepeat);
 	CATCH (repeat->from != 0);
 	CATCH (repeat->to != 123);
@@ -464,7 +464,7 @@ bool test_pattern_tokens_repeat_4 (Test *test)
 	TITLE ();
 	CATCH (!(list = pattern_tokens_create ("a{123-}")));
 	CATCH (list_count (list) != 2);
-	repeat = list_first (list)->next->data;
+	repeat = list_next (list_first (list))->data;
 	CATCH (repeat->token.type != PatternTokenTypeRepeat);
 	CATCH (repeat->from != 123);
 	CATCH (repeat->to != ULLONG_MAX);
@@ -480,7 +480,7 @@ bool test_pattern_tokens_repeat_5 (Test *test)
 	TITLE ();
 	CATCH (!(list = pattern_tokens_create ("a{-}")));
 	CATCH (list_count (list) != 2);
-	repeat = list_first (list)->next->data;
+	repeat = list_next (list_first (list))->data;
 	CATCH (repeat->token.type != PatternTokenTypeRepeat);
 	CATCH (repeat->from != 0);
 	CATCH (repeat->to != ULLONG_MAX);
@@ -781,8 +781,8 @@ bool test_pattern_tokens_set_3 (Test *test)
 	CATCH (!(list = pattern_tokens_create ("a<bc>d")));
 	CATCH (list_count (list) != 3);
 	value_a = list_first (list)->data;
-	set = list_first (list)->next->data;
-	value_d = list_first (list)->next->next->data;
+	set = list_next (list_first (list))->data;
+	value_d = list_next (list_next (list_first (list)))->data;
 	CATCH (value_a->value != 'a');
 	CATCH (set->token.type != PatternTokenTypeSet);
 	CATCH (set->values_length != 2);

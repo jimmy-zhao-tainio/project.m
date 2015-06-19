@@ -110,11 +110,11 @@ static PatternBranch *branch_create (ListNode *node, ListNode **end, uint8_t dep
                 pattern_error_code (FunctionCall, 2);
                 return NULL;
         }
-        node = node->next;
+        node = list_next (node);
         while (node) {
                 token = node->data;
                 if (token->type == PatternTokenTypeParenthesesClose) {
-                        *end = node->next;
+                        *end = list_next (node);
                         return branch;
                 }
                 if (!(part = branch_part_create (node, end, depth))) {
@@ -209,7 +209,7 @@ static PatternBranchPart *branch_part_create_not (ListNode *node, ListNode **end
                 return NULL;
         }
         not->base.type = PatternBranchPartTypeNot;
-        if (!(not->part = branch_part_create (node->next, end, (uint8_t)(depth - 1)))) {
+        if (!(not->part = branch_part_create (list_next (node), end, (uint8_t)(depth - 1)))) {
                 branch_part_destroy_not (not);
                 pattern_error_code (FunctionCall, 2);
                 return NULL;
@@ -246,7 +246,7 @@ static PatternBranchPart *branch_part_create_or (ListNode *node, ListNode **end)
                 return NULL;
         }
         or->base.type = PatternBranchPartTypeOr;
-        *end = node->next;
+        *end = list_next (node);
         return (PatternBranchPart *)or;
 }
 
@@ -260,7 +260,7 @@ static PatternBranchPart *branch_part_create_repeat (ListNode *node, ListNode **
         }
         repeat->base.type = PatternBranchPartTypeRepeat;
         repeat->token = node->data;
-        *end = node->next;
+        *end = list_next (node);
         return (PatternBranchPart *)repeat;
 }
 
@@ -274,7 +274,7 @@ static PatternBranchPart *branch_part_create_range (ListNode *node, ListNode **e
         }
         range->base.type = PatternBranchPartTypeRange;
         range->token = node->data;
-        *end = node->next;
+        *end = list_next (node);
         return (PatternBranchPart *)range;
 }
 
@@ -288,7 +288,7 @@ static PatternBranchPart *branch_part_create_set (ListNode *node, ListNode **end
         }
         set->base.type = PatternBranchPartTypeSet;
         set->token = node->data;
-        *end = node->next;
+        *end = list_next (node);
         return (PatternBranchPart *)set;
 }
 
@@ -302,7 +302,7 @@ static PatternBranchPart *branch_part_create_value (ListNode *node, ListNode **e
         }
         value->base.type = PatternBranchPartTypeValue;
         value->token = node->data;
-        *end = node->next;
+        *end = list_next (node);
         return (PatternBranchPart *)value;
 }
 
@@ -313,7 +313,7 @@ static void branch_destroy (PatternBranch *branch)
         if (!branch) {
                 return;
         }
-        for (node = list_first (branch->parts); node; node = node->next) {
+        for (node = list_first (branch->parts); node; node = list_next (node)) {
                 branch_part_destroy (node->data);
         }
         if (branch->parts) {

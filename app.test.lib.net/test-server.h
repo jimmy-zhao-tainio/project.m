@@ -12,6 +12,6 @@ bool test_server_create_function_call_1 (Test *test);
 bool test_server_create_function_call_2 (Test *test);
 bool test_server_create (Test *test);
 bool test_server_stop_invalid_argument (Test *test);
-bool test_server_on_open (Test *test);
+bool test_server_on_connect (Test *test);
 
 #endif

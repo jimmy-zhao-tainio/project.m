@@ -43,7 +43,9 @@ void topological_destroy (Topological *topological)
 		tree_destroy (topological->data_to_node);
 	}
 	if (topological->nodes) {
-		for (node = topological->nodes->first; node != NULL; node = node->next) {
+		for (node = list_first (topological->nodes); 
+                     node; 
+                     node = list_next (node)) {
 			topological_node_destroy (node->data);
 		}
 		list_destroy (topological->nodes);
@@ -127,7 +129,9 @@ bool topological_set_edge (Topological *topological, Object *u, Object *v)
 		return false;
 	}
 	if (v_node->degree == 1) {
-		list_position (topological->nodes, topological->nodes->last, v_node->list_node);
+		list_position (topological->nodes, 
+                               list_last (topological->nodes), 
+                               v_node->list_node);
 	}
 	return true;
 }
@@ -150,7 +154,7 @@ List *topological_sort (Topological *topological)
 	}
 	for (list_node = list_first (topological->nodes); 
 	     list_node; 
-	     list_node = list_node->next) {
+	     list_node = list_next (list_node)) {
 		node = list_node->data;
 		if (node->degree != 0) {
 			list_destroy (list);
@@ -160,7 +164,7 @@ List *topological_sort (Topological *topological)
 		}
 		for (list_node_dependency = list_first (node->nodes); 
 		     list_node_dependency; 
-		     list_node_dependency = list_node_dependency->next) {
+		     list_node_dependency = list_next (list_node_dependency)) {
 			node_dependency = list_node_dependency->data;
 			if (node_dependency->degree == 0) {
 				list_destroy (list);
@@ -205,7 +209,9 @@ List *topological_get_edges (Topological *topological, Object *u)
 		error_code (FunctionCall, 1);
 		return NULL;
 	}
-	for (list_node = list_first (node->nodes); list_node; list_node = list_node->next) {
+	for (list_node = list_first (node->nodes); 
+             list_node; 
+             list_node = list_next (list_node)) {
 		if (!list_append (list, ((TopologicalNode *)list_node->data)->data)) {
 			list_destroy (list);
 			error_code (FunctionCall, 2);
@@ -228,7 +234,9 @@ static void topological_sort_reset (Topological *topological)
 {
 	ListNode *node;
 
-	for (node = topological->nodes->first; node; node = node->next) {
+	for (node = list_first (topological->nodes); 
+             node; 
+             node = list_next (node)) {
 		((TopologicalNode *)node->data)->degree = ((TopologicalNode *)node->data)->degree_copy;
 	}
 }

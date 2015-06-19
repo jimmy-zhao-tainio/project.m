@@ -287,7 +287,7 @@ bool test_topological_set_edge_1 (Test *test)
 	CATCH (!topological_set_edge (topological, &vertex, &vertex));
 	CATCH (!(edges = topological_get_edges (topological, &vertex)));
 	CATCH (list_count (edges) != 1);
-	CATCH (edges->first->data != &vertex);
+	CATCH (list_first (edges)->data != &vertex);
 	list_destroy (edges);
 	CATCH (topological_count_vertices (topological) != 1);
 	topological_destroy (topological);
@@ -309,8 +309,8 @@ bool test_topological_set_edge_2 (Test *test)
 	CATCH (!topological_set_edge (topological, &u, &v));
 	CATCH (!(edges = topological_get_edges (topological, &u)));
 	CATCH (list_count (edges) != 2);
-	CATCH (edges->first->data != &v);
-	CATCH (edges->last->data != &v);
+	CATCH (list_first (edges)->data != &v);
+	CATCH (list_last (edges)->data != &v);
 	list_destroy (edges);
 	CATCH (topological_count_vertices (topological) != 2);
 	topological_destroy (topological);
@@ -507,7 +507,7 @@ bool test_topological_sort_6 (Test *test)
 	CATCH (!topological_add_vertex (topological, &vertices[0]));
 	CATCH (!(sorted = topological_sort (topological)));
 	CATCH (list_count (sorted) != 1);
-	CATCH (sorted->first->data != &vertices[0]);
+	CATCH (list_first (sorted)->data != &vertices[0]);
 	list_destroy (sorted);
 	CATCH (topological_count_vertices (topological) != 1);
 	topological_destroy (topological);
@@ -527,8 +527,8 @@ bool test_topological_sort_7 (Test *test)
 	CATCH (!topological_set_edge (topological, &vertices[0], &vertices[1]));
 	CATCH (!(sorted = topological_sort (topological)));
 	CATCH (list_count (sorted) != 2);
-	CATCH (sorted->first->data != &vertices[0]);
-	CATCH (sorted->last->data != &vertices[1]);
+	CATCH (list_first (sorted)->data != &vertices[0]);
+	CATCH (list_last (sorted)->data != &vertices[1]);
 	list_destroy (sorted);
 	CATCH (topological_count_vertices (topological) != 2);
 	topological_destroy (topological);
@@ -550,9 +550,9 @@ bool test_topological_sort_8 (Test *test)
 	CATCH (!topological_set_edge (topological, &vertices[1], &vertices[2]));
 	CATCH (!(sorted = topological_sort (topological)));
 	CATCH (list_count (sorted) != 3);
-	CATCH (sorted->first->data != &vertices[0]);
-	CATCH (sorted->first->next->data != &vertices[1]);
-	CATCH (sorted->first->next->next->data != &vertices[2]);
+	CATCH (list_first (sorted)->data != &vertices[0]);
+	CATCH (list_next (list_first (sorted))->data != &vertices[1]);
+	CATCH (list_next (list_next (list_first (sorted)))->data != &vertices[2]);
 	list_destroy (sorted);
 	CATCH (topological_count_vertices (topological) != 3);
 	topological_destroy (topological);
@@ -576,9 +576,9 @@ bool test_topological_sort_9 (Test *test)
 	for (i = 0; i < 10; i++) {
 		CATCH (!(sorted = topological_sort (topological)));
 		CATCH (list_count (sorted) != 3);
-		CATCH (sorted->first->data != &vertices[0]);
-		CATCH (sorted->first->next->data != &vertices[1]);
-		CATCH (sorted->first->next->next->data != &vertices[2]);
+		CATCH (list_first (sorted)->data != &vertices[0]);
+		CATCH (list_next (list_first (sorted))->data != &vertices[1]);
+		CATCH (list_next (list_next (list_first (sorted)))->data != &vertices[2]);
 		list_destroy (sorted);
 	}
 	CATCH (topological_count_vertices (topological) != 3);
@@ -603,7 +603,7 @@ bool test_topological_sort_10 (Test *test)
 	for (i = 0; i < 4; i++) {
 		CATCH (!topological_set_edge (topological, &vertices[i], &vertices[i + 1]));
 		CATCH (!(sorted = topological_sort (topological)));
-		CATCH (sorted->last->data != &vertices[i + 1]);
+		CATCH (list_last (sorted)->data != &vertices[i + 1]);
 		list_destroy (sorted);
 	}
 	CATCH (topological_count_vertices (topological) != 5);
@@ -628,7 +628,7 @@ bool test_topological_sort_11 (Test *test)
 	for (i = 0; i < 4; i++) {
 		CATCH (!topological_set_edge (topological, &vertices[i], &vertices[i + 1]));
 		CATCH (!(sorted = topological_sort (topological)));
-		CATCH (sorted->last->data != &vertices[i + 1]);
+		CATCH (list_last (sorted)->data != &vertices[i + 1]);
 		list_destroy (sorted);
 	}
 	CATCH (!topological_set_edge (topological, &vertices[4], &vertices[0]));
@@ -663,7 +663,7 @@ bool test_topological_sort_12 (Test *test)
 	CATCH (list_count (sorted) != 1000);
 	CATCH (topological_count_vertices (topological) != 1000);
 	i = 0;
-	for (vertex = sorted->first; vertex; vertex = vertex->next) {
+	for (vertex = list_first (sorted); vertex; vertex = list_next (vertex)) {
 		CATCH (vertex->data != &vertices[i]);
 		i++;
 	}
@@ -721,8 +721,8 @@ bool test_topological_sort_14 (Test *test)
 	CATCH (!topological_set_edge (topological, &vertices[3], &vertices[4]));
 	CATCH (!(sorted = topological_sort (topological)));
 	CATCH (list_count (sorted) != 5);
-	CATCH (sorted->first->data != &vertices[0]);
-	CATCH (sorted->last->data != &vertices[4]);
+	CATCH (list_first (sorted)->data != &vertices[0]);
+	CATCH (list_last (sorted)->data != &vertices[4]);
 	CATCH (topological_count_vertices (topological) != 5);
 	list_destroy (sorted);
 	topological_destroy (topological);
@@ -818,7 +818,7 @@ bool test_topological_get_edges (Test *test)
 	CATCH (!topological_set_edge (topological, &vertices[0], &vertices[1]));
 	CATCH (!(edges = topological_get_edges (topological, &vertices[0])));
 	CATCH (list_count (edges) != 1);
-	CATCH (edges->first->data != &vertices[1]);
+	CATCH (list_first (edges)->data != &vertices[1]);
 	list_destroy (edges);
 	CATCH (!(edges = topological_get_edges (topological, &vertices[1])));
 	CATCH (list_count (edges) != 0);
@@ -829,7 +829,7 @@ bool test_topological_get_edges (Test *test)
 	CATCH (!topological_set_edge (topological, &vertices[1], &vertices[0]));
 	CATCH (!(edges = topological_get_edges (topological, &vertices[1])));
 	CATCH (list_count (edges) != 1);
-	CATCH (edges->first->data != &vertices[0]);
+	CATCH (list_first (edges)->data != &vertices[0]);
 	list_destroy (edges);
 	CATCH (topological_count_vertices (topological) != 3);
 	topological_destroy (topological);
