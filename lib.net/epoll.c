@@ -29,7 +29,7 @@ Epoll *epoll_allocate (void)
                 error (FunctionCall);
                 return NULL;
         }
-        epoll->event_stop = -1;
+        epoll->custom_event = -1;
         epoll->file = -1;
         epoll->events = NULL;
         epoll->server_event.data.ptr = NULL;
@@ -44,16 +44,16 @@ Epoll *epoll_allocate (void)
                 error_code (SystemCall, 2);
                 return NULL;
         }
-        if ((epoll->event_stop = eventfd (0, EFD_NONBLOCK)) == -1) {
+        if ((epoll->custom_event = eventfd (0, EFD_NONBLOCK)) == -1) {
                 error_code (SystemCall, 3);
                 epoll_deallocate (epoll);
                 return NULL;
         }
-        event.data.ptr = &epoll->event_stop;
+        event.data.ptr = &epoll->custom_event;
         event.events = EPOLLIN | EPOLLET;
         if (epoll_ctl (epoll->file, 
                        EPOLL_CTL_ADD, 
-                       epoll->event_stop, &event) == -1) {
+                       epoll->custom_event, &event) == -1) {
                 epoll_deallocate (epoll);
                 error_code (SystemCall, 4);
                 return NULL;
@@ -67,8 +67,8 @@ void epoll_deallocate (Epoll *epoll)
                 error (InvalidArgument);
                 return;
         }
-        if (epoll->event_stop != -1) {
-                close (epoll->event_stop);
+        if (epoll->custom_event != -1) {
+                close (epoll->custom_event);
         }
         if (epoll->file != -1) {
                 close (epoll->file);
@@ -104,14 +104,18 @@ static void print_events (uint32_t events);
 
 EpollEvent epoll_event (Epoll *epoll, int index, bool print)
 {
-        EpollEvent event = { NULL, false, false, false, false, false, false };
+        EpollEvent event = { 0 };
 
         event.pointer = epoll->events[index].data.ptr;
         if (print) {
                 print_events (epoll->events[index].events);
         }
-        if (event.pointer == &epoll->event_stop) {
-                event.stop = true;
+        if (event.pointer == &epoll->custom_event) {
+                // Read from epoll->custom_event.
+                event.custom_event = true;
+                if (eventfd_read (epoll->custom_event, &event.custom_value) == -1) {
+                        event.custom_value = (uint64_t)-1;
+                }
         }
         else if (event.pointer == epoll->server_event.data.ptr) {
                 if (epoll->events[index].events & EPOLLERR ||
@@ -168,9 +172,9 @@ static void print_events (uint32_t events)
         printf ("\n"); fflush (stdout);
 }
 
-bool epoll_stop (Epoll *epoll)
+bool epoll_custom_event (Epoll *epoll, uint64_t custom_value)
 {
-        if (eventfd_write (epoll->event_stop, 1) == -1) {
+        if (eventfd_write (epoll->custom_event, custom_value) == -1) {
                 error_code (SystemCall, errno);
                 return false;
         }
@@ -179,14 +183,22 @@ bool epoll_stop (Epoll *epoll)
 
 bool epoll_monitor_server (Epoll *epoll, int socket, void *pointer)
 {
-        return monitor_socket (epoll, &epoll->server_event, EPOLLIN | EPOLLET, socket, pointer);
+        return monitor_socket (epoll, 
+                               &epoll->server_event, 
+                               EPOLLIN | EPOLLET, 
+                               socket, 
+                               pointer);
 }
 
 bool epoll_monitor_connection (Epoll *epoll, int socket, void *pointer)
 {
         struct epoll_event event;
         
-        return monitor_socket (epoll, &event, EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLET, socket, pointer);
+        return monitor_socket (epoll, 
+                               &event, 
+                               EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLET | EPOLLONESHOT, 
+                               socket, 
+                               pointer);
 }
 
 bool epoll_monitor_stop (Epoll *epoll, int socket)

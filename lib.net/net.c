@@ -64,14 +64,23 @@ struct _NetPrivateConnection
 static bool net_private_create  (NetPrivate *net);
 static void net_private_destroy (NetPrivate *net);
 
-/*
-static NetConnection *connection_create  (int socket);
-static void           connection_destroy (NetConnection *connection);*/
-
 static void event_reader        (Thread *thread);
 static void event_worker        (Thread *thread);
 static void event_reader_stop   (NetPrivate *net, EpollEvent event);
 static bool event_reader_signal (NetPrivate *net, EpollEvent event);
+
+static void event_server_error     (NetPrivate *net);
+static void event_server_accept    (NetPrivate *net);
+static bool event_connection_open  (NetPrivate *net, NetPrivateConnection *connection);
+static void event_connection_read  (NetPrivate *net, NetPrivateConnection *connection);
+static void event_connection_write (NetPrivate *net, NetPrivateConnection *connection);
+static void event_connection_close (NetPrivate *net, NetPrivateConnection *connection);
+
+/*
+static NetConnection *connection_create  (int socket);
+static void           connection_destroy (NetConnection *connection);*/
+
+static uint64_t CUSTOM_EVENT_STOP = 1;
 
 NetServer *net_server_create (NetAddress address,
                               NetOnConnect on_connect, 
@@ -108,7 +117,11 @@ NetServer *net_server_create (NetAddress address,
                 error_code (SystemCall, 1);
                 return NULL;
         }
-        if (setsockopt (server->socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof (int)) == -1) {
+        if (setsockopt (server->socket, 
+                        SOL_SOCKET, 
+                        SO_REUSEADDR, 
+                        &yes, 
+                        sizeof (int)) == -1) {
                 net_destroy (&server->public.net);
                 error_code (SystemCall, 2);
                 return NULL;
@@ -121,7 +134,9 @@ NetServer *net_server_create (NetAddress address,
                 error_code (SystemCall, 3);
                 return NULL;
         }
-        if (bind (server->socket, (struct sockaddr *)&c_address, sizeof (c_address)) == -1) {
+        if (bind (server->socket, 
+                  (struct sockaddr *)&c_address, 
+                  sizeof (c_address)) == -1) {
                 net_destroy (&server->public.net);
                 error_code (SystemCall, 4);
                 return NULL;
@@ -265,7 +280,7 @@ static void net_private_destroy (NetPrivate *net)
 
         if (net->reader) {
                 if (net->epoll) {
-                        epoll_stop (net->epoll);
+                        epoll_custom_event (net->epoll, CUSTOM_EVENT_STOP);
                 }
                 thread_wait (net->reader);
                 thread_destroy (net->reader);
@@ -297,6 +312,171 @@ static void net_private_destroy (NetPrivate *net)
         }
 }
 
+static void event_reader (Thread *thread)
+{
+        Net *net_public = thread->argument;
+        NetPrivate *net;
+        EpollEvent event;
+        int count;
+        int i;
+
+        if (net_public->type == NET_TYPE_SERVER) {
+                net = &PRIVATE (NetPrivateServer, ((NetServer *)net_public))->net;
+        }
+        else {
+                net = &PRIVATE (NetPrivateClient, ((NetClient *)net_public))->net;
+        }
+        if (!thread_signal_wait (&net->initialized_signal)) {
+                error_code (FunctionCall, 1);
+                return;
+        }
+        while (epoll_events_count (net->epoll, &count)) {
+                for (i = 0; i < count; i++) {
+                        event = epoll_event (net->epoll, i, true);
+                        if (event.custom_event && event.custom_value == CUSTOM_EVENT_STOP) {
+                                event_reader_stop (net, event);
+                                return;
+                        }
+                        if (!event_reader_signal (net, event)) {
+                                error_code (FunctionCall, 2);
+                                break;
+                        }
+                }
+        }
+        event.custom_event = true;
+        event.custom_value = CUSTOM_EVENT_STOP;
+        event_reader_stop (net, event);
+        event_reader_signal (net, event);
+        error_code (FunctionCall, 3);
+}
+
+static void event_worker (Thread *thread)
+{
+        Net *net_public = thread->argument;
+        NetPrivate *net;
+        EpollEvent event;
+
+        if (net_public->type == NET_TYPE_SERVER) {
+                net = &PRIVATE (NetPrivateServer, ((NetServer *)net_public))->net;
+        }
+        else {
+                net = &PRIVATE (NetPrivateClient, ((NetClient *)net_public))->net;
+        }
+        while (true) {
+                if (!thread_signal_wait (&net->reader_signal)) {
+                        error_code (FunctionCall, 1);
+                        return;
+                }
+                event = net->event;
+                if (!thread_signal (&net->worker_signal)) {
+                        error_code (FunctionCall, 2);
+                        return;
+                }
+                if (event.custom_event && event.custom_value == CUSTOM_EVENT_STOP) {
+                        return;
+                }
+                if (event.server_error) {
+                        event_server_error (net);
+                }
+                if (event.server_accept) {
+                        event_server_accept (net);
+                }
+                if (event.connection_read) {
+                        event_connection_read (net, event.pointer);
+                }
+                if (event.connection_write) {
+                        event_connection_write (net, event.pointer);
+                }
+                if (event.connection_close) {
+                        event_connection_close (net, event.pointer);
+                }
+        }
+}
+
+static void event_reader_stop (NetPrivate *net, EpollEvent event)
+{
+        size_t i;
+
+        for (i = 0; i < net->worker_count; i++) {
+                if (!net->worker[i]) {
+                        break;
+                }
+                event_reader_signal (net, event);
+        }
+}
+
+static bool event_reader_signal (NetPrivate *net, EpollEvent event)
+{
+        if (!thread_signal (&net->reader_signal)) {
+                error_code (FunctionCall, 1);
+                return false;
+        }
+        net->event = event;
+        if (!thread_signal_wait (&net->worker_signal)) {
+                error_code (FunctionCall, 2);
+                return false;
+        }
+        return true;
+}
+
+static void event_server_error (NetPrivate *net)
+{
+        (void)net;
+}
+
+static void event_server_accept (NetPrivate *net)
+{
+        (void)net;
+}
+
+static bool event_connection_open (NetPrivate *net, NetPrivateConnection *connection)
+{
+        (void)net;
+        (void)connection;
+        return false;
+        /*
+        if (getsockopt (event.connection->socket,
+                        SOL_SOCKET,
+                        SO_ERROR,
+                        &result,
+                        &result_length) != 0) {
+                close (event.connection->socket);
+                event.connection_close = true;
+                // Call OnClose?
+                // Remove from connections?
+        }
+        else {
+                event.connection->initialized = true;
+                event.connection_open = true;
+                event.connection_read = true;
+        }
+        */
+}
+
+static void event_connection_read (NetPrivate *net, NetPrivateConnection *connection)
+{
+        if (!connection->initialized) {
+                if (!event_connection_open (net, connection)) {
+                        return;
+                }
+        }
+}
+
+static void event_connection_write (NetPrivate *net, NetPrivateConnection *connection)
+{
+        if (!connection->initialized) {
+                if (!event_connection_open (net, connection)) {
+                        return;
+                }
+        }
+}
+
+static void event_connection_close (NetPrivate *net, NetPrivateConnection *connection)
+{
+        (void)net;
+        (void)connection;
+}
+
 /*
 static NetConnection *connection_create (int socket)
 {
@@ -325,92 +505,4 @@ static void connection_destroy (NetConnection *connection_public)
         memory_destroy (connection);
 }*/
 
-static void event_reader (Thread *thread)
-{
-        Net *net_public = thread->argument;
-        NetPrivate *net;
-        EpollEvent event;
-        int count;
-        int i;
 
-        if (net_public->type == NET_TYPE_SERVER) {
-                net = &PRIVATE (NetPrivateServer, ((NetServer *)net_public))->net;
-        }
-        else {
-                net = &PRIVATE (NetPrivateClient, ((NetClient *)net_public))->net;
-        }
-        if (!thread_signal_wait (&net->initialized_signal)) {
-                error_code (FunctionCall, 1);
-                return;
-        }
-        while (epoll_events_count (net->epoll, &count)) {
-                for (i = 0; i < count; i++) {
-                        event = epoll_event (net->epoll, i, true);
-                        if (event.stop == true) {
-                                event_reader_stop (net, event);
-                                return;
-                        }
-                        if (!event_reader_signal (net, event)) {
-                                error_code (FunctionCall, 2);
-                                break;
-                        }
-                }
-        }
-        event.stop = true;
-        event_reader_stop (net, event);
-        event_reader_signal (net, event);
-        error_code (FunctionCall, 3);
-}
-
-static void event_worker (Thread *thread)
-{
-        Net *net_public = thread->argument;
-        NetPrivate *net;
-
-        if (net_public->type == NET_TYPE_SERVER) {
-                net = &PRIVATE (NetPrivateServer, ((NetServer *)net_public))->net;
-        }
-        else {
-                net = &PRIVATE (NetPrivateClient, ((NetClient *)net_public))->net;
-        }
-        while (true) {
-                
-        }
-        (void)net;
-        /*
-        if (!event.connection->initialized) {
-                if (getsockopt (event.connection->socket,
-                                SOL_SOCKET,
-                                SO_ERROR,
-                                &result,
-                                &result_length) != 0) {
-                        close (event.connection->socket);
-                        event.connection_close = true;
-                }
-                else {
-                        event.connection->initialized = true;
-                        event.connection_open = true;
-                        event.connection_read = true;
-                }
-        }*/
-}
-
-static void event_reader_stop (NetPrivate *net, EpollEvent event)
-{
-        size_t i;
-
-        for (i = 0; i < net->worker_count; i++) {
-                if (!net->worker[i]) {
-                        break;
-                }
-                event_reader_signal (net, event);
-        }
-}
-
-static bool event_reader_signal (NetPrivate *net, EpollEvent event)
-{
-
-        (void)net;
-        (void)event;
-        return false;
-}

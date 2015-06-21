@@ -1,6 +1,8 @@
 #include <lib.core/threads.h>
 #include <lib.core/memory.h>
 #include <lib.core/error.h>
+#include <unistd.h>
+#include <stdio.h>
 
 #include "test-threads.h"
 
@@ -115,19 +117,29 @@ bool test_thread_signal_wait_invalid_argument (Test *test)
 static void wait_twice (Thread *thread);
 static ThreadSignal wait_1;
 static ThreadSignal wait_2;
+static ThreadSignal wait_done = THREAD_SIGNAL_INITIALIZER;
+static bool done = false;
+static ThreadLock done_lock = THREAD_LOCK_INITIALIZER;
 
 bool test_thread_signal_wait_twice (Test *test)
 {
         Thread *thread;
+        size_t i;
 
         TITLE ();
         CATCH (!thread_signal_create (&wait_1));
         CATCH (!thread_signal_create (&wait_2));
         CATCH (!(thread = thread_create (&wait_twice, NULL)));
-        CATCH (!thread_signal (&wait_2));
-        CATCH (!thread_signal_wait (&wait_1));
-        CATCH (!thread_signal (&wait_2));
-        CATCH (!thread_signal_wait (&wait_1));
+        for (i = 0; i < 1000; i++) {
+                CATCH (!thread_signal (&wait_2));
+                CATCH (!thread_signal_wait (&wait_1));
+                CATCH (!thread_signal (&wait_2));
+                CATCH (!thread_signal_wait (&wait_1));
+        }
+        CATCH (!thread_signal_wait (&wait_done));
+        CATCH (!thread_lock (&done_lock));
+        CATCH (!done);
+        CATCH (!thread_unlock (&done_lock));
         thread_signal_destroy (&wait_1);
         thread_signal_destroy (&wait_2);
         thread_wait (thread);
@@ -138,21 +150,39 @@ bool test_thread_signal_wait_twice (Test *test)
 
 static void wait_twice (Thread *thread)
 {
+        size_t i;
+
         (void)thread;
-        if (!thread_signal_wait (&wait_2)) {
-                error_code (FunctionCall, 1);
+        for (i = 0; i < 1000; i++) {
+                if (!thread_signal_wait (&wait_2)) {
+                        error_code (FunctionCall, 1);
+                        return;
+                }
+                if (!thread_signal (&wait_1)) {
+                        error_code (FunctionCall, 2);
+                        return;
+                }
+                if (!thread_signal_wait (&wait_2)) {
+                        error_code (FunctionCall, 3);
+                        return;
+                }
+                if (!thread_signal (&wait_1)) {
+                        error_code (FunctionCall, 4);
+                        return;
+                }
+                usleep (1);
+        }
+        if (!thread_lock (&done_lock)) {
+                error_code (FunctionCall, 5);
                 return;
         }
-        if (!thread_signal (&wait_1)) {
-                error_code (FunctionCall, 2);
+        done = true;
+        if (!thread_unlock (&done_lock)) {
+                error_code (FunctionCall, 6);
                 return;
         }
-        if (!thread_signal_wait (&wait_2)) {
-                error_code (FunctionCall, 3);
-                return;
-        }
-        if (!thread_signal (&wait_1)) {
-                error_code (FunctionCall, 4);
+        if (!thread_signal (&wait_done)) {
+                error_code (FunctionCall, 7);
                 return;
         }
 }
