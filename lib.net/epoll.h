@@ -26,7 +26,6 @@ struct _EpollEvent
         bool connection_close;
         bool     custom_event;
         uint64_t custom_value;
-
 };
 
 Epoll *epoll_allocate   (void);

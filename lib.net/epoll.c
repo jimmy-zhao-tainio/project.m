@@ -111,10 +111,10 @@ EpollEvent epoll_event (Epoll *epoll, int index, bool print)
                 print_events (epoll->events[index].events);
         }
         if (event.pointer == &epoll->custom_event) {
-                // Read from epoll->custom_event.
                 event.custom_event = true;
                 if (eventfd_read (epoll->custom_event, &event.custom_value) == -1) {
                         event.custom_value = (uint64_t)-1;
+                        error (SystemCall);
                 }
         }
         else if (event.pointer == epoll->server_event.data.ptr) {

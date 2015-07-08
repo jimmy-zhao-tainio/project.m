@@ -22,3 +22,24 @@ void hash_destroy (Hash *hash)
 	}
 	memory_destroy (hash);
 }
+
+Object *hash_find (Hash *hash, unsigned long long object_id)
+{
+        (void)hash;
+        (void)object_id;
+        return NULL;
+}
+
+bool hash_insert (Hash *hash, Object *object)
+{
+        (void)hash;
+        (void)object;
+        return false;
+}
+
+bool hash_remove (Hash *hash, Object *object)
+{
+        (void)hash;
+        (void)object;
+        return false;
+}

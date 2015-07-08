@@ -7,9 +7,9 @@
 
 #include "test-client.h"
 
-static void on_connect (Net *client, NetConnection *connection);
-static void on_close (Net *client, NetConnection *connection);
-static void on_read (Net *client, NetConnection *connection, NetPackage package);
+static void on_connect (Net *client, NetConnection connection);
+static void on_close (Net *client, NetConnection connection);
+static void on_read (Net *client, NetConnection connection, NetPackage package);
 static void on_stop (Net *client);
 
 bool test_client_create_invalid_argument_1 (Test *test)
@@ -150,19 +150,19 @@ bool test_client_connect_system_call_1 (Test *test)
         PASS ();
 }
 
-static void on_connect (Net *client, NetConnection *connection)
+static void on_connect (Net *client, NetConnection connection)
 {
         (void)client;
         (void)connection;
 }
 
-static void on_close (Net *client, NetConnection *connection)
+static void on_close (Net *client, NetConnection connection)
 {
         (void)client;
         (void)connection;
 }
 
-static void on_read (Net *client, NetConnection *connection, NetPackage package)
+static void on_read (Net *client, NetConnection connection, NetPackage package)
 {
         (void)client;
         (void)connection;
@@ -175,14 +175,14 @@ static void on_stop (Net *client)
 }
 
 static ThreadSignal server_on_connect_signal = THREAD_SIGNAL_INITIALIZER;
-static void server_on_connect (Net *server, NetConnection *connection);
-static void server_on_close (Net *server, NetConnection *connection);
-static void server_on_read (Net *server, NetConnection *connection, NetPackage package);
+static void server_on_connect (Net *server, NetConnection connection);
+static void server_on_close (Net *server, NetConnection connection);
+static void server_on_read (Net *server, NetConnection connection, NetPackage package);
 static void server_on_stop (Net *server);
 static ThreadSignal client_on_connect_signal = THREAD_SIGNAL_INITIALIZER;
-static void client_on_connect (Net *client, NetConnection *connection);
-static void client_on_close (Net *client, NetConnection *connection);
-static void client_on_read (Net *client, NetConnection *connection, NetPackage package);
+static void client_on_connect (Net *client, NetConnection connection);
+static void client_on_close (Net *client, NetConnection connection);
+static void client_on_read (Net *client, NetConnection connection, NetPackage package);
 static void client_on_stop (Net *client);
 
 bool test_client_on_connect (Test *test)
@@ -209,20 +209,20 @@ bool test_client_on_connect (Test *test)
         PASS ();
 }
 
-static void server_on_connect (Net *server, NetConnection *connection)
+static void server_on_connect (Net *server, NetConnection connection)
 {
         (void)server;
         (void)connection;
         thread_signal (&server_on_connect_signal);
 }
 
-static void server_on_close (Net *server, NetConnection *connection)
+static void server_on_close (Net *server, NetConnection connection)
 {
         (void)server;
         (void)connection;
 }
 
-static void server_on_read (Net *server, NetConnection *connection, NetPackage package)
+static void server_on_read (Net *server, NetConnection connection, NetPackage package)
 {
         (void)server;
         (void)connection;
@@ -234,20 +234,20 @@ static void server_on_stop (Net *server)
         (void)server;
 }
 
-static void client_on_connect (Net *client, NetConnection *connection)
+static void client_on_connect (Net *client, NetConnection connection)
 {
         (void)client;
         (void)connection;
         thread_signal (&client_on_connect_signal);
 }
 
-static void client_on_close (Net *client, NetConnection *connection)
+static void client_on_close (Net *client, NetConnection connection)
 {
         (void)client;
         (void)connection;
 }
 
-static void client_on_read (Net *client, NetConnection *connection, NetPackage package)
+static void client_on_read (Net *client, NetConnection connection, NetPackage package)
 {
         (void)client;
         (void)connection;
