@@ -19,6 +19,7 @@
 #include <signal.h>
 #include <lib.net/epoll.h>
 #include <lib.net/event-reader.h>
+#include <lib.net/epoll-events.h>
 
 void event_reader (Thread *thread)
 {
@@ -40,8 +41,9 @@ void event_reader (Thread *thread)
         }
         while (epoll_events_count (net->epoll, &count)) {
                 for (i = 0; i < count; i++) {
-                        event = epoll_event (net->epoll, i, true);
-                        if (event.custom_event && event.custom_value == CUSTOM_EVENT_STOP) {
+                        event = epoll_event (net->epoll, i);
+                        if (event.is_custom_event && 
+                            event.custom_event.event_number == EPOLL_EVENT_STOP) {
                                 event_reader_stop (net, event);
                                 return;
                         }
@@ -51,8 +53,8 @@ void event_reader (Thread *thread)
                         }
                 }
         }
-        event.custom_event = true;
-        event.custom_value = CUSTOM_EVENT_STOP;
+        event.is_custom_event = true;
+        event.custom_event.event_number = EPOLL_EVENT_STOP;
         event_reader_stop (net, event);
         event_reader_signal (net, event);
         error_code (FunctionCall, 3);

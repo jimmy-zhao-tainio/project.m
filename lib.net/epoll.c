@@ -16,12 +16,17 @@
 #include <fcntl.h>
 #include <signal.h>
 
-static bool monitor_socket (Epoll *epoll, struct epoll_event *event, uint32_t events, int socket, void *pointer);
+static bool monitor_socket (Epoll *epoll, 
+                            struct epoll_event *event,
+                            uint32_t events, 
+                            int socket, 
+                            void *pointer);
 
 Epoll *epoll_allocate (void)
 {
         Epoll *epoll;
         int events_length = 64;
+        size_t custom_events_length = 64;
         size_t events_bytes = (size_t)((size_t)events_length * (size_t)sizeof (struct epoll_event));
         struct epoll_event event = { 0 };
         
@@ -29,6 +34,14 @@ Epoll *epoll_allocate (void)
                 error (FunctionCall);
                 return NULL;
         }
+        if (!(epoll->custom_events = memory_create (sizeof (EpollCustomEvent) * 
+                                                    custom_events_length))) {
+                memory_destroy (epoll);
+                error (FunctionCall);
+                return NULL;
+        }
+        epoll->custom_events_size = custom_events_length;
+        epoll->custom_events_count = 0;
         epoll->custom_event = -1;
         epoll->file = -1;
         epoll->events = NULL;
@@ -67,6 +80,9 @@ void epoll_deallocate (Epoll *epoll)
                 error (InvalidArgument);
                 return;
         }
+        if (epoll->custom_events) {
+                memory_destroy (epoll->custom_events);
+        }
         if (epoll->custom_event != -1) {
                 close (epoll->custom_event);
         }
@@ -100,20 +116,16 @@ bool epoll_events_count (Epoll *epoll, int *count)
         }
 }
 
-static void print_events (uint32_t events);
-
-EpollEvent epoll_event (Epoll *epoll, int index, bool print)
+EpollEvent epoll_event (Epoll *epoll, int index)
 {
         EpollEvent event = { 0 };
+        uint64_t not_used;
 
         event.pointer = epoll->events[index].data.ptr;
-        if (print) {
-                print_events (epoll->events[index].events);
-        }
         if (event.pointer == &epoll->custom_event) {
-                event.custom_event = true;
-                if (eventfd_read (epoll->custom_event, &event.custom_value) == -1) {
-                        event.custom_value = (uint64_t)-1;
+                event.is_custom_event = true;
+                event.custom_event = epoll->custom_events[0];
+                if (eventfd_read (epoll->custom_event, &not_used) == -1) {
                         error (SystemCall);
                 }
         }
@@ -148,33 +160,10 @@ EpollEvent epoll_event (Epoll *epoll, int index, bool print)
         return event;
 }
 
-static void print_events (uint32_t events)
+bool epoll_custom_event (Epoll *epoll, EpollCustomEvent event)
 {
-        printf ("events:");
-        if (events & EPOLLERR) {
-                printf (" EPOLLERR");
-        }
-        if (events & EPOLLHUP) {
-                printf (" EPOLLHUP");
-        }
-        if (events & EPOLLRDHUP) {
-                printf (" EPOLLRDHUP");
-        }
-        if (events & EPOLLIN) {
-                printf (" EPOLLIN");
-        }
-        if (events & EPOLLPRI) {
-                printf (" EPOLLPRI");
-        }
-        if (events & EPOLLOUT) {
-                printf (" EPOLLOUT");
-        }
-        printf ("\n"); fflush (stdout);
-}
-
-bool epoll_custom_event (Epoll *epoll, uint64_t custom_value)
-{
-        if (eventfd_write (epoll->custom_event, custom_value) == -1) {
+        (void)event;
+        if (eventfd_write (epoll->custom_event, 0) == -1) {
                 error_code (SystemCall, errno);
                 return false;
         }

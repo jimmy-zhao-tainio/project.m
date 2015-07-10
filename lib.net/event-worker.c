@@ -21,6 +21,7 @@
 #include <lib.net/event-worker.h>
 #include <lib.net/event-reader.h>
 #include <lib.net/private.h>
+#include <lib.net/epoll-events.h>
 
 void event_worker (Thread *thread)
 {
@@ -44,7 +45,7 @@ void event_worker (Thread *thread)
                         error_code (FunctionCall, 2);
                         return;
                 }
-                if (event.custom_event && event.custom_value == CUSTOM_EVENT_STOP) {
+                if (event.is_custom_event && event.custom_event.event_number == EPOLL_EVENT_STOP) {
                         return;
                 }
                 if (event.server_error) {

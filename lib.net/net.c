@@ -19,6 +19,7 @@
 #include <signal.h>
 #include <lib.net/epoll.h>
 #include <lib.net/private.h>
+#include <lib.net/epoll-events.h>
 
 NetServer *net_server_create (NetAddress address,
                               NetOnConnect on_connect, 
@@ -146,6 +147,7 @@ void net_destroy (Net *net)
 void net_close (Net *net, NetConnection connection)
 {
         NetPrivate *private;
+        EpollCustomEvent event;
 
         if (!net) {
                 error (InvalidArgument);
@@ -162,7 +164,11 @@ void net_close (Net *net, NetConnection connection)
                 return;
         }
         if (hash_find (private->connections, connection.object.id)) {
-                // Signal implementation to cause closure.
+                event.event_number = EPOLL_EVENT_CLOSE;
+                event.argument.value = connection.object.id;
+                if (!epoll_custom_event (private->epoll, event)) {
+                        error_code (FunctionCall, 2);
+                }
         }
         if (!thread_unlock (&private->connections_lock)) {
                 error_code (FunctionCall, 3);

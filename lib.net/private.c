@@ -21,6 +21,7 @@
 #include <lib.net/private.h>
 #include <lib.net/event-reader.h>
 #include <lib.net/event-worker.h>
+#include <lib.net/epoll-events.h>
 
 bool net_private_create (NetPrivate *net)
 {
@@ -81,11 +82,16 @@ bool net_private_create (NetPrivate *net)
 
 void net_private_destroy (NetPrivate *net)
 {
+        EpollCustomEvent event;
         size_t i;
 
         if (net->reader) {
                 if (net->epoll) {
-                        epoll_custom_event (net->epoll, CUSTOM_EVENT_STOP);
+                        event.event_number = EPOLL_EVENT_STOP;
+                        event.argument.pointer = NULL;
+                        if (!epoll_custom_event (net->epoll, event)) {
+                                error (FunctionCall);
+                        }
                 }
                 thread_wait (net->reader);
                 thread_destroy (net->reader);
