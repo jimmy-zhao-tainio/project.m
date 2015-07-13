@@ -45,7 +45,8 @@ void event_worker (Thread *thread)
                         error_code (FunctionCall, 2);
                         return;
                 }
-                if (event.is_custom_event && event.custom_event.event_number == EPOLL_EVENT_STOP) {
+                if (event.is_custom_event && 
+                    event.custom_event.event_number == EPOLL_EVENT_STOP) {
                         return;
                 }
                 if (event.server_error) {
