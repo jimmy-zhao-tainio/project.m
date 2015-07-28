@@ -1,4 +1,4 @@
-#include <lib.net/epoll.h>
+#include <lib.net.server/server-epoll.h>
 #include <lib.core/memory.h>
 #include <lib.core/error.h>
 #include <lib.core/list.h>
@@ -16,91 +16,67 @@
 #include <fcntl.h>
 #include <signal.h>
 
-static bool monitor_socket (Epoll *epoll, 
+static bool monitor_socket (NetServerEpoll *epoll, 
                             struct epoll_event *event,
                             uint32_t events, 
                             int socket, 
                             void *pointer);
 
-Epoll *epoll_allocate (void)
+NetServerEpoll *net_server_epoll_allocate (void)
 {
-        Epoll *epoll;
-        int events_length = 64;
-        size_t custom_events_length = 64;
-        size_t events_bytes = (size_t)((size_t)events_length * (size_t)sizeof (struct epoll_event));
+        NetServerEpoll *epoll;
         struct epoll_event event = { 0 };
         
-        if (!(epoll = memory_create (sizeof (Epoll)))) {
+        if (!(epoll = memory_create (sizeof (NetServerEpoll)))) {
                 error (FunctionCall);
                 return NULL;
         }
-        if (!(epoll->custom_events = memory_create (sizeof (EpollCustomEvent) * 
-                                                    custom_events_length))) {
-                memory_destroy (epoll);
-                error (FunctionCall);
-                return NULL;
-        }
-        epoll->custom_events_size = custom_events_length;
-        epoll->custom_events_count = 0;
-        epoll->custom_event = -1;
         epoll->file = -1;
-        epoll->events = NULL;
         epoll->server_event.data.ptr = NULL;
         if ((epoll->file = epoll_create1 (0)) == -1) {
-                epoll_deallocate (epoll);
+                net_server_epoll_deallocate (epoll);
                 error_code (SystemCall, 1);
                 return NULL;
         }
-        epoll->events_length = events_length;
-        if (!(epoll->events = memory_create (events_bytes))) {
-                epoll_deallocate (epoll);
+        if ((epoll->stop_event = eventfd (0, EFD_NONBLOCK)) == -1) {
                 error_code (SystemCall, 2);
+                net_server_epoll_deallocate (epoll);
                 return NULL;
         }
-        if ((epoll->custom_event = eventfd (0, EFD_NONBLOCK)) == -1) {
-                error_code (SystemCall, 3);
-                epoll_deallocate (epoll);
-                return NULL;
-        }
-        event.data.ptr = &epoll->custom_event;
+        event.data.ptr = &epoll->stop_event;
         event.events = EPOLLIN | EPOLLET;
         if (epoll_ctl (epoll->file, 
                        EPOLL_CTL_ADD, 
-                       epoll->custom_event, &event) == -1) {
-                epoll_deallocate (epoll);
-                error_code (SystemCall, 4);
+                       epoll->stop_event, 
+                       &event) == -1) {
+                net_server_epoll_deallocate (epoll);
+                error_code (SystemCall, 3);
                 return NULL;
         }
         return epoll;
 }
 
-void epoll_deallocate (Epoll *epoll)
+void net_server_epoll_deallocate (NetServerEpoll *epoll)
 {
         if (!epoll) {
                 error (InvalidArgument);
                 return;
         }
-        if (epoll->custom_events) {
-                memory_destroy (epoll->custom_events);
-        }
-        if (epoll->custom_event != -1) {
-                close (epoll->custom_event);
+        if (epoll->stop_event != -1) {
+                close (epoll->stop_event);
         }
         if (epoll->file != -1) {
                 close (epoll->file);
         }
-        if (epoll->events) {
-                memory_destroy (epoll->events);
-        }
         memory_destroy (epoll);
 }
 
-bool epoll_events_count (Epoll *epoll, int *count)
+bool net_server_epoll_events_count (NetServerEpoll *epoll, int *count)
 {
         while (true) {
                 *count = epoll_wait (epoll->file,
                                      epoll->events,
-                                     epoll->events_length,
+                                     NET_SERVER_EPOLL_EVENTS_LENGTH,
                                      -1);
                 if (*count > 0) {
                         return true;
@@ -116,16 +92,15 @@ bool epoll_events_count (Epoll *epoll, int *count)
         }
 }
 
-EpollEvent epoll_event (Epoll *epoll, int index)
+NetServerEpollEvent net_server_epoll_event (NetServerEpoll *epoll, int index)
 {
-        EpollEvent event = { 0 };
+        NetServerEpollEvent event = { 0 };
         uint64_t not_used;
 
         event.pointer = epoll->events[index].data.ptr;
-        if (event.pointer == &epoll->custom_event) {
-                event.is_custom_event = true;
-                event.custom_event = epoll->custom_events[0];
-                if (eventfd_read (epoll->custom_event, &not_used) == -1) {
+        if (event.pointer == &epoll->stop_event) {
+                event.stop = true;
+                if (eventfd_read (epoll->stop_event, &not_used) == -1) {
                         error (SystemCall);
                 }
         }
@@ -134,43 +109,26 @@ EpollEvent epoll_event (Epoll *epoll, int index)
                     epoll->events[index].events & EPOLLHUP ||
                     epoll->events[index].events & EPOLLRDHUP ||
                     epoll->events[index].events & EPOLLOUT) {
-                        event.server_error = true;
+                        event.error = true;
                 }
                 else if (epoll->events[index].events & EPOLLIN ||
                          epoll->events[index].events & EPOLLPRI) {
-                        event.server_accept = true;
-                }
-        }
-        else {
-                if (epoll->events[index].events & EPOLLERR ||
-                    epoll->events[index].events & EPOLLHUP ||
-                    epoll->events[index].events & EPOLLRDHUP) {
-                        event.connection_close = true;
-                }
-                else {
-                        if (epoll->events[index].events & EPOLLIN ||
-                            epoll->events[index].events & EPOLLPRI) {
-                                event.connection_read = true;
-                        }
-                        if (epoll->events[index].events & EPOLLOUT) {
-                                event.connection_write = true;
-                        }
+                        event.accept = true;
                 }
         }
         return event;
 }
 
-bool epoll_custom_event (Epoll *epoll, EpollCustomEvent event)
+bool net_server_epoll_stop (NetServerEpoll *epoll)
 {
-        (void)event;
-        if (eventfd_write (epoll->custom_event, 0) == -1) {
+        if (eventfd_write (epoll->stop_event, 1) == -1) {
                 error_code (SystemCall, errno);
                 return false;
         }
         return true;
 }
 
-bool epoll_monitor_server (Epoll *epoll, int socket, void *pointer)
+bool net_server_epoll_monitor (NetServerEpoll *epoll, int socket, void *pointer)
 {
         return monitor_socket (epoll, 
                                &epoll->server_event, 
@@ -179,18 +137,7 @@ bool epoll_monitor_server (Epoll *epoll, int socket, void *pointer)
                                pointer);
 }
 
-bool epoll_monitor_connection (Epoll *epoll, int socket, void *pointer)
-{
-        struct epoll_event event;
-        
-        return monitor_socket (epoll, 
-                               &event, 
-                               EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLET | EPOLLONESHOT, 
-                               socket, 
-                               pointer);
-}
-
-bool epoll_monitor_stop (Epoll *epoll, int socket)
+bool net_server_epoll_monitor_stop (NetServerEpoll *epoll, int socket)
 {
         struct epoll_event event = { 0 };
 
@@ -204,7 +151,11 @@ bool epoll_monitor_stop (Epoll *epoll, int socket)
         return true;
 }
 
-static bool monitor_socket (Epoll *epoll, struct epoll_event *event, uint32_t events, int socket, void *pointer)
+static bool monitor_socket (NetServerEpoll *epoll, 
+                            struct epoll_event *event, 
+                            uint32_t events, 
+                            int socket, 
+                            void *pointer)
 {
         int flags;
 
