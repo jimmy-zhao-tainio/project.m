@@ -149,7 +149,6 @@ static void server_on_connect (NetServer *server, int socket)
 
         thread_lock (&server_lock);
         server_connection[server_count].socket = socket;
-        thread_signal_create (&server_connection[server_count].write_signal);
         if (!net_stream_add (server_stream, &server_connection[server_count])) {
                 printf ("server_on_connect\n"); fflush (stdout);
         }
@@ -176,7 +175,6 @@ static void client_on_connect (NetClient *client, NetClientConnection *connectio
 
         thread_lock (&client_lock);
         client_connection[client_count].socket = connection->socket;
-        thread_signal_create (&client_connection[client_count].write_signal);
         if (!net_stream_add (client_stream, &client_connection[client_count])) {
                 printf ("client_on_connect\n"); fflush (stdout);
         }

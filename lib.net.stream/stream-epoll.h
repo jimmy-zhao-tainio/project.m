@@ -20,7 +20,6 @@ struct _NetStreamEpollEvent
 {
         void *pointer;
         bool read;
-        bool write;
         bool close;
         bool stop;
 };
@@ -33,9 +32,7 @@ NetStreamEpollEvent  net_stream_epoll_event        (NetStreamEpoll *epoll, int i
 
 bool net_stream_epoll_stop (NetStreamEpoll *epoll);
 
-bool net_stream_epoll_monitor_read    (NetStreamEpoll *epoll, int socket, void *pointer);
-bool net_stream_epoll_monitor_write   (NetStreamEpoll *epoll, int socket, void *pointer);
-bool net_stream_epoll_remonitor_write (NetStreamEpoll *epoll, int socket, void *pointer);
-bool net_stream_epoll_monitor_stop    (NetStreamEpoll *epoll, int socket);
+bool net_stream_epoll_monitor      (NetStreamEpoll *epoll, int socket, void *pointer);
+bool net_stream_epoll_monitor_stop (NetStreamEpoll *epoll, int socket);
 
 #endif

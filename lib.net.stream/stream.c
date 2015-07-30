@@ -15,17 +15,7 @@
 #include <signal.h>
 #include <lib.net.stream/stream.h>
 
-static bool inner_create (NetStream *stream,
-                          ThreadSignal *stop_signal,
-                          NetStreamEpoll **epoll,
-                          Thread **thread,
-                          bool is_read);
-static void inner_destroy (NetStream *stream, 
-                           ThreadSignal *stop_signal, 
-                           NetStreamEpoll *epoll,
-                           Thread *thread);
-static void read_worker (Thread *thread);
-static void write_worker (Thread *thread);
+static void worker (Thread *thread);
 static bool connection_read (NetStream *stream, NetStreamConnection *connection);
 
 NetStream *net_stream_create (NetStreamOnRead on_read, 
@@ -53,22 +43,19 @@ NetStream *net_stream_create (NetStreamOnRead on_read,
         stream->on_read = on_read;
         stream->on_close = on_close;
         stream->on_error = on_error;
-        if (!inner_create (stream,
-                           &stream->stop_read_signal,
-                           &stream->epoll_read,
-                           &stream->thread_read,
-                           true)) {
+        if (!thread_signal_create (&stream->stop)) {
                 net_stream_destroy (stream);
                 error_code (FunctionCall, 2);
                 return NULL;
         }
-        if (!inner_create (stream,
-                           &stream->stop_write_signal,
-                           &stream->epoll_write,
-                           &stream->thread_write,
-                           false)) {
+        if (!(stream->epoll = net_stream_epoll_allocate ())) {
                 net_stream_destroy (stream);
                 error_code (FunctionCall, 3);
+                return NULL;
+        }
+        if (!(stream->thread = thread_create (&worker, stream))) {
+                net_stream_destroy (stream);
+                error_code (FunctionCall, 4);
                 return NULL;
         }
         return stream;
@@ -79,85 +66,38 @@ void net_stream_destroy (NetStream *stream)
         if (!stream) {
                 error (InvalidArgument);
         }
-        inner_destroy (stream, 
-                       &stream->stop_read_signal, 
-                       stream->epoll_read,
-                       stream->thread_read);
-        inner_destroy (stream, 
-                       &stream->stop_write_signal, 
-                       stream->epoll_write,
-                       stream->thread_write);
-        memory_destroy (stream);
-}
-
-static bool inner_create (NetStream *stream,
-                          ThreadSignal *stop_signal,
-                          NetStreamEpoll **epoll,
-                          Thread **thread,
-                          bool is_read)
-{
-        if (!thread_signal_create (stop_signal)) {
-                return false;
-        }
-        if (!(*epoll = net_stream_epoll_allocate ())) {
-                return false;
-        }
-        if (!(*thread = thread_create (is_read ? 
-                                       &read_worker :
-                                       &write_worker, 
-                                       stream))) {
-                return false;
-        }
-        return true;
-}
-
-static void inner_destroy (NetStream *stream, 
-                           ThreadSignal *stop_signal, 
-                           NetStreamEpoll *epoll,
-                           Thread *thread)
-{
-        (void)stream;
-        if (stop_signal->initialized && 
-            epoll && 
-            thread) {
-                if (!net_stream_epoll_stop (epoll)) {
+        if (stream->stop.initialized && 
+            stream->epoll && 
+            stream->thread) {
+                if (!net_stream_epoll_stop (stream->epoll)) {
                         error_code (FunctionCall, 1);
                         return;
                 }
-                if (!thread_signal_wait (stop_signal)) {
+                if (!thread_signal_wait (&stream->stop)) {
                         error_code (FunctionCall, 2);
                 }
         }
-        if (thread) {
-                if (!thread_wait (thread)) {
+        if (stream->thread) {
+                if (!thread_wait (stream->thread)) {
                         error_code (FunctionCall, 3);
                 }
-                thread_destroy (thread);
+                thread_destroy (stream->thread);
         }
-        if (epoll) {
-                net_stream_epoll_deallocate (epoll);
+        if (stream->epoll) {
+                net_stream_epoll_deallocate (stream->epoll);
         }
-        if (stop_signal->initialized) {
-                thread_signal_destroy (stop_signal);
+        if (stream->stop.initialized) {
+                thread_signal_destroy (&stream->stop);
         }
+        memory_destroy (stream);
 }
 
 bool net_stream_add (NetStream *stream, NetStreamConnection *connection)
 {
-        if (!net_stream_epoll_monitor_read (stream->epoll_read, 
-                                            connection->socket, 
-                                            connection)) {
+        if (!net_stream_epoll_monitor (stream->epoll, 
+                                       connection->socket, 
+                                       connection)) {
                 error_code (FunctionCall, 1);
-                return false;
-        }
-        if (!net_stream_epoll_monitor_write (stream->epoll_write, 
-                                             connection->socket, 
-                                             connection)) {
-                if (!net_stream_epoll_monitor_stop (stream->epoll_read, 
-                                                    connection->socket)) {
-                        error_code (FunctionCall, 2);
-                }
-                error_code (FunctionCall, 3);
                 return false;
         }
         return true;
@@ -179,16 +119,8 @@ void net_stream_write (NetStream *stream,
                         continue;
                 }
                 if (count == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-                        if (!net_stream_epoll_remonitor_write (stream->epoll_write, 
-                                                               connection->socket,
-                                                               connection)) {
-                                error_code (FunctionCall, 1);
-                                return;
-                        }
-                        if (!thread_signal_wait (&connection->write_signal)) {
-                                error_code (FunctionCall, 2);
-                                return;
-                        }
+                        usleep (1000);
+                        continue;
                 }
                 if (count == -1 || count == 0) {
                         return;
@@ -200,7 +132,7 @@ void net_stream_write (NetStream *stream,
         }
 }
 
-static void read_worker (Thread *thread)
+static void worker (Thread *thread)
 {
         NetStream *stream = thread->argument;
         NetStreamConnection *connection;
@@ -208,11 +140,11 @@ static void read_worker (Thread *thread)
         int events;
         int i;
         
-        while (net_stream_epoll_events_count (stream->epoll_read, &events)) {
+        while (net_stream_epoll_events_count (stream->epoll, &events)) {
                 for (i = 0; i < events; i++) {
-                        event = net_stream_epoll_event (stream->epoll_read, i);
+                        event = net_stream_epoll_event (stream->epoll, i);
                         if (event.stop) {
-                                thread_signal (&stream->stop_read_signal);
+                                thread_signal (&stream->stop);
                                 thread_exit (thread);
                         }
                         connection = event.pointer;
@@ -223,31 +155,6 @@ static void read_worker (Thread *thread)
                         if (event.read) {
                                 if (!connection_read (stream, connection)) {
                                         continue;
-                                }
-                        }
-                }
-        }
-}
-
-static void write_worker (Thread *thread)
-{
-        NetStream *stream = thread->argument;
-        NetStreamConnection *connection;
-        NetStreamEpollEvent event;
-        int events;
-        int i;
-        
-        while (net_stream_epoll_events_count (stream->epoll_write, &events)) {
-                for (i = 0; i < events; i++) {
-                        event = net_stream_epoll_event (stream->epoll_write, i);
-                        if (event.stop) {
-                                thread_signal (&stream->stop_write_signal);
-                                thread_exit (thread);
-                        }
-                        connection = event.pointer;
-                        if (event.write) {
-                                if (!thread_signal (&connection->write_signal)) {
-                                        error (FunctionCall);
                                 }
                         }
                 }

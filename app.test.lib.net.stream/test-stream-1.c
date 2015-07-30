@@ -91,7 +91,6 @@ static void server_on_connect (NetServer *server, int socket)
 
         server_read = 0;
         server_connection.socket = socket;
-        thread_signal_create (&server_connection.write_signal);
         if (!net_stream_add (server_stream, &server_connection)) {
                 printf ("server_on_connect\n"); fflush (stdout);
         }
@@ -125,7 +124,6 @@ static void client_on_connect (NetClient *client, NetClientConnection *connectio
 
         client_read = 0;
         client_connection.socket = connection->socket;
-        thread_signal_create (&client_connection.write_signal);
         if (!net_stream_add (client_stream, &client_connection)) {
                 printf ("client_on_connect\n"); fflush (stdout);
         }

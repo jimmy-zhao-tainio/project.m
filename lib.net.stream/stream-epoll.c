@@ -106,9 +106,6 @@ NetStreamEpollEvent net_stream_epoll_event (NetStreamEpoll *epoll, int index)
                 if (epoll->events[index].events & EPOLLIN) {
                         event.read = true;
                 }
-                if (epoll->events[index].events & EPOLLOUT) {
-                        event.write = true;
-                }
         }
         return event;
 }
@@ -122,7 +119,7 @@ bool net_stream_epoll_stop (NetStreamEpoll *epoll)
         return true;
 }
 
-bool net_stream_epoll_monitor_read (NetStreamEpoll *epoll, int socket, void *pointer)
+bool net_stream_epoll_monitor (NetStreamEpoll *epoll, int socket, void *pointer)
 {
         struct epoll_event event = { 0 };
 
@@ -130,38 +127,6 @@ bool net_stream_epoll_monitor_read (NetStreamEpoll *epoll, int socket, void *poi
         event.events = EPOLLIN | EPOLLET;
         if (epoll_ctl (epoll->file,
                        EPOLL_CTL_ADD,
-                       socket,
-                       &event) == -1) {
-                error (SystemCall);
-                return false;
-        }
-        return true;
-}
-
-bool net_stream_epoll_monitor_write (NetStreamEpoll *epoll, int socket, void *pointer)
-{
-        struct epoll_event event = { 0 };
-
-        event.data.ptr = pointer;
-        event.events = EPOLLET | EPOLLONESHOT;
-        if (epoll_ctl (epoll->file,
-                       EPOLL_CTL_ADD,
-                       socket,
-                       &event) == -1) {
-                error (SystemCall);
-                return false;
-        }
-        return true;
-}
-
-bool net_stream_epoll_remonitor_write (NetStreamEpoll *epoll, int socket, void *pointer)
-{
-        struct epoll_event event = { 0 };
-
-        event.data.ptr = pointer;
-        event.events = EPOLLOUT | EPOLLET | EPOLLONESHOT;
-        if (epoll_ctl (epoll->file,
-                       EPOLL_CTL_MOD,
                        socket,
                        &event) == -1) {
                 error (SystemCall);

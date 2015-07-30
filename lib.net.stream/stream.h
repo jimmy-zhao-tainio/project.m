@@ -22,12 +22,9 @@ struct _NetStream
         NetStreamOnClose on_close;
         NetStreamOnRead  on_read;
         NetStreamOnError on_error;
-        Thread *thread_read;
-        Thread *thread_write;
-        NetStreamEpoll *epoll_read;
-        NetStreamEpoll *epoll_write;
-        ThreadSignal stop_read_signal;
-        ThreadSignal stop_write_signal;
+        Thread *thread;
+        NetStreamEpoll *epoll;
+        ThreadSignal stop;
 };
 
 struct _NetStreamPackage
@@ -39,7 +36,6 @@ struct _NetStreamPackage
 struct _NetStreamConnection
 {
         int socket;
-        ThreadSignal write_signal;
 };
 
 NetStream *net_stream_create (NetStreamOnRead on_read, 

@@ -53,7 +53,20 @@ bool test_stream_create_function_call_1 (Test *test)
         PASS ();
 }
 
-bool test_stream_create_function_call_2 (Test *test)
+bool test_stream_create_function_call_3 (Test *test)
+{
+        TITLE ();
+        memory_total_create_limit (sizeof (size_t) + sizeof (NetStream) +
+                                   sizeof (size_t) + sizeof (NetStreamEpoll) -
+                                   1);
+        CATCH (net_stream_create (&on_read, &on_close, &on_error));
+        CATCH (error_count () == 0);
+        CATCH (error_at (0).error != ErrorFunctionCall);
+        CATCH (error_at (0).code != 3);
+        PASS ();
+}
+
+bool test_stream_create_function_call_4 (Test *test)
 {
         TITLE ();
         memory_total_create_limit (sizeof (size_t) + sizeof (NetStream) +
@@ -63,23 +76,7 @@ bool test_stream_create_function_call_2 (Test *test)
         CATCH (net_stream_create (&on_read, &on_close, &on_error));
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorFunctionCall);
-        CATCH (error_at (0).code != 2);
-        PASS ();
-}
-
-bool test_stream_create_function_call_3 (Test *test)
-{
-        TITLE ();
-        memory_total_create_limit (sizeof (size_t) + sizeof (NetStream) +
-                                   sizeof (size_t) + sizeof (NetStreamEpoll) +
-                                   sizeof (size_t) + sizeof (Thread) +
-                                   sizeof (size_t) + sizeof (NetStreamEpoll) +
-                                   sizeof (size_t) + sizeof (Thread) -
-                                   1);
-        CATCH (net_stream_create (&on_read, &on_close, &on_error));
-        CATCH (error_count () == 0);
-        CATCH (error_at (0).error != ErrorFunctionCall);
-        CATCH (error_at (0).code != 3);
+        CATCH (error_at (0).code != 4);
         PASS ();
 }
 
