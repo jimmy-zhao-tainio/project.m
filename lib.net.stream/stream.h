@@ -22,10 +22,8 @@ struct _NetStream
         NetStreamOnClose on_close;
         NetStreamOnRead  on_read;
         NetStreamOnError on_error;
-        Thread **threads_read;
-        Thread **threads_write;
-        size_t threads_read_size;
-        size_t threads_write_size;
+        Thread *thread_read;
+        Thread *thread_write;
         NetStreamEpoll *epoll_read;
         NetStreamEpoll *epoll_write;
         ThreadSignal stop_read_signal;
@@ -46,9 +44,7 @@ struct _NetStreamConnection
 
 NetStream *net_stream_create (NetStreamOnRead on_read, 
                               NetStreamOnClose on_close,
-                              NetStreamOnError on_error, 
-                              size_t threads_read_count,
-                              size_t threads_write_count);
+                              NetStreamOnError on_error);
 void net_stream_destroy (NetStream *stream);
 bool net_stream_add (NetStream *stream, 
                      NetStreamConnection *connection);

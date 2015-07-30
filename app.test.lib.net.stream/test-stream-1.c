@@ -56,12 +56,10 @@ bool test_stream_1 (Test *test)
         for (i = 0; i < 1; i++) {
                 CATCH (!(server_stream = net_stream_create (&server_stream_on_read,
                                                             &server_stream_on_close,
-                                                            &server_stream_on_error,
-                                                            2, 1)));
+                                                            &server_stream_on_error)));
                 CATCH (!(client_stream = net_stream_create (&client_stream_on_read,
                                                             &client_stream_on_close,
-                                                            &client_stream_on_error,
-                                                            2, 1)));
+                                                            &client_stream_on_error)));
                 CATCH (!(server = net_server_create ("127.0.0.1", 8888, 
                                                      &server_on_connect, 
                                                      &server_on_error)));

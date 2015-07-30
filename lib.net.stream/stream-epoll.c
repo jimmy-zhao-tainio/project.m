@@ -122,23 +122,12 @@ bool net_stream_epoll_stop (NetStreamEpoll *epoll)
         return true;
 }
 
-bool net_stream_epoll_monitor (NetStreamEpoll *epoll, int socket, void *pointer, bool is_read, bool is_write)
+bool net_stream_epoll_monitor_read (NetStreamEpoll *epoll, int socket, void *pointer)
 {
         struct epoll_event event = { 0 };
 
         event.data.ptr = pointer;
-        if (is_read && is_write) {
-                event.events = EPOLLIN | EPOLLOUT | EPOLLET | EPOLLONESHOT;
-        }
-        else if (is_read && !is_write) {
-                event.events = EPOLLIN | EPOLLET | EPOLLONESHOT;
-        }
-        else if (!is_read && is_write) {
-                event.events = EPOLLOUT | EPOLLET | EPOLLONESHOT;
-        }
-        else if (!is_read && !is_write) {
-                event.events = EPOLLET | EPOLLONESHOT;
-        }
+        event.events = EPOLLIN | EPOLLET;
         if (epoll_ctl (epoll->file,
                        EPOLL_CTL_ADD,
                        socket,
@@ -149,23 +138,28 @@ bool net_stream_epoll_monitor (NetStreamEpoll *epoll, int socket, void *pointer,
         return true;
 }
 
-bool net_stream_epoll_remonitor (NetStreamEpoll *epoll, int socket, void *pointer, bool is_read, bool is_write)
+bool net_stream_epoll_monitor_write (NetStreamEpoll *epoll, int socket, void *pointer)
 {
         struct epoll_event event = { 0 };
 
         event.data.ptr = pointer;
-        if (is_read && is_write) {
-                event.events = EPOLLIN | EPOLLOUT | EPOLLET | EPOLLONESHOT;
+        event.events = EPOLLET | EPOLLONESHOT;
+        if (epoll_ctl (epoll->file,
+                       EPOLL_CTL_ADD,
+                       socket,
+                       &event) == -1) {
+                error (SystemCall);
+                return false;
         }
-        else if (is_read && !is_write) {
-                event.events = EPOLLIN | EPOLLET | EPOLLONESHOT;
-        }
-        else if (!is_read && is_write) {
-                event.events = EPOLLOUT | EPOLLET | EPOLLONESHOT;
-        }
-        else if (!is_read && !is_write) {
-                event.events = EPOLLET | EPOLLONESHOT;
-        }
+        return true;
+}
+
+bool net_stream_epoll_remonitor_write (NetStreamEpoll *epoll, int socket, void *pointer)
+{
+        struct epoll_event event = { 0 };
+
+        event.data.ptr = pointer;
+        event.events = EPOLLOUT | EPOLLET | EPOLLONESHOT;
         if (epoll_ctl (epoll->file,
                        EPOLL_CTL_MOD,
                        socket,

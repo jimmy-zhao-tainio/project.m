@@ -42,7 +42,7 @@ lib.core
                 ascii
                         Help functions for ASCII.
 
-                ... and more ...
+                ... etc ...
 
 lib.compile
 
