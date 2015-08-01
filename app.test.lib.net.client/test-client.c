@@ -14,7 +14,7 @@ static void on_error         (NetClient *client);
 bool test_client_create_invalid_argument_1 (Test *test)
 {
         TITLE ();
-        CATCH (net_client_create (NULL, NULL, NULL));
+        CATCH (net_client_create (NULL, NULL, NULL, NULL));
         CATCH (error_count () != 1);
         CATCH (error_at (0).error != ErrorInvalidArgument);
         CATCH (error_at (0).code != 1);
@@ -24,7 +24,7 @@ bool test_client_create_invalid_argument_1 (Test *test)
 bool test_client_create_invalid_argument_2 (Test *test)
 {
         TITLE ();
-        CATCH (net_client_create (&on_connect, NULL, NULL));
+        CATCH (net_client_create (&on_connect, NULL, NULL, NULL));
         CATCH (error_count () != 1);
         CATCH (error_at (0).error != ErrorInvalidArgument);
         CATCH (error_at (0).code != 2);
@@ -34,7 +34,7 @@ bool test_client_create_invalid_argument_2 (Test *test)
 bool test_client_create_invalid_argument_3 (Test *test)
 {
         TITLE ();
-        CATCH (net_client_create (&on_connect, &on_connect_error, NULL));
+        CATCH (net_client_create (&on_connect, &on_connect_error, NULL, NULL));
         CATCH (error_count () != 1);
         CATCH (error_at (0).error != ErrorInvalidArgument);
         CATCH (error_at (0).code != 3);
@@ -45,7 +45,7 @@ bool test_client_create_function_call_1 (Test *test)
 {
         TITLE ();
         memory_commit_limit (sizeof (size_t) + sizeof (NetClient) - 1);
-        CATCH (net_client_create (&on_connect, &on_connect_error, &on_error));
+        CATCH (net_client_create (&on_connect, &on_connect_error, &on_error, NULL));
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorFunctionCall);
         CATCH (error_at (0).code != 1);
@@ -57,7 +57,7 @@ bool test_client_create_function_call_2 (Test *test)
         TITLE ();
         memory_total_create_limit (sizeof (size_t) + sizeof (NetClient) +
                                    sizeof (size_t) + sizeof (NetClientEpoll) - 1);
-        CATCH (net_client_create (&on_connect, &on_connect_error, &on_error));
+        CATCH (net_client_create (&on_connect, &on_connect_error, &on_error, NULL));
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorFunctionCall);
         CATCH (error_at (0).code != 2);
@@ -70,7 +70,7 @@ bool test_client_create_function_call_3 (Test *test)
         memory_total_create_limit (sizeof (size_t) + sizeof (NetClient) +
                                    sizeof (size_t) + sizeof (NetClientEpoll) + 
                                    sizeof (size_t) + sizeof (Thread) - 1);
-        CATCH (net_client_create (&on_connect, &on_connect_error, &on_error));
+        CATCH (net_client_create (&on_connect, &on_connect_error, &on_error, NULL));
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorFunctionCall);
         CATCH (error_at (0).code != 3);
@@ -82,7 +82,7 @@ bool test_client_create (Test *test)
         NetClient *client;
 
         TITLE ();
-        CATCH (!(client = net_client_create (&on_connect, &on_connect_error, &on_error)));
+        CATCH (!(client = net_client_create (&on_connect, &on_connect_error, &on_error, NULL)));
         CATCH (error_count () != 0);
         net_client_destroy (client);
         PASS ();

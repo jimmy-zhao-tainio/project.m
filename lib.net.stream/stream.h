@@ -25,6 +25,7 @@ struct _NetStream
         Thread *thread;
         NetStreamEpoll *epoll;
         ThreadSignal stop;
+        void *tag;
 };
 
 struct _NetStreamPackage
@@ -40,7 +41,8 @@ struct _NetStreamConnection
 
 NetStream *net_stream_create (NetStreamOnRead on_read, 
                               NetStreamOnClose on_close,
-                              NetStreamOnError on_error);
+                              NetStreamOnError on_error,
+                              void *tag);
 void net_stream_destroy (NetStream *stream);
 bool net_stream_add (NetStream *stream, 
                      NetStreamConnection *connection);

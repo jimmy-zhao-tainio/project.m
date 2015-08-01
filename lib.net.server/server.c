@@ -21,7 +21,8 @@ static void worker_accept (NetServer *server);
 NetServer *net_server_create (const char *ip, 
                               uint16_t port,
                               NetServerOnConnect on_connect, 
-                              NetServerOnError on_error)
+                              NetServerOnError on_error,
+                              void *tag)
 {
         NetServer *server;
         struct sockaddr_in c_address;
@@ -51,6 +52,7 @@ NetServer *net_server_create (const char *ip,
         server->port = port;
         server->on_connect = on_connect;
         server->on_error = on_error;
+        server->tag = tag;
         server->socket = -1;
         if ((server->socket = socket (AF_INET, 
                                       SOCK_STREAM | SOCK_NONBLOCK, 

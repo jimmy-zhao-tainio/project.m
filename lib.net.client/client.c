@@ -21,7 +21,8 @@ static void worker_connect_error (NetClient *client, NetClientConnection *connec
 
 NetClient *net_client_create (NetClientOnConnect on_connect, 
                               NetClientOnConnectError on_connect_error, 
-                              NetClientOnError on_error)
+                              NetClientOnError on_error,
+                              void *tag)
 {
         NetClient *client;
         if (!on_connect) {
@@ -43,6 +44,7 @@ NetClient *net_client_create (NetClientOnConnect on_connect,
         client->on_connect = on_connect;
         client->on_connect_error = on_connect_error;
         client->on_error = on_error;
+        client->tag = tag;
         if (!(client->epoll = net_client_epoll_allocate ())) {
                 net_client_destroy (client);
                 error_code (FunctionCall, 2);

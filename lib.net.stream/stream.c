@@ -20,7 +20,8 @@ static bool connection_read (NetStream *stream, NetStreamConnection *connection)
 
 NetStream *net_stream_create (NetStreamOnRead on_read, 
                               NetStreamOnClose on_close,
-                              NetStreamOnError on_error)
+                              NetStreamOnError on_error,
+                              void *tag)
 {
         NetStream *stream;
 
@@ -43,6 +44,7 @@ NetStream *net_stream_create (NetStreamOnRead on_read,
         stream->on_read = on_read;
         stream->on_close = on_close;
         stream->on_error = on_error;
+        stream->tag = tag;
         if (!thread_signal_create (&stream->stop)) {
                 net_stream_destroy (stream);
                 error_code (FunctionCall, 2);

@@ -24,7 +24,8 @@ bool test_client_on_connect_error (Test *test)
         for (i = 0; i < 100; i++) {
                 CATCH (!(client = net_client_create (&client_on_connect,
                                                      &client_on_connect_error,
-                                                     &client_on_error)));
+                                                     &client_on_error,
+                                                     NULL)));
                 connection.ip = "127.0.0.1";
                 connection.port = 8888;
                 net_client_connect (client, &connection);

@@ -74,16 +74,20 @@ bool test_stream_1000x512x1000 (Test *test)
         CATCH (!(thread_client = thread_create (&worker_client, NULL)));
         CATCH (!(server_stream = net_stream_create (&server_stream_on_read,
                                                     &server_stream_on_close,
-                                                    &server_stream_on_error)));
+                                                    &server_stream_on_error,
+                                                    NULL)));
         CATCH (!(client_stream = net_stream_create (&client_stream_on_read,
                                                     &client_stream_on_close,
-                                                    &client_stream_on_error)));
-        CATCH (!(server = net_server_create ("127.0.0.1", 8888, 
+                                                    &client_stream_on_error,
+                                                    NULL)));
+        CATCH (!(server = net_server_create ("127.0.0.1", 8888,
                                              &server_on_connect, 
-                                             &server_on_error)));
+                                             &server_on_error,
+                                             NULL)));
         CATCH (!(client = net_client_create (&client_on_connect,
                                              &client_on_connect_error,
-                                             &client_on_error)));
+                                             &client_on_error,
+                                             NULL)));
         for (i = 0; i < CONNECTIONS; i++) {
                 connection[i].ip = "127.0.0.1";
                 connection[i].port = 8888;

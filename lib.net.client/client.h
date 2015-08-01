@@ -19,6 +19,7 @@ struct _NetClient
         NetClientOnError on_error;
         NetClientEpoll *epoll;
         Thread *thread;
+        void *tag;
 };
 
 struct _NetClientConnection
@@ -31,7 +32,8 @@ struct _NetClientConnection
 
 NetClient *net_client_create (NetClientOnConnect on_connect,
                               NetClientOnConnectError on_connect_error,
-                              NetClientOnError on_error);
+                              NetClientOnError on_error,
+                              void *tag);
 void net_client_connect (NetClient *client, NetClientConnection *connection);
 void net_client_destroy (NetClient *client);
 
