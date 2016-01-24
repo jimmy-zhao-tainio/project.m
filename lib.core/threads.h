@@ -19,7 +19,6 @@ struct _Thread
 
 Thread *thread_create    (void (*function) (Thread *), void *argument);
 void    thread_destroy   (Thread *thread);
-void    thread_exit      (Thread *thread);
 bool    thread_wait      (Thread *thread);
 bool    thread_set_exit  (Thread *thread);
 bool    thread_get_exit  (Thread *thread);

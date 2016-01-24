@@ -50,14 +50,6 @@ bool test_thread_destroy_invalid_argument (Test *test)
         PASS ();
 }
 
-bool test_thread_exit_invalid_argument (Test *test)
-{
-        TITLE ();
-        thread_exit (NULL);
-        CATCH (error_at (0).error != ErrorInvalidArgument);
-        PASS ();
-}
-
 bool test_thread_wait_invalid_argument (Test *test)
 {
         TITLE ();

@@ -152,7 +152,7 @@ static void worker (Thread *thread)
                 for (i = 0; i < count; i++) {
                         event = net_client_epoll_event (client->epoll, i);
                         if (event.stop) {
-                                thread_exit (thread);
+                                return;
                         }
                         else if (event.connect) {
                                 worker_connect (client, event.pointer);
@@ -163,7 +163,7 @@ static void worker (Thread *thread)
                 }
         }
         client->on_error (client);
-        thread_exit (thread);
+        return;
 }
 
 static void worker_connect (NetClient *client, NetClientConnection *connection)

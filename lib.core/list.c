@@ -176,7 +176,7 @@ ListNode *list_find (const List *list, const void *data)
 		return NULL;
 	}
 	for (node = list_first (list); 
-             node; 
+             node;
              node = list_next (node)) {
 		if (node->data == data) {
 			return node;

@@ -439,7 +439,6 @@ bool (*tests[]) (Test *test) =
         &test_thread_create_function_call_1,
         &test_thread_create_1000,
         &test_thread_destroy_invalid_argument,
-        &test_thread_exit_invalid_argument,
         &test_thread_wait_invalid_argument,
         &test_thread_set_exit_invalid_argument,
         &test_thread_get_exit_invalid_argument,

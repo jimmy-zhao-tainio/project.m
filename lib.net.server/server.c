@@ -152,16 +152,16 @@ static void worker (Thread *thread)
                                 worker_accept (server);
                         }
                         else if (event.stop) {
-                                thread_exit (thread);
+                                return;
                         }
                         else if (event.error) {
                                 server->on_error (server);
-                                thread_exit (thread);
+                                return;
                         }
                 }
         }
         server->on_error (server);
-        thread_exit (thread);
+        return;
 }
 
 static void worker_accept (NetServer *server)

@@ -18,7 +18,7 @@ struct _Test
 bool test_array (int argc, char **argv, bool (*tests[]) (Test *test));
 
 #define TITLE() \
-	test->title = __FUNCTION__;
+	test->title = __func__;
 #define CATCH(condition) \
 	if (condition) { \
 		test->line_catch = __LINE__; \

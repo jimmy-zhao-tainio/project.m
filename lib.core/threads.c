@@ -48,15 +48,6 @@ void thread_destroy (Thread *thread)
         memory_destroy (thread);
 }
 
-void thread_exit (Thread *thread)
-{
-        if (!thread) {
-                error (InvalidArgument);
-                return;
-        }
-        pthread_exit (NULL);
-}
-
 bool thread_wait (Thread *thread)
 {
         if (!thread) {

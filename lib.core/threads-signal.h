@@ -15,10 +15,10 @@ struct _ThreadSignal
         bool initialized;
 };
 
-bool thread_signal_create  (ThreadSignal *signal);
+bool thread_signal_create (ThreadSignal *signal);
 bool thread_signal_destroy (ThreadSignal *signal);
-bool thread_signal         (ThreadSignal *signal);
-bool thread_signal_wait    (ThreadSignal *signal);
+bool thread_signal (ThreadSignal *signal);
+bool thread_signal_wait (ThreadSignal *signal);
 
 #define THREAD_SIGNAL_INITIALIZER \
         { \

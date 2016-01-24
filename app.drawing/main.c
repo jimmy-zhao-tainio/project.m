@@ -119,5 +119,5 @@ static void worker (Thread *thread)
                 canvas_unlock (canvas);
                 usleep (1000000 / 40);
         }
-        thread_exit (thread);
+        return;
 }

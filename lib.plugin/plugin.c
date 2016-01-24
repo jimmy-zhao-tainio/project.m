@@ -146,7 +146,6 @@ static void dlopen_workaround (Thread *thread)
         if (!(plugin->handle = dlopen (plugin->path, RTLD_NOW))) {
                 error (SystemCall);
         }
-        thread_exit (thread);
 }
 
 static void dlclose_workaround (Thread *thread)
@@ -159,7 +158,6 @@ static void dlclose_workaround (Thread *thread)
                         error (SystemCall);
                 }
         }
-        thread_exit (thread);
 }
 
 static void dlsym_workaround (Thread *thread)
@@ -170,5 +168,4 @@ static void dlsym_workaround (Thread *thread)
         if (!(*workaround->function = dlsym (workaround->plugin->handle, workaround->function_name))) {
                 error (SystemCall);
         }
-        thread_exit (thread);
 }

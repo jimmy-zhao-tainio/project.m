@@ -1,6 +1,7 @@
 #include <lib.core/threads-signal.h>
 #include <lib.core/memory.h>
 #include <lib.core/error.h>
+#include <stdio.h>
 
 bool thread_signal_create (ThreadSignal *signal)
 {
@@ -76,10 +77,7 @@ bool thread_signal_wait (ThreadSignal *signal)
                 return false;
         }
         while (signal->set == false) {
-                if (pthread_cond_wait (&signal->cond, &signal->lock.mutex) != 0) {
-                        error (SystemCall);
-                        return false;
-                }
+                pthread_cond_wait (&signal->cond, &signal->lock.mutex);
         }
         signal->set = false;
         if (!thread_unlock (&signal->lock)) {
