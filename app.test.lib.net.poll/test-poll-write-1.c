@@ -29,8 +29,8 @@ static ThreadSignal server_close_signal = THREAD_SIGNAL_INITIALIZER;
 static ThreadSignal client_close_signal = THREAD_SIGNAL_INITIALIZER;
 static ThreadSignal client_read_signal = THREAD_SIGNAL_INITIALIZER;
 
-static NetPollConnection poll_client = { .write = { .lock = THREAD_LOCK_INITIALIZER } };
-static NetPollConnection poll_server = { .write = { .lock = THREAD_LOCK_INITIALIZER } };
+static NetPollConnection poll_client = { .closed = false, .write = { .lock = THREAD_LOCK_INITIALIZER } };
+static NetPollConnection poll_server = { .closed = false, .write = { .lock = THREAD_LOCK_INITIALIZER } };
 
 static void poll_on_monitor (NetPoll *poll, NetPollConnection *connection, bool success);
 static void poll_on_read    (NetPoll *poll, NetPollConnection *connection, unsigned char *buffer, size_t length);

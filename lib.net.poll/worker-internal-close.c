@@ -5,6 +5,10 @@
 
 void worker_internal_close (NetPoll *poll, NetPollConnection *connection)
 {
+        if (connection->closed) {
+                return;
+        }
+        connection->closed = true;
         if (close (connection->socket) != 0) {
                 error (SystemCall);
                 if (!poll->on_close) {

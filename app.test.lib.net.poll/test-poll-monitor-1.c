@@ -15,9 +15,10 @@ static bool monitor_success;
 bool test_poll_monitor_1 (Test *test)
 {
         NetPoll *poll;
-        NetPollConnection connection = { .socket = -1 };
+        NetPollConnection connection = { 0 };
 
         TITLE ();
+        connection.socket = -1;
         monitor_success = false;
         CATCH (!(poll = net_poll_create (&on_monitor, NULL, NULL)));
         CATCH (!net_poll_monitor (poll, &connection));

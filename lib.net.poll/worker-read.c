@@ -11,6 +11,9 @@ void worker_read (NetPoll *poll, NetPollConnection *connection)
         unsigned char buffer[512];
         ssize_t count;
 
+        if (connection->closed) {
+                return;
+        }
         while (true) {
                 count = read (connection->socket, buffer, sizeof (buffer));
                 if (count == 0) {

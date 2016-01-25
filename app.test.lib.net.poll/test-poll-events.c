@@ -81,7 +81,7 @@ bool test_poll_events_internal_write (Test *test)
 {
         NetPollEvents *events;
         NetPollEvent event;
-        NetPollConnection connection = { .write.lock = THREAD_LOCK_INITIALIZER };
+        NetPollConnection connection = { .closed = false, .write.lock = THREAD_LOCK_INITIALIZER };
 
         TITLE ();
         CATCH (!(events = net_poll_events_create ()));
@@ -130,6 +130,7 @@ static void worker_push (Thread *thread)
         NetPollConnection connections[pushpop];
         (void)thread;
         for (ipush = 0; ipush < pushpop; ipush++) {
+                connections[ipush].closed = false;
                 connections[ipush].socket = ipush;
                 if (!net_poll_events_push_close (worker_events, &connections[ipush])) {
                         printf ("worker_push failed at %i\n", ipush); 

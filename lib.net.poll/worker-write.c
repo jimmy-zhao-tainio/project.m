@@ -7,8 +7,6 @@
 #include <stdio.h>
 #include <errno.h>
 
-// 2648086
-
 static void monitor_write (NetPoll *poll, NetPollConnection *connection, bool monitor);
 
 void worker_write (NetPoll *poll, 
@@ -16,6 +14,9 @@ void worker_write (NetPoll *poll,
 {
         ssize_t count;
 
+        if (connection->closed) {
+                return;
+        }
         if (connection->write.monitor == true) {
                 monitor_write (poll, connection, false);
         }

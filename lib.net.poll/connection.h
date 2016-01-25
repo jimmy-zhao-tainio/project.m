@@ -16,6 +16,7 @@ struct _NetPollConnection
                 size_t position;
                 bool monitor;
         } write;
+        bool closed;
 };
 
 #endif

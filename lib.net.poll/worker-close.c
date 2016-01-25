@@ -5,6 +5,10 @@
 
 void worker_close (NetPoll *poll, NetPollConnection *connection)
 {
+        if (connection->closed) {
+                return;
+        }
+        connection->closed = true;
         if (!poll->on_close) {
                 return;
         }

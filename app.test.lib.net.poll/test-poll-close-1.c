@@ -12,7 +12,7 @@ static void on_close (NetPoll *poll, NetPollConnection *connection, bool success
 static ThreadSignal signal = THREAD_SIGNAL_INITIALIZER;
 static bool close_success;
 
-static NetPollConnection connection = { .socket = -1, .pointer = NULL };
+static NetPollConnection connection = { .closed = false, .socket = -1, .pointer = NULL };
 
 bool test_poll_close_1 (Test *test)
 {

@@ -36,7 +36,7 @@ bool test_poll_on_read_2 (Test *test)
         NetPoll *poll;
         NetServer *server;
         NetClientConnection connection;
-        NetPollConnection poll_connection;
+        NetPollConnection poll_connection = { 0 };
         NetClient *client;
 
         TITLE ();

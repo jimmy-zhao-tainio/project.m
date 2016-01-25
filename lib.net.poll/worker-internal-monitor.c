@@ -6,6 +6,9 @@ void worker_internal_monitor (NetPoll *poll, NetPollConnection *connection)
 {
         struct epoll_event event = { 0 };
 
+        if (connection->closed) {
+                return;
+        }
         event.data.ptr = connection;
         event.events = EPOLLIN | EPOLLRDHUP | EPOLLHUP | EPOLLET;
         if (epoll_ctl (poll->events->file,
