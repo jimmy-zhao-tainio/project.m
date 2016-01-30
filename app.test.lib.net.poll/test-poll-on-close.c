@@ -54,7 +54,7 @@ bool test_poll_on_close (Test *test)
         thread_signal_wait (&client_signal);
         thread_signal_wait (&server_signal);
 
-        CATCH (!(poll = net_poll_create (&on_monitor, &on_close, NULL)));
+        CATCH (!(poll = net_poll_create (&on_monitor, &on_close, NULL, NULL)));
         poll_connection.socket = server_socket;
         CATCH (!net_poll_monitor (poll, &poll_connection));
         thread_signal_wait (&monitor_signal);

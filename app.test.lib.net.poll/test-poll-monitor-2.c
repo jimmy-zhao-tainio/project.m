@@ -46,7 +46,7 @@ bool test_poll_monitor_2 (Test *test)
         connection.port = 8888;
         net_client_connect (client, &connection);
         thread_signal_wait (&server_signal);
-        CATCH (!(poll = net_poll_create (&on_monitor, NULL, NULL)));
+        CATCH (!(poll = net_poll_create (&on_monitor, NULL, NULL, NULL)));
         poll_connection.socket = server_socket;
         CATCH (!net_poll_monitor (poll, &poll_connection));
         thread_signal_wait (&signal);

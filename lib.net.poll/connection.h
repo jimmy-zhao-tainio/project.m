@@ -10,7 +10,6 @@ struct _NetPollConnection
         int socket;
         void *pointer;
         struct {
-                ThreadLock lock;
                 unsigned char *buffer;
                 size_t length;
                 size_t position;

@@ -5,7 +5,8 @@
 
 NetPoll *net_poll_create (NetPollOnMonitor on_monitor,
                           NetPollOnClose on_close,
-                          NetPollOnRead on_read)
+                          NetPollOnRead on_read,
+                          NetPollOnWrite on_write)
 {
         NetPoll *poll;
 
@@ -27,6 +28,7 @@ NetPoll *net_poll_create (NetPollOnMonitor on_monitor,
         poll->on_monitor = on_monitor;
         poll->on_close = on_close;
         poll->on_read = on_read;
+        poll->on_write = on_write;
         return poll;
 }
 
@@ -62,9 +64,6 @@ bool net_poll_close (NetPoll *poll, NetPollConnection *connection)
 bool net_poll_write (NetPoll *poll, NetPollConnection *connection,
                      unsigned char *buffer, size_t length)
 {
-        if (!thread_lock (&connection->write.lock)) {
-                return false;
-        }
         connection->write.buffer = buffer;
         connection->write.length = length;
         connection->write.position = 0;

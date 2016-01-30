@@ -20,7 +20,7 @@ bool test_poll_close_1 (Test *test)
 
         TITLE ();
         close_success = false;
-        CATCH (!(poll = net_poll_create (NULL, &on_close, NULL)));
+        CATCH (!(poll = net_poll_create (NULL, &on_close, NULL, NULL)));
         CATCH (!net_poll_close (poll, &connection));
         thread_signal_wait (&signal);
         CATCH (close_success);

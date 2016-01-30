@@ -27,14 +27,16 @@ static ThreadSignal client_monitor_signal = THREAD_SIGNAL_INITIALIZER;
 
 static ThreadSignal server_close_signal = THREAD_SIGNAL_INITIALIZER;
 static ThreadSignal client_close_signal = THREAD_SIGNAL_INITIALIZER;
+static ThreadSignal server_write_signal = THREAD_SIGNAL_INITIALIZER;
 static ThreadSignal client_read_signal = THREAD_SIGNAL_INITIALIZER;
 
-static NetPollConnection poll_client = { .closed = false, .write = { .lock = THREAD_LOCK_INITIALIZER } };
-static NetPollConnection poll_server = { .closed = false, .write = { .lock = THREAD_LOCK_INITIALIZER } };
+static NetPollConnection poll_client = { .closed = false };
+static NetPollConnection poll_server = { .closed = false };
 
 static void poll_on_monitor (NetPoll *poll, NetPollConnection *connection, bool success);
 static void poll_on_read    (NetPoll *poll, NetPollConnection *connection, unsigned char *buffer, size_t length);
 static void poll_on_close   (NetPoll *poll, NetPollConnection *connection, bool success);
+static void poll_on_write   (NetPoll *poll, NetPollConnection *connection, unsigned char *buffer, size_t length);
 
 bool test_poll_write_1 (Test *test)
 {
@@ -55,7 +57,8 @@ bool test_poll_write_1 (Test *test)
                                              NULL)));
         CATCH (!(poll = net_poll_create (&poll_on_monitor, 
                                          &poll_on_close, 
-                                         &poll_on_read)));
+                                         &poll_on_read,
+                                         &poll_on_write)));
 
         // Connect client.
         connect.ip = "127.0.0.1";
@@ -79,6 +82,7 @@ bool test_poll_write_1 (Test *test)
         // Write and wait.
         CATCH (!net_poll_write (poll, &poll_server, buffer, 1));
         thread_signal_wait (&client_read_signal);
+        thread_signal_wait (&server_write_signal);
 
         // We're done, let's close poll client.
         net_poll_close (poll, &poll_client);
@@ -138,6 +142,15 @@ static void poll_on_close (NetPoll *poll, NetPollConnection *connection, bool su
         if (connection == &poll_client) {
                 thread_signal (&client_close_signal);
         }
+}
+
+static void poll_on_write (NetPoll *poll, NetPollConnection *connection, unsigned char *buffer, size_t length)
+{
+        (void)poll;
+        (void)connection;
+        (void)buffer;
+        (void)length;
+        thread_signal (&server_write_signal);
 }
 
 static void server_on_connect (NetServer *server, int socket)

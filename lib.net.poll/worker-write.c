@@ -44,8 +44,8 @@ void worker_write (NetPoll *poll,
                 }
                 connection->write.position += (size_t)count;
         }
-        if (!thread_unlock (&connection->write.lock)) {
-                error (FunctionCall);
+        if (poll->on_write) {
+                poll->on_write (poll, connection, connection->write.buffer, connection->write.length);
         }
 }
 

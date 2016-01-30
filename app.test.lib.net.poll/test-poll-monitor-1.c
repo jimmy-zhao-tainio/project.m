@@ -20,7 +20,7 @@ bool test_poll_monitor_1 (Test *test)
         TITLE ();
         connection.socket = -1;
         monitor_success = false;
-        CATCH (!(poll = net_poll_create (&on_monitor, NULL, NULL)));
+        CATCH (!(poll = net_poll_create (&on_monitor, NULL, NULL, NULL)));
         CATCH (!net_poll_monitor (poll, &connection));
         thread_signal_wait (&signal);
         CATCH (monitor_success);
