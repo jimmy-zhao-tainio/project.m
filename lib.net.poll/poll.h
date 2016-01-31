@@ -22,7 +22,6 @@ typedef void (*NetPollOnWrite)   (NetPoll *poll,
                                   unsigned char *buffer,
                                   size_t length);
 
-
 struct _NetPoll
 {
         NetPollEvents *events;
@@ -31,6 +30,7 @@ struct _NetPoll
         NetPollOnClose   on_close;
         NetPollOnRead    on_read;
         NetPollOnWrite   on_write;
+        void *pointer;
 };
 
 NetPoll *net_poll_create  (NetPollOnMonitor on_monitor,

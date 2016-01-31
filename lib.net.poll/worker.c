@@ -50,5 +50,3 @@ void net_poll_worker (Thread *thread)
                 }
         }
 }
-
-
