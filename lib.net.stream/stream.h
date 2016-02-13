@@ -2,6 +2,7 @@
 #define lib_net_stream_h
 
 #include <lib.net.poll/poll.h>
+#include <lib.core/threads-lock.h>
 
 typedef struct _NetStream           NetStream;
 typedef struct _NetStreamConnection NetStreamConnection;
@@ -26,7 +27,10 @@ struct _NetStream
 struct _NetStreamConnection
 {
         NetPollConnection poll;
-        bool is_writing;
+        ThreadLock lock;
+        ThreadSignal signal;
+        bool closed;
+        bool writing;
 };
 
 NetStream *net_stream_create (NetStreamOnAdd on_add, 
@@ -38,5 +42,7 @@ bool net_stream_write (NetStream *stream,
                        NetStreamConnection *connection, 
                        unsigned char *buffer, 
                        size_t length);
+bool net_stream_close (NetStream *stream, NetStreamConnection *connection);
+void net_stream_remove (NetStream *stream, NetStreamConnection *connection);
 
 #endif
