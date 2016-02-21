@@ -18,7 +18,7 @@ static void server_stream_on_read (NetStream *stream, NetStreamConnection *conne
                                    unsigned char *buffer, size_t length);
 
 static NetServer *server;
-static NetStream *stream_server;
+static NetStream *stream;
 
 void server_start (void)
 {
@@ -26,9 +26,25 @@ void server_start (void)
                                     &server_on_connect,
                                     &server_on_error,
                                     NULL);
-        stream_server = net_stream_create (&server_stream_on_add, 
-                                           &server_stream_on_close, 
-                                           &server_stream_on_read);
+        stream = net_stream_create (&server_stream_on_add, 
+                                    &server_stream_on_close, 
+                                    &server_stream_on_read);
+}
+
+static void server_on_connect (NetServer *server, int socket)
+{
+        (void)server;
+        if (!net_stream_add (stream, socket)) {
+                printf ("server_on_connect\n");
+                exit (-1);
+        }
+}
+
+static void server_on_error (NetServer *server)
+{
+        (void)server;
+        printf ("server_on_error\n");
+        exit (-1);
 }
 
 static void server_stream_on_add (NetStream *stream, NetStreamConnection *connection)
@@ -41,6 +57,8 @@ static void server_stream_on_close (NetStream *stream, NetStreamConnection *conn
 {
         (void)stream;
         (void)connection;
+        printf ("server_stream_on_close\n");
+        exit (-1);
 }
 
 static void server_stream_on_read (NetStream *stream, NetStreamConnection *connection, 
@@ -50,17 +68,4 @@ static void server_stream_on_read (NetStream *stream, NetStreamConnection *conne
         (void)connection;
         (void)buffer;
         (void)length;
-}
-
-static void server_on_connect (NetServer *server, int socket)
-{
-        (void)server;
-        (void)socket;
-}
-
-static void server_on_error (NetServer *server)
-{
-        printf ("server_on_error\n"); fflush (stdout);
-        exit (-1);
-        (void)server;
 }

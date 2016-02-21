@@ -9,11 +9,36 @@
 #include "server.h"
 #include "client.h"
 
-static bool try (void);
+static bool try (size_t connections, size_t packages, size_t from, size_t to);
 
 int main (int argc, char **argv)
 {
+        uint64_t connections;
+        uint64_t packages;
+        uint64_t size_from;
+        uint64_t size_to;
+
         AppArgument arguments[] = {
+                ARGUMENT_NAMED_UINT64 ("-c", 
+                                       "--connections",
+                                       1000,
+                                       true,
+                                       &connections,
+                                       "Number of concurrent connections"),
+                ARGUMENT_NAMED_UINT64 ("-p", 
+                                       "--packages",
+                                       1000,
+                                       true,
+                                       &packages,
+                                       "Number of packages per connection"),
+                ARGUMENT_ORDINAL_UINT64 (10,
+                                         false,
+                                         &size_from,
+                                         "Smallest package size"),
+                ARGUMENT_ORDINAL_UINT64 (10,
+                                         false,
+                                         &size_to,
+                                         "Largest package size"),
                 ARGUMENT_DEFAULT,
                 ARGUMENT_END
         };
@@ -26,7 +51,10 @@ int main (int argc, char **argv)
                 error_code (FunctionCall, 1);
                 return EXIT_FAILURE;
         }
-        if (!try ()) {
+        if (!try ((size_t)connections, 
+                  (size_t)packages, 
+                  (size_t)size_from, 
+                  (size_t)size_to)) {
                 error_code (FunctionCall, 2);
                 random_close ();
                 return EXIT_FAILURE;
@@ -35,9 +63,9 @@ int main (int argc, char **argv)
 	return EXIT_SUCCESS;
 }
 
-static bool try (void)
+static bool try (size_t connections, size_t packages, size_t from, size_t to)
 {
         server_start ();
-        client_start ();
+        client_start (connections, packages, from, to);
 	return app_events ();
 }
