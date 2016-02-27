@@ -30,20 +30,18 @@ static ThreadSignal connections_ready = THREAD_SIGNAL_INITIALIZER;
 static NetClientConnection *connections;
 static NetStreamConnection **streams;
 
-static size_t size_from;
-static size_t size_to;
-static size_t packages_max;
+static size_t package_size;
+static size_t seconds;
 
 static unsigned char *buffer;
 
-void client_start (size_t count, size_t packages, size_t from, size_t to)
+void client_start (size_t count, size_t _package_size, size_t _seconds)
 {
         connections_max = count;
-        packages_max = packages;
-        size_from = from;
-        size_to = to;
+        package_size = _package_size;
+        seconds = _seconds;
         
-        buffer = memory_create (sizeof (char) * to);
+        buffer = memory_create (sizeof (char) * package_size);
         connections = memory_create (sizeof (NetClientConnection) * count);
         streams = memory_create (sizeof (NetStreamConnection *) * count);
         client = net_client_create (&client_on_connect,
@@ -59,7 +57,6 @@ void client_start (size_t count, size_t packages, size_t from, size_t to)
 static void worker (Thread *thread)
 {
         size_t i;
-        size_t p;
 
         (void)connections_count;
         (void)thread;
@@ -69,21 +66,18 @@ static void worker (Thread *thread)
                 net_client_connect (client, &connections[i]);
         }
         thread_signal_wait (&connections_ready);
-        for (p = 0; p < packages_max; p++) {
+        while (true) {
                 for (i = 0; i < connections_max; i++) {
                         if (!net_stream_write (stream,
                                                streams[i],
                                                buffer,
-                                               size_to)) {
+                                               package_size)) {
                                 printf ("worker: net_stream_write\n");
                                 fflush (stdout);
                                 exit (-1);
                         }
                 }
         }
-        printf ("Done\n");
-        fflush (stdout);
-        exit (-1);
 }
 
 static void client_stream_on_add (NetStream *stream, NetStreamConnection *connection)

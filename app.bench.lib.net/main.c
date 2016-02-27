@@ -9,14 +9,13 @@
 #include "server.h"
 #include "client.h"
 
-static bool try (size_t connections, size_t packages, size_t from, size_t to);
+static bool try (size_t connections, size_t package_size, size_t duration);
 
 int main (int argc, char **argv)
 {
         uint64_t connections;
-        uint64_t packages;
-        uint64_t size_from;
-        uint64_t size_to;
+        uint64_t package_size;
+        uint64_t seconds;
 
         AppArgument arguments[] = {
                 ARGUMENT_NAMED_UINT64 ("-c", 
@@ -25,20 +24,18 @@ int main (int argc, char **argv)
                                        true,
                                        &connections,
                                        "Number of concurrent connections"),
-                ARGUMENT_NAMED_UINT64 ("-p", 
-                                       "--packages",
-                                       1000,
+                ARGUMENT_NAMED_UINT64 ("-p",
+                                       "--package-size",
+                                       1024,
                                        true,
-                                       &packages,
-                                       "Number of packages per connection"),
-                ARGUMENT_ORDINAL_UINT64 (10,
-                                         false,
-                                         &size_from,
-                                         "Smallest package size"),
-                ARGUMENT_ORDINAL_UINT64 (10,
-                                         false,
-                                         &size_to,
-                                         "Largest package size"),
+                                       &package_size,
+                                       "Package size"),
+                ARGUMENT_NAMED_UINT64 ("-s",
+                                       "--seconds",
+                                       10,
+                                       true,
+                                       &seconds,
+                                       "Duration of the test in seconds"),
                 ARGUMENT_DEFAULT,
                 ARGUMENT_END
         };
@@ -52,9 +49,8 @@ int main (int argc, char **argv)
                 return EXIT_FAILURE;
         }
         if (!try ((size_t)connections, 
-                  (size_t)packages, 
-                  (size_t)size_from, 
-                  (size_t)size_to)) {
+                  (size_t)package_size,
+                  (size_t)seconds)) {
                 error_code (FunctionCall, 2);
                 random_close ();
                 return EXIT_FAILURE;
@@ -63,9 +59,9 @@ int main (int argc, char **argv)
 	return EXIT_SUCCESS;
 }
 
-static bool try (size_t connections, size_t packages, size_t from, size_t to)
+static bool try (size_t connections, size_t package_size, size_t seconds)
 {
-        server_start ();
-        client_start (connections, packages, from, to);
+        server_start (connections, package_size, seconds);
+        client_start (connections, package_size, seconds);
 	return app_events ();
 }
