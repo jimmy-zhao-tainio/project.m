@@ -41,13 +41,14 @@ void server_start (size_t _connections, size_t _package_size, size_t _seconds)
         connections = _connections;
         package_size = _package_size;
 
+        stream = net_stream_create (&server_stream_on_add, 
+                                    &server_stream_on_close, 
+                                    &server_stream_on_read,
+                                    NULL);
         server = net_server_create ("127.0.0.1", 8888,
                                     &server_on_connect,
                                     &server_on_error,
                                     NULL);
-        stream = net_stream_create (&server_stream_on_add, 
-                                    &server_stream_on_close, 
-                                    &server_stream_on_read);
         (void)thread_create (&worker, NULL);
 }
 

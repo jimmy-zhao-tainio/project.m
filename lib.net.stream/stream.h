@@ -22,6 +22,7 @@ struct _NetStream
         NetStreamOnAdd on_add;
         NetStreamOnClose on_close;
         NetStreamOnRead on_read;
+        void *tag;
 };
 
 struct _NetStreamConnection
@@ -31,11 +32,13 @@ struct _NetStreamConnection
         ThreadSignal signal;
         bool closed;
         bool writing;
+        void *tag;
 };
 
 NetStream *net_stream_create (NetStreamOnAdd on_add, 
                               NetStreamOnClose on_close, 
-                              NetStreamOnRead on_read);
+                              NetStreamOnRead on_read,
+                              void *tag);
 void net_stream_destroy (NetStream *stream);
 bool net_stream_add (NetStream *stream, int socket);
 bool net_stream_write (NetStream *stream, 

@@ -44,13 +44,14 @@ void client_start (size_t count, size_t _package_size, size_t _seconds)
         buffer = memory_create (sizeof (char) * package_size);
         connections = memory_create (sizeof (NetClientConnection) * count);
         streams = memory_create (sizeof (NetStreamConnection *) * count);
+        stream = net_stream_create (&client_stream_on_add, 
+                                    &client_stream_on_close, 
+                                    &client_stream_on_read,
+                                    NULL);
         client = net_client_create (&client_on_connect,
                                     &client_on_connect_error,
                                     &client_on_error,
                                     NULL);
-        stream = net_stream_create (&client_stream_on_add, 
-                                    &client_stream_on_close, 
-                                    &client_stream_on_read);
         (void)thread_create (&worker, NULL);
 }
 

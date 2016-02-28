@@ -67,9 +67,11 @@ bool test_add (Test *test)
         // Create streams.
         CATCH (!(stream_server = net_stream_create (&server_stream_on_add, 
                                                     &server_stream_on_close, 
+                                                    NULL,
                                                     NULL)));
         CATCH (!(stream_client = net_stream_create (&client_stream_on_add, 
                                                     &client_stream_on_close, 
+                                                    NULL,
                                                     NULL)));
 
         // Add sockets to streams.

@@ -24,7 +24,8 @@ static bool signal_wait_write (NetStreamConnection *connection);
 
 NetStream *net_stream_create (NetStreamOnAdd on_add,
                               NetStreamOnClose on_close, 
-                              NetStreamOnRead on_read)
+                              NetStreamOnRead on_read,
+                              void *tag)
 {
         NetStream *stream;
 
@@ -44,6 +45,7 @@ NetStream *net_stream_create (NetStreamOnAdd on_add,
         stream->on_close = on_close;
         stream->on_read = on_read;
         stream->poll->pointer = stream;
+        stream->tag = tag;
         return stream;
 }
 
