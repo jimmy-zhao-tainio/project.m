@@ -3,14 +3,13 @@
 
 #include <lib.net.stream/stream.h>
 #include <lib.net.server/server.h>
+#include <lib.net.websocket/http.h>
 
 typedef struct _NetWebsocket NetWebsocket;
 typedef struct _NetWebsocketConnection NetWebsocketConnection;
 
 struct _NetWebsocketConnection {
-        char *request;
-        size_t size;
-        size_t index;
+        NetHttpReader reader;
 };
 
 struct _NetWebsocket {

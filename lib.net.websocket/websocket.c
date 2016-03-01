@@ -58,6 +58,8 @@ static void server_on_connect (NetServer *server, int socket)
 {
         NetWebsocket *websocket = server->tag;
 
+        
+
         if (!net_stream_add (websocket->stream, socket)) {
                 close (socket);
                 error (FunctionCall);
@@ -76,12 +78,15 @@ static void stream_on_add (NetStream *stream,
         
         if (!(websocket = memory_create (sizeof (NetStreamConnection)))) {
                 net_stream_close (stream, connection);
-                error (FunctionCall);
+                error_code (FunctionCall, 1);
                 return;
         }
-        websocket->request = NULL;
-        websocket->size = 0;
-        websocket->index = 0;
+        if (!net_http_reader_create (&websocket->reader)) {
+                memory_destroy (websocket);
+                net_stream_close (stream, connection);
+                error_code (FunctionCall, 2);
+                return;
+        }
         connection->tag = websocket;
 }
 
@@ -97,13 +102,15 @@ static void stream_on_read (NetStream *stream,
                             unsigned char *buffer, 
                             size_t length)
 {
-        size_t i;
+        NetWebsocketConnection *websocket = connection->tag;
+        NetHttpRequest request;
 
-        (void)stream;
-        (void)connection;
-        (void)buffer;
-        for (i = 0; i < length; i++) {
-                putchar (buffer[i]);
+        if (!net_http_reader_append (&websocket->reader, (char *)buffer, length)) {
+                net_stream_close (stream, connection);
+                error_code (FunctionCall, 1);
+                return;
         }
-        fflush (stdout);
+        while (net_http_request_begin (&websocket->reader, &request)) {
+                net_http_request_end (&websocket->reader, &request);
+        }
 }
