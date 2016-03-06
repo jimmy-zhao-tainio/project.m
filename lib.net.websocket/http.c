@@ -13,11 +13,10 @@ bool net_http_reader_create (NetHttpReader *reader)
                 error (FunctionCall);
                 return false;
         }
-        reader->request.begin = 0;
-        reader->request.end = 0;
         reader->size = 1024;
-        reader->index = 0;
+        reader->length = 0;
         reader->initialized = true;
+        reader->request_end = 0;
         return true;
 }
 
@@ -25,7 +24,7 @@ bool net_http_reader_append (NetHttpReader *reader, char *buffer, size_t length)
 {
         void *grown;
 
-        while (reader->index + length > reader->size) {
+        while (reader->length + length > reader->size) {
                 if (reader->size == 1024 * 2 * 2 * 2 * 2) {
                         error (FunctionCall);
                         return false;
@@ -37,8 +36,8 @@ bool net_http_reader_append (NetHttpReader *reader, char *buffer, size_t length)
                 reader->buffer = grown;
                 reader->size = reader->size * 2;
         }
-        (void)memcpy (reader->buffer + reader->index, buffer, length);
-        reader->index = reader->index + length;
+        (void)memcpy (reader->buffer + reader->length, buffer, length);
+        reader->length = reader->length + length;
         return true;
 }
 
@@ -52,19 +51,26 @@ void net_http_reader_destroy (NetHttpReader *reader)
         }
         reader->buffer = NULL;
         reader->size = 0;
-        reader->index = 0;
+        reader->length = 0;
         reader->initialized = false;
 }
 
-bool net_http_request_begin (NetHttpReader *reader, NetHttpRequest *request)
+bool net_http_request_begin (NetHttpReader *reader)
 {
-        (void)reader;
-        (void)request;
-        return true;
+        while (reader->request_end + 3 < reader->length) {
+                if (reader->buffer[reader->request_end + 0] == '\r' && 
+                    reader->buffer[reader->request_end + 1] == '\n' &&
+                    reader->buffer[reader->request_end + 2] == '\r' &&
+                    reader->buffer[reader->request_end + 3] == '\n') {
+                        reader->request_end += 4;
+                        return true;
+                }
+                reader->request_end += 1;
+        }
+        return false;
 }
 
-void net_http_request_end (NetHttpReader *reader, NetHttpRequest *request)
+void net_http_request_end (NetHttpReader *reader)
 {
         (void)reader;
-        (void)request;
 }

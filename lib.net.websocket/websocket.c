@@ -103,14 +103,13 @@ static void stream_on_read (NetStream *stream,
                             size_t length)
 {
         NetWebsocketConnection *websocket = connection->tag;
-        NetHttpRequest request;
 
         if (!net_http_reader_append (&websocket->reader, (char *)buffer, length)) {
                 net_stream_close (stream, connection);
                 error_code (FunctionCall, 1);
                 return;
         }
-        while (net_http_request_begin (&websocket->reader, &request)) {
-                net_http_request_end (&websocket->reader, &request);
+        while (net_http_request_begin (&websocket->reader)) {
+                net_http_request_end (&websocket->reader);
         }
 }
