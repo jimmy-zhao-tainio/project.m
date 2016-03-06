@@ -1,6 +1,7 @@
 #include <lib.core/error.h>
 #include <lib.core/memory.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "http.h"
 
@@ -72,5 +73,14 @@ bool net_http_request_begin (NetHttpReader *reader)
 
 void net_http_request_end (NetHttpReader *reader)
 {
-        (void)reader;
+        if (reader->length == reader->request_end) {
+                reader->request_end = 0;
+                reader->length = 0;
+                return;
+        }
+        memmove (reader->buffer, 
+                 reader->buffer + reader->request_end, 
+                 reader->length - reader->request_end);
+        reader->length = reader->length - reader->request_end;
+        reader->request_end = 0;
 }

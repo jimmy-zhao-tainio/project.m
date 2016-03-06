@@ -3,6 +3,7 @@
 #include <lib.core/threads.h>
 #include <lib.core/threads-signal.h>
 #include <lib.net.websocket/websocket.h>
+#include <lib.core/string.h>
 #include <unistd.h>
 #include <stdio.h>
 
@@ -79,5 +80,23 @@ bool test_http_request_begin (Test *test)
         CATCH (net_http_request_begin (&reader));
         CATCH (reader.request_end != 4);
         
+        PASS ();
+}
+
+bool test_http_request_end (Test *test)
+{
+        NetHttpReader reader;
+
+        TITLE ();
+        reader.buffer = string_create (" \r\n\r\nx");
+        reader.length = 6;
+        reader.request_end = 0;
+        CATCH (!net_http_request_begin (&reader));
+        CATCH (reader.request_end != 5);
+        net_http_request_end (&reader);
+        CATCH (reader.length != 1);
+        CATCH (reader.buffer[0] != 'x');
+        CATCH (reader.request_end != 0);
+        string_destroy (reader.buffer);
         PASS ();
 }
