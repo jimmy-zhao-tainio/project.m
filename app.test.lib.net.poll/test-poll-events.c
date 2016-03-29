@@ -81,12 +81,11 @@ bool test_poll_events_internal_write (Test *test)
 {
         NetPollEvents *events;
         NetPollEvent event;
-        NetPollConnection connection = { .closed = false, .write.lock = THREAD_LOCK_INITIALIZER };
+        NetPollConnection connection = { 0 };
 
         TITLE ();
         CATCH (!(events = net_poll_events_create ()));
         CATCH (!net_poll_events_push_write (events, &connection));
-        thread_unlock (&connection.write.lock);
         event = net_poll_events_next (events);
         CATCH (event.type != NET_POLL_INTERNAL_WRITE);
         CATCH (event.connection != &connection);

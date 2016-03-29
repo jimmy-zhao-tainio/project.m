@@ -2,6 +2,7 @@
 #include <lib.core/memory.h>
 #include <lib.core/threads.h>
 #include <lib.core/threads-signal.h>
+#include <lib.core/string.h>
 #include <unistd.h>
 #include <stdio.h>
 
@@ -11,15 +12,21 @@ static void server_on_connect (NetServer *server, int socket);
 static void server_on_error   (NetServer *server);
 
 static void stream_on_add (NetStream *stream, 
-                           NetStreamConnection *connection);
+                           NetStreamConnection *stream_connection);
 static void stream_on_close (NetStream *stream, 
-                             NetStreamConnection *connection);
+                             NetStreamConnection *stream_connection);
 static void stream_on_read (NetStream *stream, 
-                            NetStreamConnection *connection, 
+                            NetStreamConnection *stream_connection, 
                             unsigned char *buffer, 
                             size_t length);
+static void http_on_read (NetStream *stream, 
+                          NetStreamConnection *stream_connection, 
+                          unsigned char *buffer, 
+                          size_t length);
 
-NetWebsocket *net_websocket_create (void)
+static void upgrade_request (NetWebsocket *websocket, NetWebsocketConnection *connection);
+
+NetWebsocket *net_websocket_create (NetWebsocketOnRequest on_request)
 {
         NetWebsocket *websocket;
 
@@ -27,6 +34,7 @@ NetWebsocket *net_websocket_create (void)
                 error_code (FunctionCall, 1);
                 return NULL;
         }
+        websocket->on_request = on_request;
         if (!(websocket->stream = net_stream_create (&stream_on_add, 
                                                      &stream_on_close, 
                                                      &stream_on_read,
@@ -58,8 +66,6 @@ static void server_on_connect (NetServer *server, int socket)
 {
         NetWebsocket *websocket = server->tag;
 
-        
-
         if (!net_stream_add (websocket->stream, socket)) {
                 close (socket);
                 error (FunctionCall);
@@ -72,44 +78,87 @@ static void server_on_error (NetServer *server)
 }
 
 static void stream_on_add (NetStream *stream, 
-                           NetStreamConnection *connection)
+                           NetStreamConnection *stream_connection)
 {
-        NetWebsocketConnection *websocket;
+        NetWebsocketConnection *connection;
         
-        if (!(websocket = memory_create (sizeof (NetStreamConnection)))) {
-                net_stream_close (stream, connection);
+        if (!(connection = memory_create (sizeof (NetWebsocketConnection)))) {
+                net_stream_close (stream, stream_connection);
                 error_code (FunctionCall, 1);
                 return;
         }
-        if (!net_http_reader_create (&websocket->reader)) {
-                memory_destroy (websocket);
-                net_stream_close (stream, connection);
+        connection->upgraded = false;
+        if (!net_http_reader_create (&connection->reader)) {
+                memory_destroy (connection);
+                net_stream_close (stream, stream_connection);
                 error_code (FunctionCall, 2);
                 return;
         }
-        connection->tag = websocket;
+        stream_connection->tag = connection;
 }
 
 static void stream_on_close (NetStream *stream, 
-                             NetStreamConnection *connection)
+                             NetStreamConnection *stream_connection)
 {
         (void)stream;
-        (void)connection;
+        (void)stream_connection;
 }
 
 static void stream_on_read (NetStream *stream, 
-                            NetStreamConnection *connection, 
+                            NetStreamConnection *stream_connection, 
                             unsigned char *buffer, 
                             size_t length)
 {
-        NetWebsocketConnection *websocket = connection->tag;
+        NetWebsocketConnection *connection = stream_connection->tag;
 
-        if (!net_http_reader_append (&websocket->reader, (char *)buffer, length)) {
-                net_stream_close (stream, connection);
+        if (!connection->upgraded) {
+                http_on_read (stream, stream_connection, buffer, length);
+        }
+}
+
+static void http_on_read (NetStream *stream, 
+                          NetStreamConnection *stream_connection, 
+                          unsigned char *buffer, 
+                          size_t length)
+{
+        NetWebsocketConnection *connection = stream_connection->tag;
+        NetWebsocket *websocket = stream->tag;
+        size_t i;
+
+        for (i = 0; i < length; i++)
+                putchar (buffer[i]);
+
+        if (!net_http_reader_append (&connection->reader, (char *)buffer, length)) {
+                net_stream_close (stream, stream_connection);
                 error_code (FunctionCall, 1);
                 return;
         }
-        while (net_http_request_begin (&websocket->reader)) {
-                net_http_request_end (&websocket->reader);
+        while (net_http_request_begin (&connection->reader)) {
+                if (!net_http_set_method (&connection->reader) ||
+                    !net_http_set_uri (&connection->reader) ||
+                    !net_http_set_version (&connection->reader) ||
+                    !net_http_set_headers (&connection->reader)) {
+                        net_stream_close (stream, stream_connection);
+                        net_http_request_end (&connection->reader);
+                        continue;
+                }
+                upgrade_request (websocket, connection);
+                //websocket->on_request (websocket, connection);
+                net_http_request_end (&connection->reader);
+        } 
+}
+
+static void upgrade_request (NetWebsocket *websocket, NetWebsocketConnection *connection)
+{
+        char *key;
+
+        // Get Sec-WebSocket-Key header
+        if (!(key = net_http_get_header (&connection->reader, "Sec-WebSocket-Key"))) {
+                printf ("Failed to get Sec-WebSocket-Key\n");
+                return;
         }
+        printf ("Key: '%s'\n", key);
+        string_destroy (key);
+        (void)websocket;
+        (void)connection;
 }

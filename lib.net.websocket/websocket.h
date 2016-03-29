@@ -8,16 +8,21 @@
 typedef struct _NetWebsocket NetWebsocket;
 typedef struct _NetWebsocketConnection NetWebsocketConnection;
 
+typedef void (*NetWebsocketOnRequest) (NetWebsocket *websocket,
+                                       NetWebsocketConnection *connection);
+
 struct _NetWebsocketConnection {
         NetHttpReader reader;
+        bool upgraded;
 };
 
 struct _NetWebsocket {
         NetServer *server;
         NetStream *stream;
+        NetWebsocketOnRequest on_request;
 };
 
-NetWebsocket *net_websocket_create (void);
+NetWebsocket *net_websocket_create (NetWebsocketOnRequest on_request);
 void net_websocket_destroy (NetWebsocket *socket);
 
 #endif

@@ -6,7 +6,14 @@
 bool (*tests[]) (Test *test) =
 {
         &test_http_request_begin,
-        &test_http_request_end,
+        &test_http_request_end_1,
+        &test_http_request_end_2,
+        &test_http_set_method,
+        &test_http_set_uri,
+        &test_http_set_version,
+        &test_http_set_headers,
+        &test_http_get_header_1,
+        &test_http_get_header_2,
 	NULL
 };
 

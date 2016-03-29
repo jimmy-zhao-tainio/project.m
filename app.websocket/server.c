@@ -2,76 +2,42 @@
 #include <lib.core/memory.h>
 #include <lib.core/threads.h>
 #include <lib.core/threads-signal.h>
-#include <lib.net.stream/stream.h>
-#include <lib.net.server/server.h>
+#include <lib.net.websocket/websocket.h>
 #include <unistd.h>
 #include <stdio.h>
 
 #include "server.h"
 
-static void server_on_connect (NetServer *server, int socket);
-static void server_on_error   (NetServer *server);
+static NetWebsocket *websocket;
 
-static void server_stream_on_add (NetStream *stream, NetStreamConnection *connection);
-static void server_stream_on_close (NetStream *stream, NetStreamConnection *connection);
-static void server_stream_on_read (NetStream *stream, NetStreamConnection *connection, 
-                                   unsigned char *buffer, size_t length);
-
-static NetServer *server;
-static NetStream *stream;
+void on_request (NetWebsocket *websocket, NetWebsocketConnection *connection);
 
 void server_start (void)
 {
-        stream = net_stream_create (&server_stream_on_add, 
-                                    &server_stream_on_close, 
-                                    &server_stream_on_read,
-                                    NULL);
-        server = net_server_create ("127.0.0.1", 8888,
-                                    &server_on_connect,
-                                    &server_on_error,
-                                    NULL);
+        websocket = net_websocket_create (&on_request);
 }
 
-static void server_on_connect (NetServer *server, int socket)
-{
-        (void)server;
-        if (!net_stream_add (stream, socket)) {
-                printf ("server_on_connect\n");
-                exit (-1);
-        }
-}
-
-static void server_on_error (NetServer *server)
-{
-        (void)server;
-        printf ("server_on_error\n");
-        exit (-1);
-}
-
-static void server_stream_on_add (NetStream *stream, NetStreamConnection *connection)
-{
-        (void)stream;
-        (void)connection;
-}
-
-static void server_stream_on_close (NetStream *stream, NetStreamConnection *connection)
-{
-        (void)stream;
-        (void)connection;
-        printf ("server_stream_on_close\n");
-        exit (-1);
-}
-
-static void server_stream_on_read (NetStream *stream, NetStreamConnection *connection, 
-                                   unsigned char *buffer, size_t length)
+void on_request (NetWebsocket *websocket, NetWebsocketConnection *connection)
 {
         size_t i;
+        NetHttpReader reader = connection->reader;
 
-        (void)stream;
-        (void)connection;
-        (void)buffer;
-        for (i = 0; i < length; i++) {
-                putchar (buffer[i]);
+        printf ("uri: ");
+        for (i = 0; i < reader.request.uri_length; i++) {
+                putchar (reader.buffer[reader.request.uri_begin + i]);
         }
-        fflush (stdout);
+        printf ("\n");
+        printf ("version: ");
+        for (i = 0; i < reader.request.version_length; i++) {
+                putchar (reader.buffer[reader.request.version_begin + i]);
+        }
+        printf ("\n");
+        printf ("headers: ");
+        for (i = 0; i < reader.request.headers_length; i++) {
+                putchar (reader.buffer[reader.request.headers_begin + i]);
+        }
+        printf ("\n");
+
+        (void)websocket;
+        (void)connection;
 }
