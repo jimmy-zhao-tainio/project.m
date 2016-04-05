@@ -9,7 +9,8 @@
 #include <lib.compile/compile.h>
 
 static bool recursively_flatten_libraries       (CompileProject *project, Compile *compile);
-static bool recursively_flatten_libraries_inner (CompileProject *project, Compile *compile, Directory *library, Tree *append);
+static bool recursively_flatten_libraries_inner (CompileProject *project, Compile *compile, 
+                                                 Directory *library, Tree *append);
 static bool sort_libraries                      (CompileProject *project, Compile *compile);
 static bool included_libraries_are_up_to_date   (CompileProject *project, Compile *compile);
 
@@ -112,7 +113,8 @@ bool compile_project_prepare (CompileProject *project)
                     !string_begins_with (sub_directory->name, "plugin.")) {
 			continue;
 		}
-		if (!(compile = tree_search (project->directory_to_compile, (Object *)sub_directory))) {
+		if (!(compile = tree_search (project->directory_to_compile, 
+                                             (Object *)sub_directory))) {
                         error_code (InvalidOperation, 5);
 			return false;
 		}
@@ -125,15 +127,19 @@ bool compile_project_prepare (CompileProject *project)
 			return false;
 		}
 		while (tree_iterator_next (iterator)) {
-			if (string_equals (sub_directory->name, ((Directory *)iterator->key)->name)) {
+			if (string_equals (sub_directory->name, 
+                                           ((Directory *)iterator->key)->name)) {
 				continue;
 			}
-			if (!(sub_compile = tree_search (project->directory_to_compile, iterator->key))) {
+			if (!(sub_compile = tree_search (project->directory_to_compile, 
+                                                         iterator->key))) {
 				tree_iterator_destroy (iterator);
                                 error_code (InvalidOperation, 6);
 				return false;
 			}
-			if (!topological_set_edge (project->topological, (Object *)compile, (Object *)sub_compile)) {
+			if (!topological_set_edge (project->topological, 
+                                                   (Object *)compile, 
+                                                   (Object *)sub_compile)) {
 				tree_iterator_destroy (iterator);
 				error_code (FunctionCall, 8);
 				return false;
@@ -207,7 +213,9 @@ bool compile_project_execute (CompileProject *project, bool bootstrap)
 	return true;
 }
 
-bool compile_project_execute_with_directory_name (CompileProject *project, const char *directory_name, bool bootstrap)
+bool compile_project_execute_with_directory_name (CompileProject *project, 
+                                                  const char *directory_name, 
+                                                  bool bootstrap)
 {
 	Compile *compile = NULL;
 	ListNode *node;
@@ -252,7 +260,10 @@ static bool recursively_flatten_libraries (CompileProject *project, Compile *com
 		return false;
 	}
 	while (tree_iterator_next (iterator)) {
-		if (!recursively_flatten_libraries_inner (project, compile, (Directory *)iterator->key, append)) {
+		if (!recursively_flatten_libraries_inner (project, 
+                                                          compile, 
+                                                          (Directory *)iterator->key, 
+                                                          append)) {
 			tree_iterator_destroy (iterator);
 			tree_destroy (append);
 			return false;
@@ -276,7 +287,10 @@ static bool recursively_flatten_libraries (CompileProject *project, Compile *com
 	return true;
 }
 
-static bool recursively_flatten_libraries_inner (CompileProject *project, Compile *compile, Directory *library, Tree *append)
+static bool recursively_flatten_libraries_inner (CompileProject *project, 
+                                                 Compile *compile, 
+                                                 Directory *library, 
+                                                 Tree *append)
 {
 	Compile *compile_library;
 	TreeIterator *iterator;
@@ -290,7 +304,10 @@ static bool recursively_flatten_libraries_inner (CompileProject *project, Compil
 		return false;
 	}
 	while (tree_iterator_next (iterator)) {
-		if (!recursively_flatten_libraries_inner (project, compile, (Directory *)iterator->key, append)) {
+		if (!recursively_flatten_libraries_inner (project, 
+                                                          compile, 
+                                                          (Directory *)iterator->key, 
+                                                          append)) {
 			tree_iterator_destroy (iterator);
 			return false;
 		}

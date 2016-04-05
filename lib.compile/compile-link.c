@@ -1,10 +1,12 @@
 #include <lib.compile/compile-link.h>
 #include <lib.compile/compile-action.h>
 #include <lib.compile/compile-print.h>
+#include <lib.core/file-reader.h>
 #include <lib.core/string.h>
 
 static bool link_library_try (Compile *compile, char **lib_path, char **lib_filename);
 static int library_is_newer (Directory *directory, time_t modified);
+static char *link_flags (Directory *directory);
 
 bool compile_link_library (Compile *compile)
 {
@@ -23,13 +25,13 @@ bool compile_link_library (Compile *compile)
 
 static bool link_library_try (Compile *compile, char **lib_path, char **lib_filename)
 {
+	CompileAction *rm;
 	CompileAction *arch;
 	CompileAction *index;
 	TreeIterator *iterator;
 	ListNode *node;
 	File *lib_file;
-	const char *linker = "ar";
-	const char *flag = " rsc ";
+	const char *linker = "ar rsc ";
 	bool newer_library = false;
 	Directory *directory;
 	File *file;
@@ -51,7 +53,8 @@ static bool link_library_try (Compile *compile, char **lib_path, char **lib_file
 			return false;
 		}
 		while (!newer_library && tree_iterator_next (iterator)) {
-			switch (library_is_newer ((Directory *)iterator->key, lib_file->modified)) {
+			switch (library_is_newer ((Directory *)iterator->key, 
+                                                  lib_file->modified)) {
 			case -1:
 				tree_iterator_destroy (iterator);
 				return false;
@@ -69,6 +72,20 @@ static bool link_library_try (Compile *compile, char **lib_path, char **lib_file
 	    list_count (compile->actions) == 0) {
 		return true;
 	}
+        if (!(rm = compile_action_create (COMPILE_ACTION_SILENT))) {
+		compile_debug_allocate_memory ();
+		return false;
+	}
+	if (!list_append (compile->actions, rm)) {
+		compile_action_destroy (rm);
+		compile_debug_operation_failed ();
+		return false;
+	}
+	if (!(rm->command = string_create ("rm ")) || 
+	    !string_append (&rm->command, *lib_path)) {
+		compile_debug_allocate_memory ();
+		return false;
+	}
 	if (!(arch = compile_action_create (COMPILE_ACTION_ARCH))) {
 		compile_debug_allocate_memory ();
 		return false;
@@ -79,7 +96,6 @@ static bool link_library_try (Compile *compile, char **lib_path, char **lib_file
 		return false;
 	}
 	if (!(arch->command = string_create (linker)) || 
-	    !string_append (&arch->command, flag) || 
 	    !string_append (&arch->command, *lib_path) || 
 	    !string_append (&arch->command, " ")) {
 		compile_debug_allocate_memory ();
@@ -102,7 +118,9 @@ static bool link_library_try (Compile *compile, char **lib_path, char **lib_file
 			return false;
 		}
 	}
-	for (node = list_last (compile->libraries_sorted); node; node = list_previous (node)) {
+	for (node = list_last (compile->libraries_sorted); 
+             node;
+             node = list_previous (node)) {
 		directory = node->data;
 		if (!string_append (&arch->command, directory->path) || 
 	    	    !string_append (&arch->command, "/") || 
@@ -141,6 +159,7 @@ bool compile_link_application (Compile *compile)
 	CompileAction *action;
 	const char *linker = "gcc -pthread -lrt -rdynamic ";
 	const char *flag = "-O0 -o ";
+        char *dot_link;
 	bool newer_library = 0;
 	File *app_file;
 	File *file;
@@ -148,13 +167,15 @@ bool compile_link_application (Compile *compile)
 	TreeIterator *iterator;
 	Directory *directory;
 
-	if ((app_file = directory_find_file (compile->directory, compile->directory->name))) {
+	if ((app_file = directory_find_file (compile->directory, 
+                                             compile->directory->name))) {
 		if (!(iterator = tree_iterator_create (compile->libraries))) {
 			compile_debug_allocate_memory ();
 			return false;
 		}
 		while (!newer_library && tree_iterator_next (iterator)) {
-			switch (library_is_newer ((Directory *)iterator->key, app_file->modified)) {
+			switch (library_is_newer ((Directory *)iterator->key, 
+                                                  app_file->modified)) {
 			case -1:
 				tree_iterator_destroy (iterator);
 				return false;
@@ -193,7 +214,9 @@ bool compile_link_application (Compile *compile)
 			return false;
 		}
 	}
-	for (node = list_last (compile->libraries_sorted); node; node = list_previous (node)) {
+	for (node = list_last (compile->libraries_sorted); 
+             node; 
+             node = list_previous (node)) {
 		directory = node->data;
 		if (!string_append (&action->command, directory->path) || 
 	    	    !string_append (&action->command, "/") || 
@@ -204,15 +227,20 @@ bool compile_link_application (Compile *compile)
 			return false;
 		}
 	}
+        dot_link = link_flags (compile->directory);
 	if (!string_append (&action->command, flag) || 
 	    !string_append (&action->command, compile->directory->path) ||
 	    !string_append (&action->command, "/") ||
 	    !string_append (&action->command, compile->directory->name) ||
-            !string_append (&action->command, " -lm -ldl") ||
+            !string_append (&action->command, " -lm -ldl ") ||
+            (dot_link && !string_append (&action->command, dot_link)) ||
 	    !string_append (&action->command, " 1>/dev/null")) {
 		compile_debug_allocate_memory ();
 		return false;
 	}
+        if (dot_link) {
+                string_destroy (dot_link);
+        }
 	if (!(action->print = string_create ("[BUILD] ")) ||
 	    !string_append (&action->print, compile->directory->name) ||
 	    !string_append (&action->print, "\n")) {
@@ -227,6 +255,7 @@ bool compile_link_plugin (Compile *compile)
         CompileAction *action;
 	const char *linker = "gcc -lrt -shared ";
 	const char *flag = "-O0 -o ";
+        char *dot_link;
 	bool newer_library = 0;
 	File *so_file;
         char *so_file_name;
@@ -250,7 +279,8 @@ bool compile_link_plugin (Compile *compile)
 			return false;
 		}
 		while (!newer_library && tree_iterator_next (iterator)) {
-			switch (library_is_newer ((Directory *)iterator->key, so_file->modified)) {
+			switch (library_is_newer ((Directory *)iterator->key, 
+                                                  so_file->modified)) {
 			case -1:
 				tree_iterator_destroy (iterator);
 				return false;
@@ -292,7 +322,9 @@ bool compile_link_plugin (Compile *compile)
 			return false;
 		}
 	}
-	for (node = list_last (compile->libraries_sorted); node; node = list_previous (node)) {
+	for (node = list_last (compile->libraries_sorted); 
+             node; 
+             node = list_previous (node)) {
 		directory = node->data;
 		if (!string_append (&action->command, directory->path) || 
 	    	    !string_append (&action->command, "/") || 
@@ -303,15 +335,20 @@ bool compile_link_plugin (Compile *compile)
 			return false;
 		}
 	}
+        dot_link = link_flags (compile->directory);
 	if (!string_append (&action->command, flag) || 
 	    !string_append (&action->command, compile->directory->path) ||
 	    !string_append (&action->command, "/") ||
 	    !string_append (&action->command, compile->directory->name) ||
-	    !string_append (&action->command, ".so -lm -lSDL2 -lX11") ||
+	    !string_append (&action->command, ".so -lm -lSDL2 -lX11 ") ||
+            (dot_link && !string_append (&action->command, dot_link)) ||
 	    !string_append (&action->command, " 1>/dev/null")) {
 		compile_debug_allocate_memory ();
 		return false;
 	}
+        if (dot_link) {
+                string_destroy (dot_link);
+        }
 	if (!(action->print = string_create ("[BUILD] ")) ||
 	    !string_append (&action->print, compile->directory->name) ||
 	    !string_append (&action->print, "\n")) {
@@ -350,4 +387,29 @@ static int library_is_newer (Directory *directory, time_t modified)
 		return 1;
 	}
 	return 0;
+}
+
+static char *link_flags (Directory *directory)
+{
+        File *file;
+        FileReader *reader;
+        char *flags;
+        size_t length;
+
+        if (!(file = directory_find_file (directory, ".link"))) {
+                return NULL;
+        }
+        if (!(reader = file_reader_create (file->path))) {
+                return NULL;
+        }
+        if (!(flags = string_create ((const char *)reader->map))) {
+		compile_debug_allocate_memory ();
+                return NULL;
+        }
+        length = string_length (flags);
+        if (length > 0 && flags[length - 1] == '\n') {
+                flags[length - 1] = '\0';
+        }
+        file_reader_destroy (reader);
+        return flags;
 }

@@ -10,7 +10,8 @@ CompileAction *compile_action_create (CompileActionType type)
 	if (type != COMPILE_ACTION_CC &&
 	    type != COMPILE_ACTION_ARCH &&
 	    type != COMPILE_ACTION_INDEX &&
-	    type != COMPILE_ACTION_BUILD) {
+	    type != COMPILE_ACTION_BUILD &&
+            type != COMPILE_ACTION_SILENT) {
 		compile_debug_invalid_arguments ();
 		return NULL;
 	}

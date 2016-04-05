@@ -15,7 +15,11 @@ static bool read_included_headers (File *file, List *headers_local, List *header
 static bool link_local_header (Compile *compile, File *file, char *header);
 static bool link_library_header (Compile *compile, File *file, char *header);
 static bool compile_o_file (Compile *compile, File *file, const char *project_path);
-static bool compile_o_file_try (Compile *compile, File *file, char **c_path, char **c_name, const char *project_path);
+static bool compile_o_file_try (Compile *compile, 
+                                File *file, 
+                                char **c_path, 
+                                char **c_name, 
+                                const char *project_path);
 static int o_file_is_latest (Compile *compile, File *file);
 
 Compile *compile_create (Directory *project, Directory *directory)
@@ -178,15 +182,19 @@ bool compile_execute (Compile *compile, bool bootstrap)
 	for (node = list_first (compile->actions); node; node = list_next (node)) {
 		action = node->data;
                 if (!bootstrap) {
-                        compile_print ("\t");
-                        compile_print (action->print);
+                        if (action->type != COMPILE_ACTION_SILENT) {
+                                compile_print ("\t");
+                                compile_print (action->print);
+                        }
                         if (system (action->command)) {
                                 return false;
                         }
                 }
                 else {
-                        compile_print (action->command);
-                        compile_print ("\n");
+                        if (action->type != COMPILE_ACTION_SILENT) {
+                                compile_print (action->command);
+                                compile_print ("\n");
+                        }
                 }
 	}
 	return true;
@@ -569,7 +577,11 @@ static bool compile_o_file (Compile *compile, File *file, const char *project_pa
 	return result;
 }
 
-static bool compile_o_file_try (Compile *compile, File *file, char **c_path, char **c_name, const char *project_path)
+static bool compile_o_file_try (Compile *compile, 
+                                File *file, 
+                                char **c_path, 
+                                char **c_name, 
+                                const char *project_path)
 {
 	CompileAction *action;
 

@@ -3,6 +3,7 @@
 #include <lib.core/threads.h>
 #include <lib.core/threads-signal.h>
 #include <lib.core/string.h>
+#include <openssl/sha.h>
 #include <unistd.h>
 #include <stdio.h>
 
@@ -150,14 +151,23 @@ static void http_on_read (NetStream *stream,
 
 static void upgrade_request (NetWebsocket *websocket, NetWebsocketConnection *connection)
 {
+        unsigned char hash[SHA_DIGEST_LENGTH];
         char *key;
+        size_t i;
 
         // Get Sec-WebSocket-Key header
         if (!(key = net_http_get_header (&connection->reader, "Sec-WebSocket-Key"))) {
                 printf ("Failed to get Sec-WebSocket-Key\n");
                 return;
         }
-        printf ("Key: '%s'\n", key);
+        if (!string_append (&key, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")) {
+                return;
+        }
+        SHA1 ((unsigned char *)key, string_length (key), hash);
+        printf ("Key: '%s', hash: '", key);
+        for (i = 0; i < SHA_DIGEST_LENGTH; i++)
+                putchar ((char)hash[i]);
+        printf ("'\n");
         string_destroy (key);
         (void)websocket;
         (void)connection;
