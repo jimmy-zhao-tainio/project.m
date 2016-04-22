@@ -33,9 +33,9 @@ NetStream *net_stream_create (NetStreamOnAdd on_add,
                 error_code (FunctionCall, 1);
                 return NULL;
         }
-        if (!(stream->poll = net_poll_create (&poll_on_monitor, 
-                                              &poll_on_close, 
-                                              &poll_on_read, 
+        if (!(stream->poll = net_poll_create (&poll_on_monitor,
+                                              &poll_on_close,
+                                              &poll_on_read,
                                               &poll_on_write))) {
                 memory_destroy (stream);
                 error_code (FunctionCall, 2);

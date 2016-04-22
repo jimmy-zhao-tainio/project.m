@@ -10,11 +10,25 @@
 
 static NetWebsocket *websocket;
 
+void on_add (NetWebsocket *websocket, NetWebsocketConnection *connection);
+void on_close (NetWebsocket *websocket, NetWebsocketConnection *connection);
 void on_request (NetWebsocket *websocket, NetWebsocketConnection *connection);
 
 void server_start (void)
 {
-        websocket = net_websocket_create (&on_request);
+        websocket = net_websocket_create (&on_add, &on_close, &on_request);
+}
+
+void on_add (NetWebsocket *websocket, NetWebsocketConnection *connection)
+{
+        (void)websocket;
+        (void)connection;
+}
+
+void on_close (NetWebsocket *websocket, NetWebsocketConnection *connection)
+{
+        (void)websocket;
+        (void)connection;
 }
 
 void on_request (NetWebsocket *websocket, NetWebsocketConnection *connection)

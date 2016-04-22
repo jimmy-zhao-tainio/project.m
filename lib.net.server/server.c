@@ -128,7 +128,8 @@ void net_server_destroy (NetServer *server)
         }
         if (server->epoll) {
                 if (server->socket != -1) {
-                        net_server_epoll_monitor_stop (server->epoll, server->socket);
+                        net_server_epoll_monitor_stop (server->epoll, 
+                                                       server->socket);
                 }
                 net_server_epoll_deallocate (server->epoll);
         }

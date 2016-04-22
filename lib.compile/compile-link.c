@@ -81,7 +81,7 @@ static bool link_library_try (Compile *compile, char **lib_path, char **lib_file
 		compile_debug_operation_failed ();
 		return false;
 	}
-	if (!(rm->command = string_create ("rm ")) || 
+	if (!(rm->command = string_create ("rm -f ")) || 
 	    !string_append (&rm->command, *lib_path)) {
 		compile_debug_allocate_memory ();
 		return false;

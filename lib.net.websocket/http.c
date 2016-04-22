@@ -162,10 +162,13 @@ bool net_http_set_headers (NetHttpReader *reader)
         headers_end = reader->request.headers_begin;
         while (true) {
                 // Check for empty line.
-                if (is_line_break (reader->buffer, reader->request.end, headers_end)) {
+                if (is_line_break (reader->buffer, 
+                                   reader->request.end, 
+                                   headers_end)) {
                         headers_end++; // Position '\n' in '\r\n'.
                         reader->request.headers_length = 
-                                (headers_end - reader->request.headers_begin) + 1;
+                                (headers_end - 
+                                 reader->request.headers_begin) + 1;
                         return true;
                 }
                 // Find ":"
