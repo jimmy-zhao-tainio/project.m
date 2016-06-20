@@ -26,6 +26,11 @@ struct _NetWebsocketTest {
         bool AddError1;
         bool AddError2;
         bool HttpOnReadError;
+        bool UpgradeError1;
+        bool UpgradeError2;
+        bool UpgradeError3;
+        bool UpgradeError4;
+        bool UpgradeError5;
 };
 
 struct _NetWebsocket {

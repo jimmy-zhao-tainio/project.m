@@ -2,6 +2,7 @@
 #include <lib.core/error.h>
 #include <sys/epoll.h>
 #include <unistd.h>
+#include <stdio.h>
 
 void worker_internal_close (NetPoll *poll, NetPollConnection *connection)
 {

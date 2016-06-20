@@ -31,6 +31,7 @@ void      error_reset (void);
 size_t    error_count (void);
 ErrorItem error_at (size_t index);
 void      error_silent (bool state);
+void      error_print_all (void);
 
 #define error(e) error_add (__FILE__, __func__, __LINE__, 0, Error##e)
 #define error_code(e,c) error_add (__FILE__, __func__, __LINE__, c, Error##e)

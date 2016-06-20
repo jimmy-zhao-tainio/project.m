@@ -30,13 +30,13 @@ static ThreadSignal client_close_signal = THREAD_SIGNAL_INITIALIZER;
 static ThreadSignal server_write_signal = THREAD_SIGNAL_INITIALIZER;
 static ThreadSignal client_read_signal = THREAD_SIGNAL_INITIALIZER;
 
-static NetPollConnection poll_client = { .closed = false };
-static NetPollConnection poll_server = { .closed = false };
+static NetPollConnection poll_client;
+static NetPollConnection poll_server;
 
 static void poll_on_monitor (NetPoll *poll, NetPollConnection *connection, bool success);
 static void poll_on_read    (NetPoll *poll, NetPollConnection *connection, unsigned char *buffer, size_t length);
 static void poll_on_close   (NetPoll *poll, NetPollConnection *connection, bool success);
-static void poll_on_write   (NetPoll *poll, NetPollConnection *connection, unsigned char *buffer, size_t length);
+static void poll_on_write   (NetPoll *poll, NetPollConnection *connection, unsigned char *buffer, size_t length, bool success);
 
 bool test_poll_write_1 (Test *test)
 {
@@ -47,6 +47,8 @@ bool test_poll_write_1 (Test *test)
         unsigned char *buffer = (unsigned char *)"X";
 
         TITLE ();
+        poll_client.closed = false;
+        poll_server.closed = false;
         CATCH (!(server = net_server_create ("127.0.0.1", 8888,
                                              &server_on_connect,
                                              &server_on_error,
@@ -144,12 +146,13 @@ static void poll_on_close (NetPoll *poll, NetPollConnection *connection, bool su
         }
 }
 
-static void poll_on_write (NetPoll *poll, NetPollConnection *connection, unsigned char *buffer, size_t length)
+static void poll_on_write (NetPoll *poll, NetPollConnection *connection, unsigned char *buffer, size_t length, bool success)
 {
         (void)poll;
         (void)connection;
         (void)buffer;
         (void)length;
+        (void)success;
         thread_signal (&server_write_signal);
 }
 

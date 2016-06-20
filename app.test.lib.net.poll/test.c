@@ -4,6 +4,7 @@
 #include "test-poll-queue.h"
 #include "test-poll-events.h"
 #include "test-poll.h"
+#include "test-poll-internal-loop.h"
 #include "test-poll-monitor-1.h"
 #include "test-poll-monitor-2.h"
 #include "test-poll-close-1.h"

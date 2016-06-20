@@ -25,7 +25,7 @@ bool test_memory_create_overflow_1 (Test *test)
 	CATCH (memory_create (SIZE_MAX - (sizeof (size_t) - 1)));
 	CATCH (error_count () != 1);
 	CATCH (error_at (0).error != ErrorOverflow);
-	CATCH (error_at (0).line != 25);
+	CATCH (error_at (0).code != 1);
 	PASS ();
 }
 
@@ -39,7 +39,7 @@ bool test_memory_create_overflow_2 (Test *test)
 	CATCH (memory_create (1));
 	CATCH (error_count () != 1);
 	CATCH (error_at (0).error != ErrorOverflow);
-	CATCH (error_at (0).line != 29);
+	CATCH (error_at (0).code != 2);
 	memory_destroy (memory);
 	PASS ();
 }
@@ -57,7 +57,7 @@ bool test_memory_create_overflow_3 (Test *test)
 	CATCH (memory_create (1));
 	CATCH (error_count () != 1);
 	CATCH (error_at (0).error != ErrorOverflow);
-	CATCH (error_at (0).line != 34);
+	CATCH (error_at (0).code != 3);
 	PASS ();
 }
 
@@ -188,7 +188,7 @@ bool test_memory_grow_overflow_1 (Test *test)
 	CATCH ((memory_grow (memory, SIZE_MAX - 7)));
 	CATCH (error_count () != 1);
 	CATCH (error_at (0).error != ErrorOverflow);
-	CATCH (error_at (0).line != 83);
+	CATCH (error_at (0).code != 1);
 	memory_destroy (memory);
 	PASS ();
 }
@@ -206,7 +206,7 @@ bool test_memory_grow_overflow_2 (Test *test)
 	CATCH (memory_grow (memory2, 2));
 	CATCH (error_count () != 1);
 	CATCH (error_at (0).error != ErrorOverflow);
-	CATCH (error_at (0).line != 87);
+	CATCH (error_at (0).code != 2);
 	memory_destroy (memory1);
 	memory_destroy (memory2);
 	PASS ();
@@ -225,7 +225,7 @@ bool test_memory_grow_overflow_3 (Test *test)
 	CATCH (memory_grow (memory, 2));
 	CATCH (error_count () != 1);
 	CATCH (error_at (0).error != ErrorOverflow);
-	CATCH (error_at (0).line != 91);
+	CATCH (error_at (0).code != 3);
 	memory_destroy (memory);
 	PASS ();
 }

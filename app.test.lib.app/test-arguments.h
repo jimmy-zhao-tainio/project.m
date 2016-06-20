@@ -20,6 +20,7 @@ bool test_app_arguments_named_function_call_2 (Test *test);
 bool test_app_arguments_named_invalid_uint64_value (Test *test);
 bool test_app_arguments_named_missing_string_value (Test *test);
 bool test_app_arguments_named_unknown_argument (Test *test);
+bool test_app_arguments_named_uint64_default (Test *test);
 bool test_app_arguments_ordinal_function_call_1 (Test *test);
 bool test_app_arguments_ordinal_invalid_integer_value (Test *test);
 bool test_app_arguments_ordinal_function_call_2 (Test *test);

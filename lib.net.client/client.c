@@ -25,6 +25,8 @@ NetClient *net_client_create (NetClientOnConnect on_connect,
                               void *tag)
 {
         NetClient *client;
+
+        signal (SIGPIPE, SIG_IGN);
         if (!on_connect) {
                 error_code (InvalidArgument, 1);
                 return NULL;

@@ -149,6 +149,18 @@ NetPollEvent net_poll_events_next (NetPollEvents *events)
         return event;
 }
 
+void net_poll_events_clear (NetPollEvents *events, NetPollConnection *connection)
+{
+        int i;
+
+        for (i = 0; i < events->event_count; i++) {
+                if (events->events[i].data.ptr != connection) {
+                        continue;
+                }
+                events->events[i].events = 0;
+        }
+}
+
 static bool read_events (NetPollEvents *events)
 {
         // Loop here to retry when interrupted by EINTR.

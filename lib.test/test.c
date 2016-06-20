@@ -19,6 +19,7 @@
 static void print_catch (Test *test);
 static void print_leak (Test *test);
 static void print_pass (Test *test);
+static void print_catchpass (Test *test);
 static void print_memory_size (void);
 static bool test_memory_leak (Test *test);
 static void reset (void);
@@ -32,7 +33,24 @@ bool test_array (int argc, char **argv, bool (*tests[]) (Test *test))
 	size_t test_ok = 0;
 	size_t test_memory_ok = 0;
         size_t i;
+        uint64_t repeat;
+        uint64_t r;
+        bool repeat_ok;
+        bool stop_on_fail;
+
         AppArgument arguments[] = {
+                ARGUMENT_NAMED_UINT64 ("-r", 
+                                       "--repeat", 
+                                       1, 
+                                       false, 
+                                       &repeat, 
+                                       "Repeat tests n times."),
+                ARGUMENT_NAMED_BOOLEAN ("-s", 
+                                        "--stop-on-fail", 
+                                        false, 
+                                        false, 
+                                        &stop_on_fail, 
+                                        "Stops at first test failing."),
                 ARGUMENT_DEFAULT,
                 ARGUMENT_END
         };
@@ -74,19 +92,37 @@ bool test_array (int argc, char **argv, bool (*tests[]) (Test *test))
                 string_destroy (path_post_sh);
                 return EXIT_FAILURE;
         }
-	while (tests[test_count]) {
-		reset ();
-		test.title = NULL;
-		test.line_catch = 0;
-		test_ok = tests[test_count] (&test);
-		test_memory_ok = test_memory_leak (&test_memory);
-        	if (test_ok && test_memory_ok) {
+        while (tests[test_count]) {
+                repeat_ok = true;
+                for (r = 0; repeat_ok && r < repeat; r++) {
+                        reset ();
+                        test.title = NULL;
+                        test.line_catch = 0;
+                        test_ok = tests[test_count] (&test);
+                        test_memory_ok = test_memory_leak (&test_memory);
+                        if (!test_ok || !test_memory_ok) {
+                                if (stop_on_fail) {
+                                        if (test_memory_ok) {
+                                                print_catch (&test);
+                                        }
+                                        else {
+                                                print_leak (&test);
+                                                print_memory_size ();
+                                        }
+                                        error_print_all ();
+                                        
+                                        return EXIT_FAILURE;
+                                }
+                                repeat_ok = false;
+                        }
+                }
+                if (repeat_ok) {
                         tests[test_count] = NULL;
-		        test_count_ok++;
-		        print_pass (&test);
-        	}
-		test_count++;
-	}
+                        test_count_ok++;
+                        print_pass (&test); 
+                }
+                test_count++;
+        }
         if (test_count_ok != test_count) {
                 /* Rerun failed tests with errors printed. */
                 printf ("\n");
@@ -101,7 +137,7 @@ bool test_array (int argc, char **argv, bool (*tests[]) (Test *test))
                         test_memory_ok = test_memory_leak (&test_memory);
                         if (test_ok) {
                                 if (test_memory_ok) {
-                                        print_pass (&test);
+                                        print_catchpass (&test);
                                 }
                                 else {
                                         print_leak (&test);
@@ -152,6 +188,12 @@ static void print_leak (Test *test)
 static void print_pass (Test *test)
 {
 	printf ("\033[1;32m[PASS]\033[0m %s\n", test->title);
+	fflush (stdout);
+}
+
+static void print_catchpass (Test *test)
+{
+	printf ("\033[1;35m[SECOND TRY PASS]\033[0m %s: %lu\n", test->title, test->line_catch);
 	fflush (stdout);
 }
 

@@ -30,5 +30,6 @@ bool     net_poll_events_push_write   (NetPollEvents *events, NetPollConnection 
 bool     net_poll_events_push_exit    (NetPollEvents *events);
 
 NetPollEvent net_poll_events_next (NetPollEvents *events);
+void net_poll_events_clear (NetPollEvents *events, NetPollConnection *connection);
 
 #endif

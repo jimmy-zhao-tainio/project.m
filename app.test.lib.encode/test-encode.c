@@ -24,9 +24,13 @@ bool test_encode_base64 (Test *test)
         CATCH (encode_base64 ("abc", 3));
         CATCH (error_at (0).error != ErrorFunctionCall);
         memory_commit_limit (ULLONG_MAX);
-        CATCH (!(base64 = encode_base64 ("any carnal pleasure.", 20)));
-        CATCH (!string_equals (base64, "YW55IGNhcm5hbCBwbGVhc3VyZS4="));
-        string_destroy (base64);
+
+        for (i = 0; i < 1000; i++) {
+                CATCH (!(base64 = encode_base64 ("any carnal pleasure.", 20)));
+                CATCH (!string_equals (base64, "YW55IGNhcm5hbCBwbGVhc3VyZS4="));
+                string_destroy (base64);
+        }
+
         CATCH (!random_open ());
         for (i = 0; i < 1000; i++) {
                 CATCH (!random_bytes ((unsigned char *)&bytes, 1024 * 16));

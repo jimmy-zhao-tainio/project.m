@@ -54,6 +54,8 @@ bool test_write (Test *test)
         size_t i;
 
         TITLE ();
+        write_count = 2000;
+        read_count = 0;
         CATCH (!(server = net_server_create ("127.0.0.1", 8888,
                                              &server_on_connect,
                                              &server_on_error,

@@ -2,6 +2,7 @@
 #include <lib.core/memory.h>
 #include <lib.core/error.h>
 #include <lib.core/string.h>
+#include <string.h>
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <openssl/buffer.h>
@@ -40,9 +41,13 @@ char *encode_base64 (const char *buffer, size_t length)
         }
 	BIO_get_mem_ptr (s_mem, &pointer);
 	BIO_set_close (s_mem, BIO_NOCLOSE);
-        if (!(encoded = string_create (pointer->data))) {
+        if (!(encoded = string_create_with_size (pointer->length + 1))) {
+	        BIO_free_all (s_mem);
                 error (FunctionCall);
+                return NULL;
         }
+        (void)memmove (encoded, pointer->data, pointer->length);
+        encoded[pointer->length] = '\0';
 	BIO_free_all (s_mem);
 	return encoded;
 }

@@ -34,7 +34,6 @@ static ThreadLock lock = THREAD_LOCK_INITIALIZER;
                 fflush (stderr); \
         }
 
-
 void error_add (const char *file, const char *function, int line, int code, Error error)
 {
 	size_t i = ERROR_ITEMS_MAX;
@@ -128,6 +127,19 @@ void error_silent (bool state)
         LOCK ();
         silent = state;
         UNLOCK ();
+}
+
+void error_print_all (void)
+{
+        bool silent_copy = silent;
+        size_t i, m;
+
+        m = i = error_count ();
+        while (i-- > 0) {
+                print_item (error_at (i), m - i);
+        }
+        error_silent (false);
+        error_silent (silent_copy);
 }
 
 static void print_item (ErrorItem item, uint64_t item_count)

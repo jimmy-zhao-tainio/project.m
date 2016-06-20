@@ -6,6 +6,7 @@
 #include <lib.core/string.h>
 #include <lib.core/convert.h>
 #include <lib.core/print.h>
+#include <stdio.h>
 
 static bool argument_named (int argc, char **argv, int *argi, AppArgument *arguments);
 static bool argument_ordinal (int argc, char **argv, int *argi, AppArgument *arguments, int *order);

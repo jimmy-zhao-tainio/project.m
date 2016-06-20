@@ -12,22 +12,23 @@
 
 static void server_on_connect (NetServer *server, int socket);
 static void server_on_error   (NetServer *server);
-static ThreadSignal server_signal = THREAD_SIGNAL_INITIALIZER;
-static int server_socket;
 
 static void client_on_connect       (NetClient *client, NetClientConnection *connection);
 static void client_on_connect_error (NetClient *client, NetClientConnection *connection);
 static void client_on_error         (NetClient *client);
-static int  client_socket;
 
 static void on_monitor (NetPoll *poll, NetPollConnection *connection, bool success);
-
 static void on_read (NetPoll *poll, NetPollConnection *connection, unsigned char *buffer, size_t length);
-static ThreadSignal read_signal = THREAD_SIGNAL_INITIALIZER;
-static bool read_success;
-
 static void on_close (NetPoll *poll, NetPollConnection *connection, bool success);
+
+static ThreadSignal server_signal = THREAD_SIGNAL_INITIALIZER;
+static ThreadSignal read_signal = THREAD_SIGNAL_INITIALIZER;
 static ThreadSignal close_signal = THREAD_SIGNAL_INITIALIZER;
+
+static int server_socket;
+static int client_socket;
+
+static bool read_success;
 static bool close_success;
 
 bool test_poll_on_read_1 (Test *test)
@@ -40,6 +41,7 @@ bool test_poll_on_read_1 (Test *test)
 
         TITLE ();
         read_success = false;
+        close_success = false;
         CATCH (!(server = net_server_create ("127.0.0.1", 8888,
                                              &server_on_connect,
                                              &server_on_error,

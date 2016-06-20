@@ -22,6 +22,7 @@ void net_poll_worker (Thread *thread)
                 }
                 if (event.type == NET_POLL_INTERNAL_CLOSE) {
                         worker_internal_close (poll, event.connection);
+                        net_poll_events_clear (poll->events, event.connection);
                         continue;
                 }
                 if (event.type == NET_POLL_INTERNAL_WRITE) {
@@ -30,6 +31,7 @@ void net_poll_worker (Thread *thread)
                 }
                 if (event.type == NET_POLL_CLOSE) {
                         worker_close (poll, event.connection);
+                        net_poll_events_clear (poll->events, event.connection);
                         continue;
                 }
                 if (event.type == (NET_POLL_READ | NET_POLL_WRITE)) {

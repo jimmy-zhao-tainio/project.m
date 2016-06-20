@@ -2,6 +2,7 @@
 #include <lib.net.poll/worker.h>
 #include <lib.core/memory.h>
 #include <lib.core/error.h>
+#include <stdio.h>
 
 NetPoll *net_poll_create (NetPollOnMonitor on_monitor,
                           NetPollOnClose on_close,
@@ -67,5 +68,17 @@ bool net_poll_write (NetPoll *poll, NetPollConnection *connection,
         connection->write.buffer = buffer;
         connection->write.length = length;
         connection->write.position = 0;
+        connection->write.flags = 0;
+        return net_poll_events_push_write (poll->events, connection);
+}
+
+bool net_poll_write_flags (NetPoll *poll, NetPollConnection *connection,
+                           unsigned char *buffer, size_t length,
+                           NetPollFlag flags)
+{
+        connection->write.buffer = buffer;
+        connection->write.length = length;
+        connection->write.position = 0;
+        connection->write.flags = flags;
         return net_poll_events_push_write (poll->events, connection);
 }

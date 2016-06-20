@@ -28,7 +28,7 @@ bool net_http_reader_append (NetHttpReader *reader, char *buffer, size_t length)
 
         while (reader->length + length > reader->size) {
                 if (reader->size == 1024 * 2 * 2 * 2 * 2) {
-                        error (FunctionCall);
+                        error (InvalidOperation);
                         return false;
                 }
                 if (!(grown = memory_grow (reader->buffer, reader->size * 2))) {

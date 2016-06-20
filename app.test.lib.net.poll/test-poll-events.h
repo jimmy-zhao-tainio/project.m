@@ -9,6 +9,5 @@ bool test_poll_events_create (Test *test);
 bool test_poll_events_internal_monitor (Test *test);
 bool test_poll_events_internal_close (Test *test);
 bool test_poll_events_internal_write (Test *test);
-bool test_poll_events_internal_loop (Test *test);
 
 #endif

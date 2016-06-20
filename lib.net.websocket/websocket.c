@@ -25,6 +25,10 @@ static void http_on_read (NetStream *stream,
                           NetStreamConnection *stream_connection, 
                           unsigned char *buffer, 
                           size_t length);
+static void frame_on_read (NetStream *stream, 
+                           NetStreamConnection *stream_connection, 
+                           unsigned char *buffer, 
+                           size_t length);
 
 static bool upgrade_request (NetWebsocket *websocket, 
                              NetWebsocketConnection *connection,
@@ -143,18 +147,12 @@ static void stream_on_read (NetStream *stream,
                             size_t length)
 {
         NetWebsocketConnection *connection = stream_connection->tag;
-        size_t i;
 
         if (!connection->upgraded) {
                 http_on_read (stream, stream_connection, buffer, length);
         }
         else {
-                printf ("[");
-                for (i = 0; i < length; i++) {
-                        putchar (buffer[i]);
-                }
-                printf ("]\n");
-                fflush (stdout);
+                frame_on_read (stream, stream_connection, buffer, length);
         }
 }
 
@@ -184,7 +182,12 @@ static void http_on_read (NetStream *stream,
                         error_code (FunctionCall, 2);
                         continue;
                 }
-                upgrade_request (websocket, connection, stream_connection);
+                if (!upgrade_request (websocket, connection, stream_connection)) {
+                        net_stream_close (stream, stream_connection);
+                        net_http_request_end (&connection->reader);
+                        error_code (FunctionCall, 3);
+                        continue;
+                }
                 net_http_request_end (&connection->reader);
         } 
 }
@@ -199,22 +202,27 @@ static bool upgrade_request (NetWebsocket *websocket,
         char *response;
 
         // Get Sec-WebSocket-Key header
-        if (!(key = net_http_get_header (&connection->reader, 
+        if (websocket->test.UpgradeError1 ||
+            !(key = net_http_get_header (&connection->reader, 
                                          "Sec-WebSocket-Key"))) {
                 error_code (FunctionCall, 1);
                 return false;
         }
-        if (!string_append (&key, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")) {
+        if (websocket->test.UpgradeError2 ||
+            !string_append (&key, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")) {
+                string_destroy (key);
                 error_code (FunctionCall, 2);
                 return false;
         }
         SHA1 ((unsigned char *)key, string_length (key), hash);
-        if (!(base64 = encode_base64 ((char *)hash, SHA_DIGEST_LENGTH))) {
+        if (websocket->test.UpgradeError3 ||
+            !(base64 = encode_base64 ((char *)hash, SHA_DIGEST_LENGTH))) {
                 string_destroy (key);
                 error_code (FunctionCall, 3);
                 return false;
         }
-        if (!(response = string_create ("HTTP/1.1 101 Switching Protocols\r\n"
+        if (websocket->test.UpgradeError4 ||
+            !(response = string_create ("HTTP/1.1 101 Switching Protocols\r\n"
                                         "Upgrade: websocket\r\n"
                                         "Connection: Upgrade\r\n"
                                         "Sec-WebSocket-Accept: ")) ||
@@ -226,16 +234,30 @@ static bool upgrade_request (NetWebsocket *websocket,
                 return false;
         }
         connection->upgraded = true;
-        if (!net_stream_write (websocket->stream,
-                               stream_connection,
-                               (unsigned char *)response,
-                               string_length (response))) {
+        if (websocket->test.UpgradeError5 ||
+            !net_stream_write_flags (websocket->stream,
+                                     stream_connection,
+                                     (unsigned char *)response,
+                                     string_length (response),
+                                     FREE_BUFFER)) {
                 string_destroy (key);
                 string_destroy (base64);
+                string_destroy (response);
                 error_code (FunctionCall, 5);
                 return false;
         }
         string_destroy (key);
         string_destroy (base64);
         return true;
+}
+
+static void frame_on_read (NetStream *stream, 
+                           NetStreamConnection *stream_connection, 
+                           unsigned char *buffer, 
+                           size_t length)
+{
+        (void)stream;
+        (void)stream_connection;
+        (void)buffer;
+        (void)length;
 }

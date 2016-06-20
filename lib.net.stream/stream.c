@@ -10,7 +10,8 @@ static void poll_on_monitor (NetPoll *poll,
 static void poll_on_write   (NetPoll *poll, 
                              NetPollConnection *poll_connection, 
                              unsigned char *buffer, 
-                             size_t length);
+                             size_t length,
+                             bool success);
 static void poll_on_read    (NetPoll *poll, 
                              NetPollConnection *poll_connection, 
                              unsigned char *buffer, 
@@ -18,9 +19,6 @@ static void poll_on_read    (NetPoll *poll,
 static void poll_on_close   (NetPoll *poll, 
                              NetPollConnection *poll_connection, 
                              bool success);
-static void signal_close      (NetStreamConnection *connection);
-static void signal_write      (NetStreamConnection *connection);
-static bool signal_wait_write (NetStreamConnection *connection);
 
 NetStream *net_stream_create (NetStreamOnAdd on_add,
                               NetStreamOnClose on_close, 
@@ -76,19 +74,28 @@ bool net_stream_add (NetStream *stream, int socket)
                 error_code (FunctionCall, 2);
                 return false;
         }
-        if (!thread_signal_create (&connection->signal)) {
+        if (!thread_signal_create (&connection->close_signal)) {
                 thread_lock_destroy (&connection->lock);
                 memory_destroy (connection);
                 close (socket);
                 error_code (FunctionCall, 3);
                 return false;
         }
-        if (!net_poll_monitor (stream->poll, &connection->poll)) {
-                thread_signal_destroy (&connection->signal);
+        if (!thread_signal_create (&connection->write_signal)) {
+                thread_signal_destroy (&connection->close_signal);
                 thread_lock_destroy (&connection->lock);
                 memory_destroy (connection);
                 close (socket);
                 error_code (FunctionCall, 4);
+                return false;
+        }
+        if (!net_poll_monitor (stream->poll, &connection->poll)) {
+                thread_signal_destroy (&connection->write_signal);
+                thread_signal_destroy (&connection->close_signal);
+                thread_lock_destroy (&connection->lock);
+                memory_destroy (connection);
+                close (socket);
+                error_code (FunctionCall, 5);
                 return false;
         }
         return true;
@@ -99,13 +106,28 @@ bool net_stream_write (NetStream *stream,
                        unsigned char *buffer, 
                        size_t length)
 {
-        if (!signal_wait_write (connection)) {
-                return false;
-        }
         if (!net_poll_write (stream->poll, &connection->poll, buffer, length)) {
                 return false;
         }
-        return true;
+        thread_signal_wait (&connection->write_signal);
+        return connection->write_success;
+}
+
+bool net_stream_write_flags (NetStream *stream, 
+                             NetStreamConnection *connection, 
+                             unsigned char *buffer, 
+                             size_t length,
+                             NetPollFlag flags)
+{
+        if (!net_poll_write_flags (stream->poll, 
+                                   &connection->poll, 
+                                   buffer,
+                                   length,
+                                   flags)) {
+                return false;
+        }
+        thread_signal_wait (&connection->write_signal);
+        return connection->write_success;
 }
 
 bool net_stream_close (NetStream *stream, NetStreamConnection *connection)
@@ -119,7 +141,8 @@ bool net_stream_close (NetStream *stream, NetStreamConnection *connection)
 void net_stream_remove (NetStream *stream, NetStreamConnection *connection)
 {
         (void)stream;
-        thread_signal_destroy (&connection->signal);
+        thread_signal_destroy (&connection->write_signal);
+        thread_signal_destroy (&connection->close_signal);
         thread_lock_destroy (&connection->lock);
         memory_destroy (connection);
 }
@@ -156,7 +179,8 @@ static void poll_on_read (NetPoll *poll,
 static void poll_on_write (NetPoll *poll, 
                            NetPollConnection *poll_connection, 
                            unsigned char *buffer, 
-                           size_t length)
+                           size_t length,
+                           bool success)
 {
         NetStream *stream = poll->pointer;
         NetStreamConnection *connection = poll_connection->pointer;
@@ -164,7 +188,10 @@ static void poll_on_write (NetPoll *poll,
         (void)stream;
         (void)buffer;
         (void)length;
-        signal_write (connection);
+        (void)success;
+ 
+        connection->write_success = success;       
+        thread_signal (&connection->write_signal);
 }
 
 static void poll_on_close (NetPoll *poll, 
@@ -176,47 +203,6 @@ static void poll_on_close (NetPoll *poll,
 
         (void)stream;
         (void)success;
-        signal_close (connection);
+        thread_signal (&connection->close_signal);
         stream->on_close (stream, connection);
-}
-
-static void signal_close (NetStreamConnection *connection)
-{
-        thread_lock (&connection->lock);
-        connection->closed = true;
-        thread_signal (&connection->signal);
-        thread_unlock (&connection->lock);
-}
-
-static void signal_write (NetStreamConnection *connection)
-{
-        thread_lock (&connection->lock);
-        connection->writing = false;
-        thread_signal (&connection->signal);
-        thread_unlock (&connection->lock);
-}
-
-static bool signal_wait_write (NetStreamConnection *connection)
-{
-        bool closed = false;
-        bool done = false;
-
-        while (true) {
-                thread_lock (&connection->lock);
-                if (connection->closed) {
-                        closed = true;
-                }
-                else if (connection->writing == false) {
-                        connection->writing = true;
-                        done = true;
-                }
-                thread_unlock (&connection->lock);
-                if (closed) {
-                        return false;
-                }
-                if (done) {
-                        return true;
-                }
-                thread_signal_wait (&connection->signal);
-        }
 }

@@ -20,7 +20,8 @@ typedef void (*NetPollOnRead)    (NetPoll *poll,
 typedef void (*NetPollOnWrite)   (NetPoll *poll,
                                   NetPollConnection *connection, 
                                   unsigned char *buffer,
-                                  size_t length);
+                                  size_t length,
+                                  bool success);
 
 struct _NetPoll
 {
@@ -33,14 +34,17 @@ struct _NetPoll
         void *pointer;
 };
 
-NetPoll *net_poll_create  (NetPollOnMonitor on_monitor,
-                           NetPollOnClose on_close,
-                           NetPollOnRead on_read,
-                           NetPollOnWrite on_write);
-void     net_poll_destroy (NetPoll *poll);
-bool     net_poll_monitor (NetPoll *poll, NetPollConnection *connection);
-bool     net_poll_close   (NetPoll *poll, NetPollConnection *connection);
-bool     net_poll_write   (NetPoll *poll, NetPollConnection *connection,
-                           unsigned char *buffer, size_t length);
+NetPoll *net_poll_create (NetPollOnMonitor on_monitor,
+                          NetPollOnClose on_close,
+                          NetPollOnRead on_read,
+                          NetPollOnWrite on_write);
+void net_poll_destroy (NetPoll *poll);
+bool net_poll_monitor (NetPoll *poll, NetPollConnection *connection);
+bool net_poll_close   (NetPoll *poll, NetPollConnection *connection);
+bool net_poll_write   (NetPoll *poll, NetPollConnection *connection,
+                       unsigned char *buffer, size_t length);
+bool net_poll_write_flags (NetPoll *poll, NetPollConnection *connection,
+                           unsigned char *buffer, size_t length,
+                           NetPollFlag flags);
 
 #endif

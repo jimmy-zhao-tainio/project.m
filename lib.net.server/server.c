@@ -28,6 +28,7 @@ NetServer *net_server_create (const char *ip,
         struct sockaddr_in c_address;
         int yes = 1;
         
+        signal (SIGPIPE, SIG_IGN);
         if (ip == NULL) {
                 error_code (InvalidArgument, 1);
                 return NULL;

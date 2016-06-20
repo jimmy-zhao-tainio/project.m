@@ -13,7 +13,7 @@ static bool log_end (const char *equals);
 bool test_app_arguments_invalid_argument_1 (Test *test)
 {
         TITLE ();
-        CATCH (app_arguments (-1, NULL, NULL))
+        CATCH (app_arguments (-1, NULL, NULL));
         CATCH (error_count () != 1);
         CATCH (error_at (0).error != ErrorInvalidArgument);
         CATCH (error_at (0).code != 1);
@@ -23,7 +23,7 @@ bool test_app_arguments_invalid_argument_1 (Test *test)
 bool test_app_arguments_invalid_argument_2 (Test *test)
 {
         TITLE ();
-        CATCH (app_arguments (0, NULL, NULL))
+        CATCH (app_arguments (0, NULL, NULL));
         CATCH (error_count () != 1);
         CATCH (error_at (0).error != ErrorInvalidArgument);
         CATCH (error_at (0).code != 2);
@@ -35,7 +35,7 @@ bool test_app_arguments_invalid_argument_3 (Test *test)
         char *argv[] = { "./app" };
 
         TITLE ();
-        CATCH (app_arguments (1, argv, NULL))
+        CATCH (app_arguments (1, argv, NULL));
         CATCH (error_count () != 1);
         CATCH (error_at (0).error != ErrorInvalidArgument);
         CATCH (error_at (0).code != 3);
@@ -52,7 +52,7 @@ bool test_app_arguments_function_call_1 (Test *test)
         };
 
         TITLE ();
-        CATCH (app_arguments (1, argv, arguments))
+        CATCH (app_arguments (1, argv, arguments));
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorFunctionCall);
         CATCH (error_at (0).code != 1);
@@ -69,7 +69,7 @@ bool test_app_arguments_function_call_2 (Test *test)
         };
 
         TITLE ();
-        CATCH (app_arguments (3, argv, arguments))
+        CATCH (app_arguments (3, argv, arguments));
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorFunctionCall);
         CATCH (error_at (0).code != 2);
@@ -86,7 +86,7 @@ bool test_app_arguments_function_call_3 (Test *test)
         };
 
         TITLE ();
-        CATCH (app_arguments (2, argv, arguments))
+        CATCH (app_arguments (2, argv, arguments));
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorFunctionCall);
         CATCH (error_at (0).code != 3);
@@ -102,7 +102,7 @@ bool test_app_arguments_function_call_4 (Test *test)
         };
 
         TITLE ();
-        CATCH (app_arguments (3, argv, arguments))
+        CATCH (app_arguments (3, argv, arguments));
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorFunctionCall);
         CATCH (error_at (0).code != 4);
@@ -120,7 +120,7 @@ bool test_app_arguments_function_call_5 (Test *test)
         };
 
         TITLE ();
-        CATCH (app_arguments (2, argv, arguments))
+        CATCH (app_arguments (2, argv, arguments));
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorFunctionCall);
         CATCH (error_at (0).code != 5);
@@ -138,7 +138,7 @@ bool test_app_arguments_named_duplicate (Test *test)
 
         TITLE ();
         CATCH (!log_begin ());
-        CATCH (app_arguments (5, argv, arguments))
+        CATCH (app_arguments (5, argv, arguments));
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentDuplicate);
         CATCH (!log_end ("The argument -a is duplicated.\n"));
@@ -156,7 +156,7 @@ bool test_app_arguments_named_missing_integer_value (Test *test)
 
         TITLE ();
         CATCH (!log_begin ());
-        CATCH (app_arguments (2, argv, arguments))
+        CATCH (app_arguments (2, argv, arguments));
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentMissingIntegerValue);
         CATCH (!log_end ("The argument -a is missing an integer value.\n"));
@@ -174,7 +174,7 @@ bool test_app_arguments_named_function_call_1 (Test *test)
 
         TITLE ();
         CATCH (!log_begin ());
-        CATCH (app_arguments (3, argv, arguments))
+        CATCH (app_arguments (3, argv, arguments));
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorFunctionCall);
         CATCH (error_at (1).code != 1);
@@ -193,7 +193,7 @@ bool test_app_arguments_named_invalid_integer_value (Test *test)
 
         TITLE ();
         CATCH (!log_begin ());
-        CATCH (app_arguments (3, argv, arguments))
+        CATCH (app_arguments (3, argv, arguments));
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentInvalidIntegerValue);
         CATCH (!log_end ("The value '123abc' for -a could not be converted to an integer value.\n"));
@@ -212,7 +212,7 @@ bool test_app_arguments_named_missing_uint64_value (Test *test)
 
         TITLE ();
         CATCH (!log_begin ());
-        CATCH (app_arguments (2, argv, arguments))
+        CATCH (app_arguments (2, argv, arguments));
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentMissingUInt64Value);
         CATCH (!log_end ("The argument -a is missing an UInt64 value.\n"));
@@ -230,7 +230,7 @@ bool test_app_arguments_named_function_call_2 (Test *test)
 
         TITLE ();
         CATCH (!log_begin ());
-        CATCH (app_arguments (3, argv, arguments))
+        CATCH (app_arguments (3, argv, arguments));
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorFunctionCall);
         CATCH (error_at (1).code != 2);
@@ -249,7 +249,7 @@ bool test_app_arguments_named_invalid_uint64_value (Test *test)
 
         TITLE ();
         CATCH (!log_begin ());
-        CATCH (app_arguments (3, argv, arguments))
+        CATCH (app_arguments (3, argv, arguments));
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentInvalidUInt64Value);
         CATCH (!log_end ("The value '123abc' for -a could not be converted to an UInt64 value.\n"));
@@ -267,7 +267,7 @@ bool test_app_arguments_named_missing_string_value (Test *test)
 
         TITLE ();
         CATCH (!log_begin ());
-        CATCH (app_arguments (2, argv, arguments))
+        CATCH (app_arguments (2, argv, arguments));
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentMissingStringValue);
         CATCH (!log_end ("The argument -a is missing a string value.\n"));
@@ -285,10 +285,27 @@ bool test_app_arguments_named_unknown_argument (Test *test)
 
         TITLE ();
         CATCH (!log_begin ());
-        CATCH (app_arguments (2, argv, arguments))
+        CATCH (app_arguments (2, argv, arguments));
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentUnknownNamedArgument);
         CATCH (!log_end ("Unrecognized argument '-b'.\n"));
+        PASS ();
+}
+
+bool test_app_arguments_named_uint64_default (Test *test)
+{
+        char *argv[] = { "./app" };
+        uint64_t value;
+        AppArgument arguments[] = {
+                ARGUMENT_NAMED_UINT64 ("-a", "--abc", 123, false, &value, "test"),
+                ARGUMENT_DEFAULT,
+                ARGUMENT_END
+        };
+
+        TITLE ();
+        CATCH (!app_arguments (1, argv, arguments));
+        CATCH (value != 123);
+        CATCH (error_count () != 0);
         PASS ();
 }
 
@@ -303,7 +320,7 @@ bool test_app_arguments_ordinal_function_call_1 (Test *test)
 
         TITLE ();
         CATCH (!log_begin ());
-        CATCH (app_arguments (2, argv, arguments))
+        CATCH (app_arguments (2, argv, arguments));
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorFunctionCall);
         CATCH (!log_end ("The value 'abc' could not be converted to an integer value.\n"));
@@ -375,7 +392,7 @@ bool test_app_arguments_ordinal_unknown_argument (Test *test)
 
         TITLE ();
         CATCH (!log_begin ());
-        CATCH (app_arguments (3, argv, arguments))
+        CATCH (app_arguments (3, argv, arguments));
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentUnknownOrdinalArgument);
         CATCH (!log_end ("Unrecognized argument 'unknown'.\n"));
@@ -394,7 +411,7 @@ bool test_app_arguments_missing_required_argument_1 (Test *test)
 
         TITLE ();
         CATCH (!log_begin ());
-        CATCH (app_arguments (2, argv, arguments))
+        CATCH (app_arguments (2, argv, arguments));
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentMissingRequiredArgument);
         CATCH (error_at (1).code != 1);
@@ -413,7 +430,7 @@ bool test_app_arguments_missing_required_argument_2 (Test *test)
 
         TITLE ();
         CATCH (!log_begin ());
-        CATCH (app_arguments (1, argv, arguments))
+        CATCH (app_arguments (1, argv, arguments));
         CATCH (error_count () < 2);
         CATCH (error_at (1).error != ErrorAppArgumentMissingRequiredArgument);
         CATCH (error_at (1).code != 2);
@@ -452,7 +469,7 @@ bool test_app_arguments (Test *test)
         };
 
         TITLE ();
-        CATCH (!app_arguments (11, argv, arguments))
+        CATCH (!app_arguments (11, argv, arguments));
         CATCH (error_count () != 0);
         CATCH (ordinal_integer != 321);
         CATCH (ordinal_uint64 != 654);

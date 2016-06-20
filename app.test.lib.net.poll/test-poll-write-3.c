@@ -31,20 +31,20 @@ static ThreadSignal client_close_signal = THREAD_SIGNAL_INITIALIZER;
 static ThreadSignal server_read_signal = THREAD_SIGNAL_INITIALIZER;
 static ThreadSignal client_read_signal = THREAD_SIGNAL_INITIALIZER;
 
-static NetPollConnection poll_client = { .closed = false };
-static NetPollConnection poll_server = { .closed = false };
+static NetPollConnection poll_client;
+static NetPollConnection poll_server;
 
 static void poll_on_monitor (NetPoll *poll, NetPollConnection *connection, bool success);
 static void poll_on_close   (NetPoll *poll, NetPollConnection *connection, bool success);
 static void poll_on_read    (NetPoll *poll, NetPollConnection *connection, unsigned char *buffer, size_t length);
-static void poll_on_write   (NetPoll *poll, NetPollConnection *connection, unsigned char *buffer, size_t length);
+static void poll_on_write   (NetPoll *poll, NetPollConnection *connection, unsigned char *buffer, size_t length, bool success);
 
 #define BufferSize 10000000 /* Large enough size to cause an EWOULDBLOCK */
 
 static unsigned char *write_buffer;
 
-static size_t client_read_count = 0;
-static size_t server_read_count = 0;
+static size_t client_read_count;
+static size_t server_read_count;
 
 bool test_poll_write_3 (Test *test)
 {
@@ -55,6 +55,10 @@ bool test_poll_write_3 (Test *test)
         size_t i;
 
         TITLE ();
+        poll_client.closed = false;
+        poll_server.closed = false;
+        client_read_count = 0;
+        server_read_count = 0;
         CATCH (!(server = net_server_create ("127.0.0.1", 8888,
                                              &server_on_connect,
                                              &server_on_error,
@@ -184,12 +188,13 @@ static void poll_on_read (NetPoll *poll, NetPollConnection *connection, unsigned
         }
 }
 
-static void poll_on_write (NetPoll *poll, NetPollConnection *connection, unsigned char *buffer, size_t length)
+static void poll_on_write (NetPoll *poll, NetPollConnection *connection, unsigned char *buffer, size_t length, bool success)
 {
         (void)poll;
         (void)connection;
         (void)buffer;
         (void)length;
+        (void)success;
 }
 
 static void server_on_connect (NetServer *server, int socket)

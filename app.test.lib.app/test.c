@@ -9,7 +9,7 @@
 
 bool (*tests[]) (Test *test) =
 {
-        &test_app_arguments_invalid_argument_1,
+        /*&test_app_arguments_invalid_argument_1,
         &test_app_arguments_invalid_argument_2,
         &test_app_arguments_invalid_argument_3,
         &test_app_arguments_function_call_1,
@@ -25,8 +25,9 @@ bool (*tests[]) (Test *test) =
 	&test_app_arguments_named_function_call_2,
 	&test_app_arguments_named_invalid_uint64_value,
 	&test_app_arguments_named_missing_string_value,
-	&test_app_arguments_named_unknown_argument,
-	&test_app_arguments_ordinal_function_call_1,
+	&test_app_arguments_named_unknown_argument,*/
+	&test_app_arguments_named_uint64_default,
+	/*&test_app_arguments_ordinal_function_call_1,
 	&test_app_arguments_ordinal_invalid_integer_value,
 	&test_app_arguments_ordinal_function_call_2,
 	&test_app_arguments_ordinal_invalid_uint64_value,
@@ -56,7 +57,7 @@ bool (*tests[]) (Test *test) =
         &test_app_arguments_usage_function_call,
         &test_app_arguments_usage,
         &test_app_events_1,
-        &test_app_events_2,
+        &test_app_events_2,*/
 	NULL
 };
 
