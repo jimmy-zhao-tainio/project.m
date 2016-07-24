@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
-#include "test-websocket-add-error-2.h"
+#include "test-websocket-http-on-read-2.h"
 
 static void on_add (NetWebsocket *websocket, NetWebsocketConnection *connection);
 static void on_close (NetWebsocket *websocket, NetWebsocketConnection *connection);
@@ -18,18 +18,32 @@ static void client_on_connect       (NetClient *client, NetClientConnection *con
 static void client_on_connect_error (NetClient *client, NetClientConnection *connection);
 static void client_on_error         (NetClient *client);
 
-bool test_websocket_add_error_2 (Test *test)
+static void client_stream_on_add (NetStream *stream, NetStreamConnection *connection);
+static void client_stream_on_close (NetStream *stream, NetStreamConnection *connection);
+
+static NetStream *stream_client;
+static NetStreamConnection *stream_connection_client;
+
+static ThreadSignal websocket_close_ready = THREAD_SIGNAL_INITIALIZER;
+static ThreadSignal client_close_ready = THREAD_SIGNAL_INITIALIZER;
+static ThreadSignal stream_add_ready = THREAD_SIGNAL_INITIALIZER;
+
+bool test_websocket_http_on_read_3 (Test *test)
 {
         NetWebsocket *websocket;
         NetClientConnection connection;
         NetClient *client;
+        char *buffer = "GET * HTTP/X.X\r\nabc:def\r\n\r\n";
 
         TITLE ();
         CATCH (!(websocket = net_websocket_create (&on_add, 
                                                    &on_close, 
                                                    &on_request)));
-        websocket->test.AddError2 = true;
         // Connect with client.
+        CATCH (!(stream_client = net_stream_create (&client_stream_on_add,
+                                                    &client_stream_on_close,
+                                                    NULL,
+                                                    NULL)));
         CATCH (!(client = net_client_create (&client_on_connect,
                                              &client_on_connect_error,
                                              &client_on_error,
@@ -37,14 +51,20 @@ bool test_websocket_add_error_2 (Test *test)
         connection.ip = "127.0.0.1";
         connection.port = 8888;
         net_client_connect (client, &connection);
-        while (error_count () == 0) {
-                usleep (10);
-        }
+        CATCH (!thread_signal_wait (&stream_add_ready));
+        net_stream_write (stream_client,
+                          stream_connection_client,
+                          (unsigned char *)buffer,
+                          string_length (buffer));
+        CATCH (!thread_signal_wait (&websocket_close_ready));
+        CATCH (!thread_signal_wait (&client_close_ready));
+        net_stream_remove (stream_client, stream_connection_client);
+        net_stream_destroy (stream_client);
         net_client_destroy (client);
         net_websocket_destroy (websocket);
         CATCH (error_at (0).error != ErrorFunctionCall);
-        CATCH (error_at (0).code != 2);
-        CATCH (!string_equals (error_at (0).function, "stream_on_add"));
+        CATCH (error_at (0).code != 3);
+        CATCH (!string_equals (error_at (0).function, "http_on_read"));
         PASS ();
 }
 
@@ -56,6 +76,7 @@ static void on_add (NetWebsocket *websocket, NetWebsocketConnection *connection)
 
 static void on_close (NetWebsocket *websocket, NetWebsocketConnection *connection)
 {
+        thread_signal (&websocket_close_ready);
         (void)websocket;
         (void)connection;
 }
@@ -68,8 +89,10 @@ static void on_request (NetWebsocket *websocket, NetWebsocketConnection *connect
 
 static void client_on_connect (NetClient *client, NetClientConnection *connection)
 {
+        // Write
         (void)connection;
         (void)client;
+        net_stream_add (stream_client, connection->socket);
 }
 
 static void client_on_connect_error (NetClient *client, NetClientConnection *connection)
@@ -82,3 +105,17 @@ static void client_on_error (NetClient *client)
 {
         (void)client;
 } 
+
+static void client_stream_on_add (NetStream *stream, NetStreamConnection *connection)
+{
+        (void)stream;
+        stream_connection_client = connection;
+        thread_signal (&stream_add_ready);
+}
+
+static void client_stream_on_close (NetStream *stream, NetStreamConnection *connection)
+{
+        (void)stream;
+        (void)connection;
+        thread_signal (&client_close_ready);
+}

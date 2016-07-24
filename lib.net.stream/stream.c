@@ -31,12 +31,18 @@ NetStream *net_stream_create (NetStreamOnAdd on_add,
                 error_code (FunctionCall, 1);
                 return NULL;
         }
+        if (!(stream->connection_queue = net_stream_connection_queue_create (stream))) {
+                memory_destroy (stream);
+                error_code (FunctionCall, 2);
+                return NULL;
+        }
         if (!(stream->poll = net_poll_create (&poll_on_monitor,
                                               &poll_on_close,
                                               &poll_on_read,
                                               &poll_on_write))) {
+                net_stream_connection_queue_destroy (stream->connection_queue);
                 memory_destroy (stream);
-                error_code (FunctionCall, 2);
+                error_code (FunctionCall, 3);
                 return NULL;
         }
         stream->on_add = on_add;
@@ -53,6 +59,7 @@ void net_stream_destroy (NetStream *stream)
                 error (InvalidArgument);
                 return;
         }
+        net_stream_connection_queue_destroy (stream->connection_queue);
         net_poll_destroy (stream->poll);
         memory_destroy (stream);
 }
@@ -61,39 +68,12 @@ bool net_stream_add (NetStream *stream, int socket)
 {
         NetStreamConnection *connection;
 
-        if (!(connection = memory_create (sizeof (NetStreamConnection)))) {
-                close (socket);
+        if (!(connection = net_stream_connection_create (socket))) {
                 error_code (FunctionCall, 1);
                 return false;
         }
-        connection->poll.socket = socket;
-        connection->poll.pointer = connection;
-        if (!thread_lock_create_full (&connection->lock, false)) {
-                memory_destroy (connection);
-                close (socket);
-                error_code (FunctionCall, 2);
-                return false;
-        }
-        if (!thread_signal_create (&connection->close_signal)) {
-                thread_lock_destroy (&connection->lock);
-                memory_destroy (connection);
-                close (socket);
-                error_code (FunctionCall, 3);
-                return false;
-        }
-        if (!thread_signal_create (&connection->write_signal)) {
-                thread_signal_destroy (&connection->close_signal);
-                thread_lock_destroy (&connection->lock);
-                memory_destroy (connection);
-                close (socket);
-                error_code (FunctionCall, 4);
-                return false;
-        }
         if (!net_poll_monitor (stream->poll, &connection->poll)) {
-                thread_signal_destroy (&connection->write_signal);
-                thread_signal_destroy (&connection->close_signal);
-                thread_lock_destroy (&connection->lock);
-                memory_destroy (connection);
+                net_stream_connection_destroy (connection);
                 close (socket);
                 error_code (FunctionCall, 5);
                 return false;
@@ -106,11 +86,16 @@ bool net_stream_write (NetStream *stream,
                        unsigned char *buffer, 
                        size_t length)
 {
-        if (!net_poll_write (stream->poll, &connection->poll, buffer, length)) {
+        NetStreamTask task = {
+                .type = NET_STREAM_TASK_WRITE,
+                .value.write.buffer = buffer,
+                .value.write.length = length
+        };
+
+        if (!net_stream_connection_queue_insert (stream->connection_queue, connection, task)) {
                 return false;
         }
-        thread_signal_wait (&connection->write_signal);
-        return connection->write_success;
+        return true;
 }
 
 bool net_stream_write_flags (NetStream *stream, 
@@ -141,10 +126,7 @@ bool net_stream_close (NetStream *stream, NetStreamConnection *connection)
 void net_stream_remove (NetStream *stream, NetStreamConnection *connection)
 {
         (void)stream;
-        thread_signal_destroy (&connection->write_signal);
-        thread_signal_destroy (&connection->close_signal);
-        thread_lock_destroy (&connection->lock);
-        memory_destroy (connection);
+        net_stream_connection_destroy (connection);
 }
 
 static void poll_on_monitor (NetPoll *poll, 

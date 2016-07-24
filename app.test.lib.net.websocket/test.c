@@ -10,6 +10,7 @@
 #include "test-websocket-add.h"
 #include "test-websocket-http-on-read-1.h"
 #include "test-websocket-http-on-read-2.h"
+#include "test-websocket-http-on-read-3.h"
 #include "test-websocket-upgrade-1.h"
 #include "test-websocket-upgrade-2.h"
 #include "test-websocket-upgrade-3.h"
@@ -19,7 +20,10 @@
 
 bool (*tests[]) (Test *test) =
 {
-        &test_http_request_begin,
+        /* OBS! valgrind will show openssl allocations which aren't 
+         * cleaned up. 
+         */
+        /*&test_http_request_begin,
         &test_http_request_end_1,
         &test_http_request_end_2,
         &test_http_set_method,
@@ -44,14 +48,15 @@ bool (*tests[]) (Test *test) =
         &test_websocket_add_error_1,
         &test_websocket_add_error_2,
         &test_websocket_add,
-        /*&test_websocket_http_on_read_1,
+        &test_websocket_http_on_read_1,
         &test_websocket_http_on_read_2,
+        &test_websocket_http_on_read_3,
         &test_websocket_upgrade_1,
         &test_websocket_upgrade_2,
         &test_websocket_upgrade_3,
         &test_websocket_upgrade_4,
-        &test_websocket_upgrade_5,
-        &test_websocket_upgrade,*/
+        &test_websocket_upgrade_5,*/
+        &test_websocket_upgrade,
 	NULL
 };
 

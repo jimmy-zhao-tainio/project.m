@@ -26,12 +26,14 @@ static NetStreamConnection *stream_connection_client;
 
 static ThreadSignal websocket_close_ready = THREAD_SIGNAL_INITIALIZER;
 static ThreadSignal client_close_ready = THREAD_SIGNAL_INITIALIZER;
+static ThreadSignal stream_add_ready = THREAD_SIGNAL_INITIALIZER;
 
 bool test_websocket_http_on_read_1 (Test *test)
 {
         NetWebsocket *websocket;
         NetClientConnection connection;
         NetClient *client;
+        unsigned char *buffer = (unsigned char *)"GET * HTTP/X.X\r\nabc:def\r\n\r\n";
 
         TITLE ();
         CATCH (!(websocket = net_websocket_create (&on_add, 
@@ -50,6 +52,11 @@ bool test_websocket_http_on_read_1 (Test *test)
         connection.ip = "127.0.0.1";
         connection.port = 8888;
         net_client_connect (client, &connection);
+        CATCH (!thread_signal_wait (&stream_add_ready));
+        net_stream_write (stream_client,
+                          stream_connection_client,
+                          buffer,
+                          string_length ((char *)buffer));
         CATCH (!thread_signal_wait (&websocket_close_ready));
         CATCH (!thread_signal_wait (&client_close_ready));
         net_stream_remove (stream_client, stream_connection_client);
@@ -104,10 +111,7 @@ static void client_stream_on_add (NetStream *stream, NetStreamConnection *connec
 {
         (void)stream;
         stream_connection_client = connection;
-        net_stream_write (stream_client,
-                          stream_connection_client,
-                          (unsigned char *)"abc",
-                          3);
+        thread_signal (&stream_add_ready);
 }
 
 static void client_stream_on_close (NetStream *stream, NetStreamConnection *connection)

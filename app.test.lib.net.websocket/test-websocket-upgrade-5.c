@@ -26,12 +26,19 @@ static NetStreamConnection *stream_connection_client;
 
 static ThreadSignal websocket_close_ready = THREAD_SIGNAL_INITIALIZER;
 static ThreadSignal client_close_ready = THREAD_SIGNAL_INITIALIZER;
+static ThreadSignal stream_add_ready = THREAD_SIGNAL_INITIALIZER;
 
 bool test_websocket_upgrade_5 (Test *test)
 {
         NetWebsocket *websocket;
         NetClientConnection connection;
         NetClient *client;
+        char *buffer = "GET * HTTP/1.1\r\n"
+                       "Upgrade: websocket\r\n"
+                       "Connection: Upgrade\r\n"
+                       "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+                       "Sec-WebSocket-Version: 13\r\n\r\n";
+
 
         TITLE ();
         CATCH (!(websocket = net_websocket_create (&on_add, 
@@ -50,6 +57,11 @@ bool test_websocket_upgrade_5 (Test *test)
         connection.ip = "127.0.0.1";
         connection.port = 8888;
         net_client_connect (client, &connection);
+        CATCH (!thread_signal_wait (&stream_add_ready));
+        net_stream_write (stream_client,
+                          stream_connection_client,
+                          (unsigned char *)buffer,
+                          string_length (buffer));
         CATCH (!thread_signal_wait (&websocket_close_ready));
         CATCH (!thread_signal_wait (&client_close_ready));
         net_stream_remove (stream_client, stream_connection_client);
@@ -102,18 +114,9 @@ static void client_on_error (NetClient *client)
 
 static void client_stream_on_add (NetStream *stream, NetStreamConnection *connection)
 {
-        char *buffer = "GET * HTTP/1.1\r\n"
-                       "Upgrade: websocket\r\n"
-                       "Connection: Upgrade\r\n"
-                       "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
-                       "Sec-WebSocket-Version: 13\r\n\r\n";
-
         (void)stream;
         stream_connection_client = connection;
-        net_stream_write (stream_client,
-                          stream_connection_client,
-                          (unsigned char *)buffer,
-                          string_length (buffer));
+        thread_signal (&stream_add_ready);
 }
 
 static void client_stream_on_close (NetStream *stream, NetStreamConnection *connection)

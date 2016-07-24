@@ -18,8 +18,6 @@ static void client_on_connect       (NetClient *client, NetClientConnection *con
 static void client_on_connect_error (NetClient *client, NetClientConnection *connection);
 static void client_on_error         (NetClient *client);
 
-static ThreadSignal client_ready = THREAD_SIGNAL_INITIALIZER;
-
 bool test_websocket_add_error_1 (Test *test)
 {
         NetWebsocket *websocket;
@@ -39,8 +37,10 @@ bool test_websocket_add_error_1 (Test *test)
         connection.ip = "127.0.0.1";
         connection.port = 8888;
         net_client_connect (client, &connection);
-        CATCH (!thread_signal_wait (&client_ready));
-        usleep (100);
+        // Loop until websocket.c: stream_on_add: FunctionCall, 1
+        while (error_count () == 0) {
+                usleep (10);
+        }
         net_client_destroy (client);
         net_websocket_destroy (websocket);
         CATCH (error_at (0).error != ErrorFunctionCall);
@@ -69,20 +69,19 @@ static void on_request (NetWebsocket *websocket, NetWebsocketConnection *connect
 
 static void client_on_connect (NetClient *client, NetClientConnection *connection)
 {
-        thread_signal (&client_ready);
         (void)connection;
         (void)client;
 }
 
 static void client_on_connect_error (NetClient *client, NetClientConnection *connection)
 {
-        thread_signal (&client_ready);
+        printf ("client_on_connect_error\n"); fflush (stdout);
         (void)connection;
         (void)client;
 }
 
 static void client_on_error (NetClient *client)
 {
-        thread_signal (&client_ready);
+        printf ("client_on_error\n"); fflush (stdout);
         (void)client;
 } 
