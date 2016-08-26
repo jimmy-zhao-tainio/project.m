@@ -1,4 +1,6 @@
 #include <lib.net.stream/stream.h>
+#include <lib.net.stream/connection.h>
+#include <lib.net.stream/connection-queue.h>
 #include <lib.core/memory.h>
 #include <lib.core/error.h>
 #include <unistd.h>
@@ -92,7 +94,7 @@ bool net_stream_write (NetStream *stream,
                 .value.write.length = length
         };
 
-        if (!net_stream_connection_queue_insert (stream->connection_queue, connection, task)) {
+        if (!net_stream_connection_queue_push (stream->connection_queue, connection, task)) {
                 return false;
         }
         return true;

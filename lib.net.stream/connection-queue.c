@@ -1,5 +1,5 @@
 #include <lib.net.stream/connection-queue.h>
-#include <lib.net.stream/stream.h>
+#include <lib.net.stream/task-queue.h>
 #include <lib.core/memory.h>
 #include <lib.core/error.h>
 #include <stdio.h>
@@ -20,7 +20,7 @@ static void task_close       (NetStream *stream,
                               NetStreamConnection *connection,
                               NetStreamTaskClose close);
 
-NetStreamConnectionQueue *net_stream_connection_queue_create (void *stream)
+NetStreamConnectionQueue *net_stream_connection_queue_create (NetStream *stream)
 {
         NetStreamConnectionQueue *connection_queue;
 

@@ -32,8 +32,22 @@ void net_stream_task_queue_destroy (NetStreamTaskQueue *task_queue)
 bool net_stream_task_queue_push (NetStreamTaskQueue *task_queue,
                                  NetStreamTask task)
 {
+        void *grown;
         size_t index;
 
+        if (task_queue->count == task_queue->length) {
+                // Resize task_queue
+                if (!(grown = memory_grow (task_queue->tasks,
+                                           (task_queue->length * 2) * 
+                                           sizeof (NetStreamTask)))) {
+                        error (FunctionCall);
+                        return false;
+                }
+                // This doesn't work without a memmove!
+                // Isolate code to core.
+                task_queue->tasks = grown;
+                task_queue->length = task_queue->length * 2;
+        }
         if (task_queue->front + task_queue->count >= task_queue->length) {
                 index = task_queue->front + task_queue->count - task_queue->length;
         }
