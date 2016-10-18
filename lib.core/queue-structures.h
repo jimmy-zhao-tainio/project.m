@@ -16,7 +16,8 @@ struct _Queue
         size_t item_capacity;
         size_t item_count;
         size_t item_size;
-        size_t position;
+        size_t pop_position;
+        size_t push_position;
         void *items;
 };
 

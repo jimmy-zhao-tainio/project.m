@@ -8,16 +8,21 @@
 //
 // |---###########--|
 //     ^         ^
-//     position  +count
+//     |         count
+//     pop_position
 //
-// Push at position + count
-// Pop at position
+// Push at pop_position + count
+// Pop at pop_position
 //
 // It wraps
 //
 // |###---------###|
 //    ^         ^
-//    +count    position
+//    +count    pop_position
+
+static bool is_wrapped (Queue *queue);
+static size_t push_position (Queue *queue);
+static void set_pop_position (Queue *queue);
 
 bool queue_create (Queue *queue, size_t items, size_t item_size, QueueSize queue_size)
 {
@@ -38,7 +43,7 @@ bool queue_create (Queue *queue, size_t items, size_t item_size, QueueSize queue
         queue->item_capacity = items;
         queue->item_count = 0;
         queue->item_size = item_size;
-        queue->position = 0;
+        queue->pop_position = 0;
         queue->queue_size = queue_size;
         return true;
 }
@@ -55,7 +60,7 @@ void queue_destroy (Queue *queue)
 
 bool queue_push (Queue *queue, void *item)
 {
-        size_t index;
+        size_t copy_to;
         
         if (queue->item_count == queue->item_capacity) {
                 if (queue->queue_size == QUEUE_SIZE_FIXED) {
@@ -67,31 +72,50 @@ bool queue_push (Queue *queue, void *item)
                         return false;
                 }
         }
-        if (queue->position + queue->item_count >= queue->item_capacity) {
-                // Wrapped
-                index = queue->position + queue->item_count - queue->item_capacity;
-        }
-        else {
-                index = queue->position + queue->item_count;
-        }
-        (void)memmove ((char *)queue->items + index, item, queue->item_size);
+        copy_to = push_position (queue) * queue->item_size;
+        (void)memmove ((char *)queue->items + copy_to, item, queue->item_size);
         queue->item_count++;
         return true;
 }
 
 bool queue_pop (Queue *queue, void *item)
 {
+        size_t copy_from;
+
         if (queue->item_count == 0) {
                 error (InvalidOperation);
                 return false;
         }
-        (void)memmove (item, (char *)queue->items + queue->position, queue->item_size);
-        if (queue->position == queue->item_capacity - 1) {
-                queue->position = 0;
-        }
-        else {
-                queue->position++;
-        }
+        copy_from = queue->pop_position * queue->item_size;
+        (void)memmove (item, (char *)queue->items + copy_from, queue->item_size);
+        memset ((char *)queue->items + copy_from, '\0', queue->item_size);
+        set_pop_position (queue);
         queue->item_count--;
         return true;
+}
+
+static size_t push_position (Queue *queue)
+{
+        if (is_wrapped (queue)) {
+                return queue->pop_position + queue->item_count - queue->item_capacity;
+        }
+        return queue->pop_position + queue->item_count;
+}
+
+static bool is_wrapped (Queue *queue)
+{
+        if (queue->pop_position + queue->item_count >= queue->item_capacity) {
+                return true;
+        }
+        return false;
+}
+
+static void set_pop_position (Queue *queue)
+{
+        if (queue->pop_position == queue->item_capacity - 1) {
+                queue->pop_position = 0;
+        }
+        else {
+                queue->pop_position++;
+        }
 }
