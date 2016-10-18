@@ -27,7 +27,7 @@
 
 bool (*tests[]) (Test *test) =
 {
-        /*&test_defines,
+        &test_defines,
         &test_size_t_add,
         &test_size_t_mul,
         &test_size_t_pow_invalid_argument,
@@ -452,8 +452,8 @@ bool (*tests[]) (Test *test) =
         &test_thread_lock_destroy_invalid_argument,
         &test_thread_lock_invalid_argument,
         &test_thread_unlock_invalid_argument,
-        &test_thread_lock_recursive,*/
-        /*&test_queue_create_function_call_1,
+        &test_thread_lock_recursive,
+        &test_queue_create_function_call_1,
         &test_queue_create_invalid_operation,
         &test_queue_create_function_call_2,
         &test_queue_create,
@@ -465,7 +465,7 @@ bool (*tests[]) (Test *test) =
         &test_queue_grow_function_call,
         &test_queue_grow_1,
         &test_queue_grow_2,
-        &test_queue_grow_3,*/
+        &test_queue_grow_3,
         &test_queue_grow_4,
         &test_queue_grow_5,
         &test_queue_grow_6,
