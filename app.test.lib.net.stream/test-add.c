@@ -78,9 +78,8 @@ bool test_add (Test *test)
         CATCH (!net_stream_add (stream_server, server_socket));
         CATCH (!net_stream_add (stream_client, client_socket));
 
-        // Wait for add to be completed.
-        thread_signal_wait (&client_add_signal);
         thread_signal_wait (&server_add_signal);
+        thread_signal_wait (&client_add_signal);
 
         // Close client connection, should cause server to close as well.
         net_stream_close (stream_client, stream_connection_client);

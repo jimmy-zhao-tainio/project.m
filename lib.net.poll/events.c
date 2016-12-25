@@ -16,11 +16,9 @@
 #include <fcntl.h>
 #include <signal.h>
 
-#define QUEUE_SIZE 1024
-
 static bool read_events (NetPollEvents *events);
 static NetPollEvent next_event (NetPollEvents *events);
-static bool push_queue_event (NetPollEvents *events);
+static bool push_internal_event (NetPollEvents *events);
 
 NetPollEvents *net_poll_events_create (void)
 {
@@ -36,7 +34,10 @@ NetPollEvents *net_poll_events_create (void)
         events->event_index = 0;
         events->event_count = 0;
         events->queue_got_events = false;
-        if (!net_poll_queue_create (&events->queue, QUEUE_SIZE)) {
+        if (!queue_create (&events->queue, 
+                           1024,
+                           sizeof (NetPollEvent),
+                           QUEUE_SIZE_DYNAMIC)) {
                 memory_destroy (events);
                 error_code (FunctionCall, 2);
                 return NULL;
@@ -70,7 +71,7 @@ void net_poll_events_destroy (NetPollEvents *events)
                 error (InvalidArgument);
                 return;
         }
-        net_poll_queue_destroy (&events->queue);
+        queue_destroy (&events->queue);
         if (events->internal_event != -1) {
                 close (events->internal_event);
         }
@@ -83,28 +84,46 @@ void net_poll_events_destroy (NetPollEvents *events)
 bool net_poll_events_push_monitor (NetPollEvents *events, 
                                    NetPollConnection *connection)
 {
-        if (!net_poll_queue_push_monitor (&events->queue, connection)) {
+        NetPollEvent event = {
+                .connection = connection,
+                .type = NET_POLL_INTERNAL_MONITOR
+        };
+
+        if (!queue_push (&events->queue, &event)) {
+                error (FunctionCall);
                 return false;
         }
-        return push_queue_event (events);
+        return push_internal_event (events);
 }
 
 bool net_poll_events_push_close (NetPollEvents *events, 
                                  NetPollConnection *connection)
 {
-        if (!net_poll_queue_push_close (&events->queue, connection)) {
+        NetPollEvent event = {
+                .connection = connection,
+                .type = NET_POLL_INTERNAL_CLOSE
+        };
+
+        if (!queue_push (&events->queue, &event)) {
+                error (FunctionCall);
                 return false;
         }
-        return push_queue_event (events);
+        return push_internal_event (events);
 }
 
 bool net_poll_events_push_write (NetPollEvents *events, 
                                  NetPollConnection *connection)
 {
-        if (!net_poll_queue_push_write (&events->queue, connection)) {
+        NetPollEvent event = {
+                .connection = connection,
+                .type = NET_POLL_INTERNAL_WRITE
+        };
+
+        if (!queue_push (&events->queue, &event)) {
+                error (FunctionCall);
                 return false;
         }
-        return push_queue_event (events);
+        return push_internal_event (events);
 }
 
 bool net_poll_events_push_exit (NetPollEvents *events)
@@ -113,13 +132,14 @@ bool net_poll_events_push_exit (NetPollEvents *events)
                 .type = NET_POLL_EXIT
         };
 
-        if (!net_poll_queue_push (&events->queue, event)) {
+        if (!queue_push (&events->queue, &event)) {
+                error (FunctionCall);
                 return false;
         }
-        return push_queue_event (events);
+        return push_internal_event (events);
 }
 
-static bool push_queue_event (NetPollEvents *events)
+static bool push_internal_event (NetPollEvents *events)
 {
         if (eventfd_write (events->internal_event, 1) == -1) {
                 error_code (SystemCall, errno);
@@ -200,8 +220,8 @@ static NetPollEvent next_event (NetPollEvents *events)
                                 error (SystemCall);
                         }
                 }
-                event = net_poll_queue_pop (&events->queue);
-                if (event.type == NET_POLL_EMPTY) {
+                if (!queue_pop (&events->queue, &event)) {
+                        event.type = NET_POLL_EMPTY;
                         events->queue_got_events = false;
                         events->event_index++;
                 }

@@ -10,6 +10,7 @@ bool (*tests[]) (Test *test) =
 {
         &test_stream_create_function_call_1,
         &test_stream_create_function_call_2,
+        &test_stream_create_function_call_3,
         &test_stream_create,
         &test_add,
         &test_write,

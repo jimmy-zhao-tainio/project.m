@@ -44,7 +44,7 @@ bool test_poll_close_2 (Test *test)
         close_success = false;
         poll_connection.closed = false;
         poll_connection.socket = 0;
-        poll_connection.pointer = NULL;
+        poll_connection.tag = NULL;
         CATCH (!(server = net_server_create ("127.0.0.1", 8888,
                                              &server_on_connect,
                                              &server_on_error,

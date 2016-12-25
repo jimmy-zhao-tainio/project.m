@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <lib.test/test.h>
 
-#include "test-poll-queue.h"
 #include "test-poll-events.h"
 #include "test-poll.h"
 #include "test-poll-internal-loop.h"
@@ -18,10 +17,6 @@
 
 bool (*tests[]) (Test *test) =
 {
-        &test_poll_queue_create_function_call_1,
-        &test_poll_queue_create,
-        &test_poll_queue_1,
-        &test_poll_queue_2,
         &test_poll_events_create_function_call_1,
         &test_poll_events_create_function_call_2,
         &test_poll_events_create,

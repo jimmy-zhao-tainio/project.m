@@ -8,5 +8,7 @@ bool queue_create (Queue *queue, size_t items, size_t item_size, QueueSize queue
 void queue_destroy (Queue *queue);
 bool queue_push (Queue *queue, void *item);
 bool queue_pop (Queue *queue, void *item);
+bool queue_is_empty (Queue *queue);
+bool queue_is_full (Queue *queue);
 
 #endif

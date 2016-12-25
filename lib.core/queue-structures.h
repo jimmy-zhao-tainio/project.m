@@ -2,6 +2,7 @@
 #define queue_structures_h
 
 #include <lib.core/defines.h>
+#include <lib.core/threads-lock.h>
 
 typedef struct _Queue Queue;
 
@@ -18,6 +19,7 @@ struct _Queue
         size_t item_size;
         size_t pop_position;
         void *items;
+        ThreadLock lock;
 };
 
 #endif

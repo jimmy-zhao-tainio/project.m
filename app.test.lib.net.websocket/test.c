@@ -23,7 +23,7 @@ bool (*tests[]) (Test *test) =
         /* OBS! valgrind will show openssl allocations which aren't 
          * cleaned up. 
          */
-        /*&test_http_request_begin,
+        &test_http_request_begin,
         &test_http_request_end_1,
         &test_http_request_end_2,
         &test_http_set_method,
@@ -55,7 +55,7 @@ bool (*tests[]) (Test *test) =
         &test_websocket_upgrade_2,
         &test_websocket_upgrade_3,
         &test_websocket_upgrade_4,
-        &test_websocket_upgrade_5,*/
+        &test_websocket_upgrade_5,
         &test_websocket_upgrade,
 	NULL
 };

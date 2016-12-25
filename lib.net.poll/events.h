@@ -2,7 +2,7 @@
 #define lib_net_poll_events_h
 
 #include <lib.core/defines.h>
-#include <lib.net.poll/queue.h>
+#include <lib.core/queue.h>
 #include <lib.net.poll/event.h>
 #include <lib.net.poll/connection.h>
 #include <sys/epoll.h>
@@ -18,7 +18,7 @@ struct _NetPollEvents
         int event_count;
         int file;
         int internal_event;
-        NetPollQueue queue;
+        Queue queue;
         bool queue_got_events;
 };
 

@@ -125,7 +125,6 @@ static void client_stream_on_close (NetStream *stream, NetStreamConnection *conn
 
 static void client_stream_on_read (NetStream *stream, NetStreamConnection *connection, unsigned char *buffer, size_t length) 
 {
-        printf ("what?"); fflush (stdout);
         net_stream_close (stream, connection);
         (void)buffer;
         (void)length;

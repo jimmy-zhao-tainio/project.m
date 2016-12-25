@@ -13,7 +13,7 @@ typedef enum {
 struct _NetPollConnection
 {
         int socket;
-        void *pointer;
+        void *tag;
         struct {
                 unsigned char *buffer;
                 size_t length;

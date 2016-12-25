@@ -74,9 +74,9 @@ bool test_websocket_create_function_call_3 (Test *test)
                              sizeof (size_t) + sizeof (NetPollEvents) +
                              sizeof (size_t) + (1024 * sizeof (NetPollEvent)) +
                              sizeof (size_t) + sizeof (Thread) +
-                             sizeof (size_t) + sizeof (NetServer) +
-                             sizeof (size_t) + sizeof (NetServerEpoll) +
-                             sizeof (size_t) + sizeof (Thread) - 1);
+                             sizeof (size_t) + sizeof (NetStreamWorker) +
+                             sizeof (size_t) + (1024 * sizeof (NetStreamConnection *)) +
+                             sizeof (size_t) + sizeof (Thread));
         CATCH (net_websocket_create (&on_add, &on_close, &on_request));
         CATCH (error_at (0).error != ErrorFunctionCall);
         CATCH (error_at (0).code != 3);

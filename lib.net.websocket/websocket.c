@@ -234,21 +234,18 @@ static bool upgrade_request (NetWebsocket *websocket,
                 return false;
         }
         connection->upgraded = true;
-        printf ("here\n"); fflush (stdout);
         if (websocket->test.UpgradeError5 ||
             !net_stream_write_flags (websocket->stream,
                                      stream_connection,
                                      (unsigned char *)response,
                                      string_length (response),
                                      FREE_BUFFER)) {
-                printf ("too\n"); fflush (stdout);
                 string_destroy (key);
                 string_destroy (base64);
                 string_destroy (response);
                 error_code (FunctionCall, 5);
                 return false;
         }
-        printf ("end\n"); fflush (stdout);
         string_destroy (key);
         string_destroy (base64);
         return true;

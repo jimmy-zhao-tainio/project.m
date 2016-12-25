@@ -5,8 +5,8 @@
 #include <lib.core/threads-lock.h>
 #include <lib.net.stream/structures.h>
 
-NetStream *net_stream_create (NetStreamOnAdd on_add, 
-                              NetStreamOnClose on_close, 
+NetStream *net_stream_create (NetStreamOnAdd on_add,
+                              NetStreamOnClose on_close,
                               NetStreamOnRead on_read,
                               void *tag);
 void net_stream_destroy (NetStream *stream);

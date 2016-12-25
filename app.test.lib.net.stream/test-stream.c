@@ -21,11 +21,30 @@ bool test_stream_create_function_call_2 (Test *test)
 {
         TITLE ();
         memory_commit_limit (sizeof (size_t) + sizeof (NetStream) +
-                             sizeof (size_t) + sizeof (NetPoll) - 1);
+                             sizeof (size_t) + sizeof (NetPoll) +
+                             sizeof (size_t) + sizeof (NetPollEvents) +
+                             sizeof (size_t) + (sizeof (NetPollEvent) * 1024) +
+                             sizeof (size_t) + sizeof (Thread) - 1);
         CATCH (net_stream_create (NULL, NULL, NULL, NULL));
         CATCH (error_count () == 0);
         CATCH (error_at (0).error != ErrorFunctionCall);
         CATCH (error_at (0).code != 2);
+        PASS ();
+}
+
+bool test_stream_create_function_call_3 (Test *test)
+{
+        TITLE ();
+        memory_commit_limit (sizeof (size_t) + sizeof (NetStream) +
+                             sizeof (size_t) + sizeof (NetPoll) +
+                             sizeof (size_t) + sizeof (NetPollEvents) +
+                             sizeof (size_t) + (sizeof (NetPollEvent) * 1024) +
+                             sizeof (size_t) + sizeof (Thread) +
+                             sizeof (size_t) + sizeof (Thread) - 1);
+        CATCH (net_stream_create (NULL, NULL, NULL, NULL));
+        CATCH (error_count () == 0);
+        CATCH (error_at (0).error != ErrorFunctionCall);
+        CATCH (error_at (0).code != 3);
         PASS ();
 }
 
